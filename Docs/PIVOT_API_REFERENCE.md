@@ -1,0 +1,359 @@
+# Pivot App Backend - API Quick Reference
+
+**Base URL:** `http://your-domain/api/v1`  
+**Authentication:** Bearer Token (Laravel Sanctum)
+
+---
+
+## Table of Contents
+
+1. [Authentication Endpoints](#authentication-endpoints)
+2. [User Profile Endpoints](#user-profile-endpoints)
+3. [Common Request Headers](#common-request-headers)
+4. [HTTP Status Codes](#http-status-codes)
+5. [Example Usage](#example-usage)
+
+---
+
+## Authentication Endpoints
+
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| POST | `/auth/register` | ❌ | Create new account |
+| POST | `/auth/login` | ❌ | Login user |
+| POST | `/auth/logout` | ✅ | Logout user |
+| GET | `/user/current-user` | ✅ | Get authenticated user |
+
+---
+
+## User Profile Endpoints
+
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| POST | `/user/profile` | ✅ | Create or update user profile |
+
+---
+
+## Endpoint Details
+
+### Authentication
+
+#### Register
+**POST** `/auth/register`
+
+```json
+{
+  "name": "John Doe",
+  "email": "john@example.com",
+  "password": "password123"
+}
+```
+
+**Response:**
+```json
+{
+  "token": "1|abc123...",
+  "user": {
+    "id": 1,
+    "name": "John Doe",
+    "email": "john@example.com",
+    "provider": "email",
+    "created_at": "2026-01-20T10:30:00.000000Z"
+  }
+}
+```
+
+---
+
+#### Login
+**POST** `/auth/login`
+
+```json
+{
+  "email": "john@example.com",
+  "password": "password123"
+}
+```
+
+**Response:**
+```json
+{
+  "token": "1|abc123...",
+  "user": {
+    "id": 1,
+    "name": "John Doe",
+    "email": "john@example.com",
+    "provider": "email",
+    "created_at": "2026-01-20T10:30:00.000000Z"
+  }
+}
+```
+
+---
+
+#### Logout
+**POST** `/auth/logout`
+
+**Headers:**
+```
+Authorization: Bearer YOUR_TOKEN
+```
+
+**Response:**
+```json
+{
+  "message": "Logged out successfully"
+}
+```
+
+---
+
+#### Get Current User
+**GET** `/user/current-user`
+
+**Headers:**
+```
+Authorization: Bearer YOUR_TOKEN
+```
+
+**Response:**
+```json
+{
+  "id": 1,
+  "name": "John Doe",
+  "email": "john@example.com",
+  "provider": "email",
+  "created_at": "2026-01-20T10:30:00.000000Z"
+}
+```
+
+---
+
+### User Profile
+
+#### Create/Update Profile
+**POST** `/user/profile`
+
+**Headers:**
+```
+Authorization: Bearer YOUR_TOKEN
+```
+
+**Request Body:**
+```json
+{
+  "country": "United States",
+  "gender": "male",
+  "age_range": "18-30",
+  "screen_goal_hours": 40,
+  "onboarding_completed": true
+}
+```
+
+**Response:**
+```json
+{
+  "message": "Profile saved successfully",
+  "profile": {
+    "country": "United States",
+    "gender": "male",
+    "age_range": "18-30",
+    "screen_goal_hours": 40,
+    "onboarding_done": true
+  }
+}
+```
+
+---
+
+## Validation Rules
+
+### Register
+| Field | Type | Required | Validation |
+|-------|------|----------|------------|
+| `name` | string | No | max: 255 |
+| `email` | string | Yes | email, unique |
+| `password` | string | Yes | min: 8 |
+
+### Login
+| Field | Type | Required | Validation |
+|-------|------|----------|------------|
+| `email` | string | Yes | email |
+| `password` | string | Yes | - |
+
+### Profile
+| Field | Type | Required | Validation |
+|-------|------|----------|------------|
+| `country` | string | Yes | max: 100 |
+| `gender` | string | Yes | enum: male, female, other |
+| `age_range` | string | Yes | enum: 5-18, 18-30, 30-45, 45+ |
+| `screen_goal_hours` | integer | Yes | min: 1, max: 168 |
+| `onboarding_completed` | boolean | No | true/false |
+
+---
+
+## Common Request Headers
+
+```http
+Authorization: Bearer YOUR_TOKEN_HERE
+Content-Type: application/json
+Accept: application/json
+```
+
+---
+
+## HTTP Status Codes
+
+| Code | Description |
+|------|-------------|
+| 200 | Success |
+| 201 | Created |
+| 400 | Bad Request |
+| 401 | Unauthorized |
+| 404 | Not Found |
+| 422 | Validation Error |
+| 500 | Server Error |
+
+---
+
+## Example Usage
+
+### Complete Authentication Flow
+
+```bash
+# 1. Register
+curl -X POST http://localhost:8000/api/v1/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "John Doe",
+    "email": "john@example.com",
+    "password": "password123"
+  }'
+
+# Response: { "token": "1|abc123...", "user": {...} }
+
+# 2. Login (if already registered)
+curl -X POST http://localhost:8000/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "john@example.com",
+    "password": "password123"
+  }'
+
+# 3. Create Profile
+curl -X POST http://localhost:8000/api/v1/user/profile \
+  -H "Authorization: Bearer 1|abc123..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "country": "United States",
+    "gender": "male",
+    "age_range": "18-30",
+    "screen_goal_hours": 40,
+    "onboarding_completed": true
+  }'
+
+# 4. Get Current User
+curl -X GET http://localhost:8000/api/v1/user/current-user \
+  -H "Authorization: Bearer 1|abc123..."
+
+# 5. Logout
+curl -X POST http://localhost:8000/api/v1/auth/logout \
+  -H "Authorization: Bearer 1|abc123..."
+```
+
+---
+
+## Error Responses
+
+### Validation Error (422)
+```json
+{
+  "message": "The given data was invalid.",
+  "errors": {
+    "email": ["The email has already been taken."],
+    "password": ["The password must be at least 8 characters."]
+  }
+}
+```
+
+### Authentication Error (401)
+```json
+{
+  "message": "Invalid credentials"
+}
+```
+
+### Unauthorized (401)
+```json
+{
+  "message": "Unauthenticated."
+}
+```
+
+### Provider Mismatch (422)
+```json
+{
+  "message": "Please login using google"
+}
+```
+
+---
+
+## Quick Tips
+
+### Token Management
+- Store tokens securely (secure storage, keychain)
+- Include token in `Authorization: Bearer {token}` header
+- Logout invalidates ALL user tokens
+- Token format: `{id}|{string}` (e.g., `1|abc123...`)
+
+### Best Practices
+- Use HTTPS in production
+- Handle 401 errors with re-authentication
+- Validate data on client before API call
+- Cache user data to reduce API calls
+- Implement request timeout (30s recommended)
+
+### Field Constraints
+- **Email**: Must be unique across all users
+- **Password**: Minimum 8 characters (no maximum specified)
+- **Country**: Maximum 100 characters
+- **Screen Goal Hours**: 1-168 (weekly hours, max 1 week)
+- **Gender**: Only accepts: `male`, `female`, `other`
+- **Age Range**: Only accepts: `5-18`, `18-30`, `30-45`, `45+`
+
+---
+
+## Environment Setup
+
+### Development
+```
+BASE_URL=http://localhost:8000/api/v1
+```
+
+### Production
+```
+BASE_URL=https://api.pivot-app.com/api/v1
+```
+
+---
+
+## Rate Limiting
+
+Currently no rate limits enforced. Recommended client-side throttling:
+- Maximum 100 requests per minute
+- Implement exponential backoff for retries
+- Cache responses when possible
+
+---
+
+## Support
+
+- **Documentation**: Full docs at `/Docs/PIVOT_API_DOCUMENTATION.md`
+- **Email**: support@pivot-app.com
+- **Issues**: GitHub Issues
+
+---
+
+**Last Updated:** January 20, 2026  
+**API Version:** 1.0
