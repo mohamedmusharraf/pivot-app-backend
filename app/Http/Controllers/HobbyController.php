@@ -19,13 +19,8 @@ class HobbyController extends Controller
      */
     public function index()
     {
-        return HobbyResource::collection(
-            $this->hobbyRepo->all()
-        );
-
         return response()->json([
-            'message' => 'Hobbies retrieved successfully',
-            'data' => HobbyResource::collection($hobbies)
+            'data' => HobbyResource::collection($this->hobbyRepo->all())
         ]);
     }
 
@@ -35,7 +30,9 @@ class HobbyController extends Controller
     public function show(Hobby $hobby)
     {
         $hobby->load('activities');
-        return new HobbyResource($hobby);
+        return response()->json(
+            new HobbyResource($hobby)
+        );
     }
 
     /**
@@ -45,10 +42,9 @@ class HobbyController extends Controller
     {
         $hobby = $this->hobbyRepo->create($request->validated());
 
-        return response()->json(
-            new HobbyResource($hobby),
-            201
-        );
+        return response()->json([
+            'data' => new HobbyResource($hobby)
+        ], 201);
     }
 
     /**
@@ -61,7 +57,9 @@ class HobbyController extends Controller
             $request->validated()
         );
 
-        return new HobbyResource($updatedHobby);
+        return response()->json([
+            'data' => new HobbyResource($updatedHobby)
+        ]);
     }
 
     /**

@@ -13,11 +13,17 @@ class ActivityController extends Controller
         protected ActivityRepositoryInterface $activityRepo
     ) {}
 
- 
     public function index()
     {
-        return ActivityResource::collection(
-            $this->activityRepo->all()
+        return response()->json([
+            'data' => ActivityResource::collection($this->activityRepo->all())
+        ]);
+    }
+
+    public function show(Activity $activity)
+    {
+        return response()->json(
+            new ActivityResource($activity)
         );
     }
 
@@ -27,10 +33,9 @@ class ActivityController extends Controller
             $request->validated()
         );
 
-        return response()->json(
-            new ActivityResource($activity),
-            201
-        );
+        return response()->json([
+            'data' => new ActivityResource($activity)
+        ], 201);
     }
 
     public function update(ActivityRequest $request, Activity $activity)
@@ -40,7 +45,9 @@ class ActivityController extends Controller
             $request->validated()
         );
 
-        return new ActivityResource($updatedActivity);
+        return response()->json([
+            'data' => new ActivityResource($updatedActivity)
+        ]);
     }
 
     public function destroy(Activity $activity)

@@ -303,6 +303,9 @@ curl -X POST http://localhost:8000/api/v1/hobbies \
     "description": "Reading books and articles"
   }'
 
+# Response:
+# { "data": { "id": 1, "name": "Reading", "description": "Reading books and articles", ... } }
+
 # 7. Add Hobby to User
 curl -X POST http://localhost:8000/api/v1/user/hobbies \
   -H "Authorization: Bearer 1|abc123..." \
@@ -320,6 +323,9 @@ curl -X POST http://localhost:8000/api/v1/activities \
     "description": "Read one chapter from current book",
     "duration_minutes": 30
   }'
+
+# Response:
+# { "data": { "id": 1, "name": "Read a chapter", "description": "Read one chapter from current book", "duration_minutes": 30, ... } }
 
 # 9. List Activities
 curl -X GET http://localhost:8000/api/v1/activities \
@@ -341,6 +347,230 @@ curl -X DELETE http://localhost:8000/api/v1/activities/1 \
 # 12. Logout
 curl -X POST http://localhost:8000/api/v1/auth/logout \
   -H "Authorization: Bearer 1|abc123..."
+```
+
+---
+
+## Hobby CRUD Endpoints
+
+### List Hobbies
+**GET** `/hobbies`
+
+**Headers:**
+```
+Authorization: Bearer YOUR_TOKEN
+```
+
+**Response (200):**
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "name": "Reading",
+      "description": "Reading books and articles",
+      "created_at": "2026-01-20T10:30:00.000000Z",
+      "updated_at": "2026-01-20T10:30:00.000000Z"
+    }
+  ]
+}
+```
+
+### Get Hobby Details
+**GET** `/hobbies/{hobby}`
+
+**Headers:**
+```
+Authorization: Bearer YOUR_TOKEN
+```
+
+**Response (200):**
+```json
+{
+  "id": 1,
+  "name": "Reading",
+  "description": "Reading books and articles",
+  "activities": [],
+  "created_at": "2026-01-20T10:30:00.000000Z",
+  "updated_at": "2026-01-20T10:30:00.000000Z"
+}
+```
+
+### Create Hobby
+**POST** `/hobbies`
+
+**Headers:**
+```
+Authorization: Bearer YOUR_TOKEN
+```
+
+**Request Body:**
+```json
+{
+  "name": "Reading",
+  "description": "Reading books and articles"
+}
+```
+
+**Response (201):**
+```json
+{
+  "data": {
+    "id": 1,
+    "name": "Reading",
+    "description": "Reading books and articles",
+    "created_at": "2026-01-20T10:30:00.000000Z",
+    "updated_at": "2026-01-20T10:30:00.000000Z"
+  }
+}
+```
+
+### Update Hobby
+**PUT** `/hobbies/{hobby}`
+
+**Headers:**
+```
+Authorization: Bearer YOUR_TOKEN
+```
+
+**Request Body:**
+```json
+{
+  "name": "Reading",
+  "description": "Reading books, articles, and blogs"
+}
+```
+
+**Response (200):**
+```json
+{
+  "data": {
+    "id": 1,
+    "name": "Reading",
+    "description": "Reading books, articles, and blogs",
+    "created_at": "2026-01-20T10:30:00.000000Z",
+    "updated_at": "2026-01-21T15:45:00.000000Z"
+  }
+}
+```
+
+### Delete Hobby
+**DELETE** `/hobbies/{hobby}`
+
+**Headers:**
+```
+Authorization: Bearer YOUR_TOKEN
+```
+
+**Response (200):**
+```json
+{
+  "message": "Hobby deleted successfully"
+}
+```
+
+---
+
+## Activity CRUD Endpoints
+
+### List Activities
+**GET** `/activities`
+
+**Headers:**
+```
+Authorization: Bearer YOUR_TOKEN
+```
+
+**Response (200):**
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "name": "Read a chapter",
+      "description": "Read one chapter from current book",
+      "duration_minutes": 30,
+      "created_at": "2026-01-20T10:30:00.000000Z",
+      "updated_at": "2026-01-20T10:30:00.000000Z"
+    }
+  ]
+}
+```
+
+### Create Activity
+**POST** `/activities`
+
+**Headers:**
+```
+Authorization: Bearer YOUR_TOKEN
+```
+
+**Request Body:**
+```json
+{
+  "name": "Read a chapter",
+  "description": "Read one chapter from current book",
+  "duration_minutes": 30
+}
+```
+
+**Response (201):**
+```json
+{
+  "data": {
+    "id": 1,
+    "name": "Read a chapter",
+    "description": "Read one chapter from current book",
+    "duration_minutes": 30,
+    "created_at": "2026-01-20T10:30:00.000000Z",
+    "updated_at": "2026-01-20T10:30:00.000000Z"
+  }
+}
+```
+
+### Update Activity
+**PUT** `/activities/{activity}`
+
+**Headers:**
+```
+Authorization: Bearer YOUR_TOKEN
+```
+
+**Request Body:**
+```json
+{
+  "name": "Read two chapters",
+  "duration_minutes": 60
+}
+```
+
+**Response (200):**
+```json
+{
+  "data": {
+    "id": 1,
+    "name": "Read two chapters",
+    "description": "Read one chapter from current book",
+    "duration_minutes": 60,
+    "created_at": "2026-01-20T10:30:00.000000Z",
+    "updated_at": "2026-01-21T15:45:00.000000Z"
+  }
+}
+```
+
+### Delete Activity
+**DELETE** `/activities/{activity}`
+
+**Headers:**
+```
+Authorization: Bearer YOUR_TOKEN
+```
+
+**Response (200):**
+```json
+{
+  "message": "Activity deleted successfully"
+}
 ```
 
 ---
