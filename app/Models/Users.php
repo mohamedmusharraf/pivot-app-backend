@@ -37,6 +37,16 @@ class Users extends Model
         return $this->hasOne(UserProfile::class);
     }
 
+    public function hobbies()
+{
+    return $this->belongsToMany(
+        Hobby::class,
+        'user_hobbies',
+        'user_id',   
+        'hobby_id'   
+    );
+}
+
     protected $casts = [
         'last_login_at' => 'datetime',
     ];

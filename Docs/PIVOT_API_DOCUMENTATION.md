@@ -10,7 +10,10 @@
 
 1. [Authentication](#1-authentication)
 2. [User Profile](#2-user-profile)
-3. [Additional Resources](#3-additional-resources)
+3. [Hobbies](#3-hobbies)
+4. [User Hobbies](#4-user-hobbies)
+5. [Activities](#5-activities)
+6. [Additional Resources](#6-additional-resources)
 
 ---
 
@@ -311,7 +314,492 @@ curl -X POST http://localhost:8000/api/v1/user/profile \
 
 ---
 
-## 3. Additional Resources
+## 3. Hobbies
+
+### 3.1 List All Hobbies
+
+Retrieves a list of all hobbies.
+
+**Endpoint:** `GET /hobbies`  
+**Auth Required:** Yes
+
+**Request Headers:**
+```
+Authorization: Bearer YOUR_TOKEN_HERE
+```
+
+**Response (Success - 200):**
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "name": "Reading",
+      "description": "Reading books and articles",
+      "created_at": "2026-01-20T10:30:00.000000Z",
+      "updated_at": "2026-01-20T10:30:00.000000Z"
+    },
+    {
+      "id": 2,
+      "name": "Gaming",
+      "description": "Playing video games",
+      "created_at": "2026-01-20T10:31:00.000000Z",
+      "updated_at": "2026-01-20T10:31:00.000000Z"
+    }
+  ]
+}
+```
+
+**cURL Example:**
+```bash
+curl -X GET http://localhost:8000/api/v1/hobbies \
+  -H "Authorization: Bearer 1|abcdef123456..."
+```
+
+---
+
+### 3.2 Get Hobby Details
+
+Retrieves details of a specific hobby.
+
+**Endpoint:** `GET /hobbies/{hobby}`  
+**Auth Required:** Yes
+
+**Path Parameters:**
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `hobby` | integer | Hobby ID |
+
+**Request Headers:**
+```
+Authorization: Bearer YOUR_TOKEN_HERE
+```
+
+**Response (Success - 200):**
+```json
+{
+  "data": {
+    "id": 1,
+    "name": "Reading",
+    "description": "Reading books and articles",
+    "created_at": "2026-01-20T10:30:00.000000Z",
+    "updated_at": "2026-01-20T10:30:00.000000Z"
+  }
+}
+```
+
+**Error Response (404):**
+```json
+{
+  "message": "Hobby not found"
+}
+```
+
+**cURL Example:**
+```bash
+curl -X GET http://localhost:8000/api/v1/hobbies/1 \
+  -H "Authorization: Bearer 1|abcdef123456..."
+```
+
+---
+
+### 3.3 Create Hobby
+
+Creates a new hobby.
+
+**Endpoint:** `POST /hobbies`  
+**Auth Required:** Yes
+
+**Request Headers:**
+```
+Authorization: Bearer YOUR_TOKEN_HERE
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "name": "string (required, max: 255)",
+  "description": "string (optional, max: 1000)"
+}
+```
+
+**Response (Success - 201):**
+```json
+{
+  "message": "Hobby created successfully",
+  "data": {
+    "id": 3,
+    "name": "Painting",
+    "description": "Creating artworks",
+    "created_at": "2026-01-25T14:20:00.000000Z",
+    "updated_at": "2026-01-25T14:20:00.000000Z"
+  }
+}
+```
+
+**cURL Example:**
+```bash
+curl -X POST http://localhost:8000/api/v1/hobbies \
+  -H "Authorization: Bearer 1|abcdef123456..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Painting",
+    "description": "Creating artworks"
+  }'
+```
+
+---
+
+### 3.4 Update Hobby
+
+Updates an existing hobby.
+
+**Endpoint:** `PUT /hobbies/{hobby}`  
+**Auth Required:** Yes
+
+**Path Parameters:**
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `hobby` | integer | Hobby ID |
+
+**Request Headers:**
+```
+Authorization: Bearer YOUR_TOKEN_HERE
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "name": "string (optional, max: 255)",
+  "description": "string (optional, max: 1000)"
+}
+```
+
+**Response (Success - 200):**
+```json
+{
+  "message": "Hobby updated successfully",
+  "data": {
+    "id": 3,
+    "name": "Digital Painting",
+    "description": "Creating digital artworks and illustrations",
+    "created_at": "2026-01-25T14:20:00.000000Z",
+    "updated_at": "2026-01-25T14:25:00.000000Z"
+  }
+}
+```
+
+**cURL Example:**
+```bash
+curl -X PUT http://localhost:8000/api/v1/hobbies/3 \
+  -H "Authorization: Bearer 1|abcdef123456..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Digital Painting",
+    "description": "Creating digital artworks and illustrations"
+  }'
+```
+
+---
+
+### 3.5 Delete Hobby
+
+Deletes a hobby.
+
+**Endpoint:** `DELETE /hobbies/{hobby}`  
+**Auth Required:** Yes
+
+**Path Parameters:**
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `hobby` | integer | Hobby ID |
+
+**Request Headers:**
+```
+Authorization: Bearer YOUR_TOKEN_HERE
+```
+
+**Response (Success - 200):**
+```json
+{
+  "message": "Hobby deleted successfully"
+}
+```
+
+**Error Response (404):**
+```json
+{
+  "message": "Hobby not found"
+}
+```
+
+**cURL Example:**
+```bash
+curl -X DELETE http://localhost:8000/api/v1/hobbies/3 \
+  -H "Authorization: Bearer 1|abcdef123456..."
+```
+
+---
+
+## 4. User Hobbies
+
+### 4.1 Add Hobby to User
+
+Adds a hobby to the authenticated user's hobby list.
+
+**Endpoint:** `POST /user/hobbies`  
+**Auth Required:** Yes
+
+**Request Headers:**
+```
+Authorization: Bearer YOUR_TOKEN_HERE
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "hobby_id": "integer (required)"
+}
+```
+
+**Response (Success - 201):**
+```json
+{
+  "message": "Hobby added to user successfully",
+  "data": {
+    "id": 1,
+    "user_id": 1,
+    "hobby_id": 2,
+    "created_at": "2026-01-25T14:30:00.000000Z",
+    "updated_at": "2026-01-25T14:30:00.000000Z"
+  }
+}
+```
+
+**Validation Error (422):**
+```json
+{
+  "message": "The given data was invalid.",
+  "errors": {
+    "hobby_id": [
+      "The hobby id field is required."
+    ]
+  }
+}
+```
+
+**cURL Example:**
+```bash
+curl -X POST http://localhost:8000/api/v1/user/hobbies \
+  -H "Authorization: Bearer 1|abcdef123456..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "hobby_id": 2
+  }'
+```
+
+---
+
+## 5. Activities
+
+### 5.1 List All Activities
+
+Retrieves a list of all activities for the authenticated user.
+
+**Endpoint:** `GET /activities`  
+**Auth Required:** Yes
+
+**Request Headers:**
+```
+Authorization: Bearer YOUR_TOKEN_HERE
+```
+
+**Response (Success - 200):**
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "user_id": 1,
+      "name": "Read a chapter",
+      "description": "Read one chapter from current book",
+      "duration_minutes": 30,
+      "created_at": "2026-01-20T10:30:00.000000Z",
+      "updated_at": "2026-01-20T10:30:00.000000Z"
+    },
+    {
+      "id": 2,
+      "user_id": 1,
+      "name": "Play online game",
+      "description": "Play an hour of online multiplayer games",
+      "duration_minutes": 60,
+      "created_at": "2026-01-20T10:35:00.000000Z",
+      "updated_at": "2026-01-20T10:35:00.000000Z"
+    }
+  ]
+}
+```
+
+**cURL Example:**
+```bash
+curl -X GET http://localhost:8000/api/v1/activities \
+  -H "Authorization: Bearer 1|abcdef123456..."
+```
+
+---
+
+### 5.2 Create Activity
+
+Creates a new activity for the authenticated user.
+
+**Endpoint:** `POST /activities`  
+**Auth Required:** Yes
+
+**Request Headers:**
+```
+Authorization: Bearer YOUR_TOKEN_HERE
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "name": "string (required, max: 255)",
+  "description": "string (optional, max: 1000)",
+  "duration_minutes": "integer (optional, min: 1)"
+}
+```
+
+**Response (Success - 201):**
+```json
+{
+  "message": "Activity created successfully",
+  "data": {
+    "id": 3,
+    "user_id": 1,
+    "name": "Sketch for 45 minutes",
+    "description": "Freehand sketching practice",
+    "duration_minutes": 45,
+    "created_at": "2026-01-25T15:00:00.000000Z",
+    "updated_at": "2026-01-25T15:00:00.000000Z"
+  }
+}
+```
+
+**cURL Example:**
+```bash
+curl -X POST http://localhost:8000/api/v1/activities \
+  -H "Authorization: Bearer 1|abcdef123456..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Sketch for 45 minutes",
+    "description": "Freehand sketching practice",
+    "duration_minutes": 45
+  }'
+```
+
+---
+
+### 5.3 Update Activity
+
+Updates an existing activity.
+
+**Endpoint:** `PUT /activities/{activity}`  
+**Auth Required:** Yes
+
+**Path Parameters:**
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `activity` | integer | Activity ID |
+
+**Request Headers:**
+```
+Authorization: Bearer YOUR_TOKEN_HERE
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "name": "string (optional, max: 255)",
+  "description": "string (optional, max: 1000)",
+  "duration_minutes": "integer (optional, min: 1)"
+}
+```
+
+**Response (Success - 200):**
+```json
+{
+  "message": "Activity updated successfully",
+  "data": {
+    "id": 3,
+    "user_id": 1,
+    "name": "Sketch for one hour",
+    "description": "Advanced sketching practice with reference",
+    "duration_minutes": 60,
+    "created_at": "2026-01-25T15:00:00.000000Z",
+    "updated_at": "2026-01-25T15:10:00.000000Z"
+  }
+}
+```
+
+**cURL Example:**
+```bash
+curl -X PUT http://localhost:8000/api/v1/activities/3 \
+  -H "Authorization: Bearer 1|abcdef123456..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Sketch for one hour",
+    "description": "Advanced sketching practice with reference",
+    "duration_minutes": 60
+  }'
+```
+
+---
+
+### 5.4 Delete Activity
+
+Deletes an activity.
+
+**Endpoint:** `DELETE /activities/{activity}`  
+**Auth Required:** Yes
+
+**Path Parameters:**
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `activity` | integer | Activity ID |
+
+**Request Headers:**
+```
+Authorization: Bearer YOUR_TOKEN_HERE
+```
+
+**Response (Success - 200):**
+```json
+{
+  "message": "Activity deleted successfully"
+}
+```
+
+**Error Response (404):**
+```json
+{
+  "message": "Activity not found"
+}
+```
+
+**cURL Example:**
+```bash
+curl -X DELETE http://localhost:8000/api/v1/activities/3 \
+  -H "Authorization: Bearer 1|abcdef123456..."
+```
+
+---
+
+## 6. Additional Resources
 
 ### Common Request Headers
 
@@ -543,6 +1031,11 @@ Currently, no specific rate limits are enforced. However, best practices recomme
 ---
 
 ### Changelog
+
+**Version 1.1** (January 25, 2026)
+- Added Hobby management endpoints (list, retrieve, create, update, delete)
+- Added User Hobbies endpoint (add hobby to user)
+- Added Activity management endpoints (list, create, update, delete)
 
 **Version 1.0** (January 20, 2026)
 - Initial API release

@@ -9,9 +9,12 @@
 
 1. [Authentication Endpoints](#authentication-endpoints)
 2. [User Profile Endpoints](#user-profile-endpoints)
-3. [Common Request Headers](#common-request-headers)
-4. [HTTP Status Codes](#http-status-codes)
-5. [Example Usage](#example-usage)
+3. [Hobby Endpoints](#hobby-endpoints)
+4. [User Hobby Endpoints](#user-hobby-endpoints)
+5. [Activity Endpoints](#activity-endpoints)
+6. [Common Request Headers](#common-request-headers)
+7. [HTTP Status Codes](#http-status-codes)
+8. [Example Usage](#example-usage)
 
 ---
 
@@ -34,7 +37,38 @@
 
 ---
 
-## Endpoint Details
+## Hobby Endpoints
+
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| GET | `/hobbies` | ✅ | List all hobbies |
+| GET | `/hobbies/{hobby}` | ✅ | Get hobby details |
+| POST | `/hobbies` | ✅ | Create hobby |
+| PUT | `/hobbies/{hobby}` | ✅ | Update hobby |
+| DELETE | `/hobbies/{hobby}` | ✅ | Delete hobby |
+
+---
+
+## User Hobby Endpoints
+
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| POST | `/user/hobbies` | ✅ | Add hobby to user |
+
+---
+
+## Activity Endpoints
+
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| GET | `/activities` | ✅ | List user activities |
+| POST | `/activities` | ✅ | Create activity |
+| PUT | `/activities/{activity}` | ✅ | Update activity |
+| DELETE | `/activities/{activity}` | ✅ | Delete activity |
+
+---
+
+## Common Request Headers
 
 ### Authentication
 
@@ -256,7 +290,55 @@ curl -X POST http://localhost:8000/api/v1/user/profile \
 curl -X GET http://localhost:8000/api/v1/user/current-user \
   -H "Authorization: Bearer 1|abc123..."
 
-# 5. Logout
+# 5. List Hobbies
+curl -X GET http://localhost:8000/api/v1/hobbies \
+  -H "Authorization: Bearer 1|abc123..."
+
+# 6. Create Hobby
+curl -X POST http://localhost:8000/api/v1/hobbies \
+  -H "Authorization: Bearer 1|abc123..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Reading",
+    "description": "Reading books and articles"
+  }'
+
+# 7. Add Hobby to User
+curl -X POST http://localhost:8000/api/v1/user/hobbies \
+  -H "Authorization: Bearer 1|abc123..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "hobby_id": 1
+  }'
+
+# 8. Create Activity
+curl -X POST http://localhost:8000/api/v1/activities \
+  -H "Authorization: Bearer 1|abc123..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Read a chapter",
+    "description": "Read one chapter from current book",
+    "duration_minutes": 30
+  }'
+
+# 9. List Activities
+curl -X GET http://localhost:8000/api/v1/activities \
+  -H "Authorization: Bearer 1|abc123..."
+
+# 10. Update Activity
+curl -X PUT http://localhost:8000/api/v1/activities/1 \
+  -H "Authorization: Bearer 1|abc123..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Read two chapters",
+    "duration_minutes": 60
+  }'
+
+# 11. Delete Activity
+curl -X DELETE http://localhost:8000/api/v1/activities/1 \
+  -H "Authorization: Bearer 1|abc123..."
+
+# 12. Logout
 curl -X POST http://localhost:8000/api/v1/auth/logout \
   -H "Authorization: Bearer 1|abc123..."
 ```
@@ -355,5 +437,5 @@ Currently no rate limits enforced. Recommended client-side throttling:
 
 ---
 
-**Last Updated:** January 20, 2026  
-**API Version:** 1.0
+**Last Updated:** January 25, 2026  
+**API Version:** 1.1

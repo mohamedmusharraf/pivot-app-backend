@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('activities', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('hobby_id')->constrained()->cascadeOnDelete();
             $table->string('title');
             $table->text('description');
             $table->integer('duration_minutes'); 

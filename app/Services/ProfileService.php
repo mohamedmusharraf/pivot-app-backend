@@ -13,7 +13,7 @@ class ProfileService
             ['user_id' => $user->id],
             [
                 'country'              => $data['country'],
-                'gender'                  => $data['gender'],
+                'gender'               => $data['gender'],
                 'age_range'            => $data['age_range'],
                 'screen_goal_hours'    => $data['screen_goal_hours'],
                 'onboarding_completed' => $data['onboarding_completed'] ?? false,
