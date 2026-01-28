@@ -14,7 +14,7 @@ class UserProfile extends Model
      */
     protected $fillable = [
         'user_id',
-        'country',
+        'country_id',
         'gender',
         'age_range',
         'screen_goal_hours',
@@ -34,6 +34,6 @@ class UserProfile extends Model
 
     public function user()
     {
-        return $this->belongsTo(Users::class);
-    }
+        return $this->belongsTo(Users::class, 'user_id');
+    } 
 }

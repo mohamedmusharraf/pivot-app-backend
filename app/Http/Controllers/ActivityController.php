@@ -5,54 +5,55 @@ namespace App\Http\Controllers;
 use App\Models\Activity;
 use App\Http\Requests\ActivityRequest;
 use App\Http\Resources\ActivityResource;
-use App\Repositories\Contracts\ActivityRepositoryInterface;
+use App\Services\ActivityService;
 
 class ActivityController extends Controller
 {
     public function __construct(
-        protected ActivityRepositoryInterface $activityRepo
+        protected ActivityService $activityService
     ) {}
 
-    public function index()
+    public function index(Activity $activity)
     {
+        $activity = $this->activityService->list();
         return response()->json([
-            'data' => ActivityResource::collection($this->activityRepo->all())
+           ActivityResource::collection($activity->all())
         ]);
     }
 
     public function show(Activity $activity)
     {
-        return response()->json(
+        return response()->json([
             new ActivityResource($activity)
-        );
+        ]);
     }
 
     public function store(ActivityRequest $request)
     {
-        $activity = $this->activityRepo->create(
+        $activity = $this->activityService->store(
             $request->validated()
         );
 
         return response()->json([
-            'data' => new ActivityResource($activity)
+            new ActivityResource($activity)
         ], 201);
     }
 
     public function update(ActivityRequest $request, Activity $activity)
     {
-        $updatedActivity = $this->activityRepo->update(
+        $updatedActivity = $this->activityService->update(
             $activity,
             $request->validated()
         );
 
         return response()->json([
-            'data' => new ActivityResource($updatedActivity)
+            new ActivityResource($updatedActivity)
         ]);
     }
 
     public function destroy(Activity $activity)
     {
-        $this->activityRepo->delete($activity);
+        $this->activityService->delete($activity);
 
         return response()->json([
             'message' => 'Activity deleted successfully'

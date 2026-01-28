@@ -38,14 +38,24 @@ class Users extends Model
     }
 
     public function hobbies()
-{
-    return $this->belongsToMany(
-        Hobby::class,
-        'user_hobbies',
-        'user_id',   
-        'hobby_id'   
-    );
-}
+    {
+        return $this->belongsToMany(Hobby::class, 'user_hobbies', 'user_id', 'hobby_id');
+    }
+
+    public function activities()
+    {
+        return $this->hasMany(Activity::class, 'user_id');
+    }
+
+    public function country()
+    {
+        return $this->belongsTo(Country::class, 'country_id');
+    }
+
+    public function userProfile()
+    {
+        return $this->hasOne(UserProfile::class);
+    }
 
     protected $casts = [
         'last_login_at' => 'datetime',

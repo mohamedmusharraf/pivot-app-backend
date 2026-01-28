@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('user_profiles', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->string('country', 100)->nullable();
+            $table->foreignId('user_id')->unique()->constrained('users')->cascadeOnDelete();
+            $table->foreignId('country_id')->constrained('countries')->cascadeOnDelete();
             $table->enum('gender', ['male', 'female', 'other'])->nullable();
             $table->enum('age_range', ['5-18', '18-30', '30-45', '45+'])->nullable();
             $table->integer('screen_goal_hours')->nullable();

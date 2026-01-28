@@ -12,6 +12,8 @@ class HobbyResource extends JsonResource
             'name' => $this->name,
             'icon' => $this->icon_url,
             'activities' => ActivityResource::collection($this->whenLoaded('activities')),
+            'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at,
         ];
     }
 }

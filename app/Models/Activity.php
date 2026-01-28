@@ -20,4 +20,9 @@ class Activity extends Model
     {
         return $this->belongsTo(Hobby::class);
     }
+
+    public function userHobby()
+    {
+        return $this->belongsTo(UserHobby::class);
+    }
 }

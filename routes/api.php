@@ -23,26 +23,19 @@ Route::prefix('v1')->group(function () {
     });
 });
 
-Route::middleware('auth:sanctum')->prefix('v1')->group(function () {
-    Route::post('/user/profile', [ProfileController::class, 'store']);
-});
-
 Route::prefix('v1')->group(function () {
 
     Route::middleware('auth:sanctum')->group(function () {
+        // User Profile Routes
+        Route::apiResource('profile', ProfileController::class);
+        
         // Hobby Management Routes
-        Route::get('/hobbies', [HobbyController::class, 'index']);
-        Route::get('/hobbies/{hobby}', [HobbyController::class, 'show']);
-        Route::post('/hobbies', [HobbyController::class, 'store']);
-        Route::put('/hobbies/{hobby}', [HobbyController::class, 'update']);
-        Route::delete('/hobbies/{hobby}', [HobbyController::class, 'destroy']);
-
-        Route::post('/user/hobbies', [UserHobbyController::class, 'store']);
+        Route::apiResource('hobbies', HobbyController::class);
 
         // Activity Management Routes
-        Route::get('/activities', [ActivityController::class, 'index']);
-        Route::post('/activities', [ActivityController::class, 'store']);
-        Route::put('/activities/{activity}', [ActivityController::class, 'update']);
-        Route::delete('/activities/{activity}', [ActivityController::class, 'destroy']);
+        Route::apiResource('activities', ActivityController::class);
+
+        // User Hobby Management Routes
+        Route::apiResource('user/hobbies', UserHobbyController::class);
     });
 });
