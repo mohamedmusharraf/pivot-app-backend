@@ -7,6 +7,8 @@ use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Resources\UserResource;
 use App\Services\AuthService;
 use Illuminate\Http\Request;
+use App\Http\Requests\ForgotPasswordRequest;
+use App\Http\Requests\ResetPasswordRequest;
 
 class AuthController extends Controller
 {
@@ -45,6 +47,28 @@ class AuthController extends Controller
 
     public function currentUser(Request $request)
     {
-        return new UserResource($request->user());
+        $user = $this->authService->getCurrentUser();
+
+        return response()->json([
+            'user' => new UserResource($user)
+        ]);;
+    }
+
+    public function forgotPassword(ForgotPasswordRequest $request)
+    {
+        $this->authService->sendResetPasswordEmail($request->email);
+
+        return response()->json([
+            'message' => 'Password reset email sent'
+        ]);
+    }
+
+    public function resetPassword(ResetPasswordRequest $request)
+    {
+        $this->authService->resetPassword($request->validated());
+
+        return response()->json([
+            'message' => 'Password reset successful'
+        ]);
     }
 }

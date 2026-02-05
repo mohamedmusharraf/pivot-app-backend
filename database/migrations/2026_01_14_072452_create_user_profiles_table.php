@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('user_id')->unique()->constrained('users')->cascadeOnDelete();
             $table->foreignId('country_id')->constrained('countries')->cascadeOnDelete();
             $table->enum('gender', ['male', 'female', 'other'])->nullable();
-            $table->enum('age_range', ['5-18', '18-30', '30-45', '45+'])->nullable();
+            $table->enum('age_range', ['16-17', '18-30', '30-45', '45+'])->nullable();
             $table->integer('screen_goal_hours')->nullable();
             $table->boolean('onboarding_completed')->default(false);
             $table->timestamps();
