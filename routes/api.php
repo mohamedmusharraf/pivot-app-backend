@@ -7,6 +7,7 @@ use App\Http\Controllers\User\ProfileController;
 use App\Http\Controllers\HobbyController;
 use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\UserHobbyController;
+use App\Http\Controllers\ResearchController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -40,5 +41,9 @@ Route::prefix('v1')->group(function () {
 
         // User Hobby Management Routes
         Route::apiResource('user/hobbies', UserHobbyController::class);
+
+        // Research Management Routes
+        Route::apiResource('research', ResearchController::class);
     });
+    
 });

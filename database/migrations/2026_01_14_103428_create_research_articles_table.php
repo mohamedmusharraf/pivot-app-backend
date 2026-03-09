@@ -14,11 +14,11 @@ return new class extends Migration
         Schema::create('research_articles', function (Blueprint $table) {
             $table->id();
             $table->string('title');
-            $table->text('ai_summary');
-            $table->text('snapshot_facts');
-            $table->text('full_content_url');
+            $table->text('research_summary');
+            $table->text('research_full_text');
+            $table->string('files')->nullable();
             $table->string('category');
-            $table->boolean('is_premium')->default(false);  
+            // $table->boolean('is_premium')->default(false);  
             $table->timestamps();
         });
     }

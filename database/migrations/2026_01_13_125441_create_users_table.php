@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('name')->nullable();
             $table->string('email')->unique();
             $table->string('password');
-            $table->string('provider');
+            $table->string('provider')->nullable();
             $table->string('provider_id')->nullable();
             $table->timestamp('last_login_at')->nullable();
             $table->timestamps();

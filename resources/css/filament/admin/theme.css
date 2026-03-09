@@ -1,0 +1,124 @@
+@import "../../../../vendor/filament/filament/resources/css/theme.css";
+
+@source '../../../../app/Filament/**/*';
+@source '../../../../resources/views/filament/**/*';
+
+@theme {
+    --color-main-primary: rgb(242, 241, 235);
+    --color-main-secondary: rgb(204, 197, 181);
+    --color-main-black: rgb(40, 43, 47);
+    --color-main-white: rgb(255, 255, 255);
+    --color-main-accent: rgb(241, 202, 59);
+}
+
+.fi-body {
+    @apply bg-main-primary text-main-black;
+}
+
+.fi-topbar {
+    @apply bg-main-primary shadow-none ring-0;
+}
+
+.fi-sidebar {
+    @apply bg-main-white rounded-2xl ml-2;
+}
+
+.fi-body-has-topbar .fi-sidebar {
+    height: calc(100vh - 6rem);
+}
+
+.fi-sidebar-item > .fi-sidebar-item-btn {
+    @apply rounded-2xl hover:bg-main-secondary;
+}
+
+.fi-sidebar-item {
+    &.fi-active {
+        & > .fi-sidebar-item-btn {
+            @apply bg-main-black text-main-black;
+        }
+    }
+}
+
+.fi-sidebar-item {
+    &.fi-active {
+        & > .fi-sidebar-item-btn {
+            & > .fi-icon {
+                @apply text-main-accent hover:text-main-accent;
+            }
+        }
+    }
+}
+
+.fi-sidebar-item {
+    &.fi-active {
+        & > .fi-sidebar-item-btn {
+            & > .fi-sidebar-item-label {
+                @apply text-main-accent hover:text-main-accent;
+            }
+        }
+    }
+}
+
+.fi-sidebar-item-btn {
+    & > .fi-icon {
+        @apply text-main-black;
+    }
+}
+
+.fi-btn {
+    @apply rounded-2xl;
+}
+
+.fi-input-wrp {
+    @apply rounded-2xl bg-main-white shadow-none ring-0;
+}
+
+.fi-ta-ctn {
+    @apply rounded-2xl bg-main-white p-4;
+}
+
+.fi-ta-ctn {
+    & .fi-ta-header-ctn {
+        @apply rounded-t-2xl bg-main-secondary;
+    }
+}
+
+.fi-ta-ctn {
+    & .fi-ta-header-toolbar {
+        @apply border-b-0;
+    }
+}
+
+.fi-ta-table {
+    & > thead {
+        & > tr {
+            @apply text-main-black bg-main-white;
+        }
+    }
+}
+
+.fi-icon-btn {
+    @apply rounded-2xl bg-main-black text-main-white hover:text-main-accent;
+}
+
+.fi-sc-form {
+    @apply bg-main-secondary rounded-2xl p-4
+}
+
+.fi-sc-form .fi-input-wrp {
+    @apply rounded-2xl bg-main-white shadow-none ring-0;
+}
+
+.fi-sc-form .fi-input-wrp .fi-input-wrp-prefix,
+.fi-sc-form .fi-input-wrp .fi-input-wrp-suffix {
+    @apply rounded-2xl bg-main-white shadow-none ring-0;
+}
+
+.fi-sc-form .fi-input-wrp .fi-input-wrp-prefix .fi-icon,
+.fi-sc-form .fi-input-wrp .fi-input-wrp-suffix .fi-icon {
+    @apply text-main-black;
+}
+
+.fi-section {
+    @apply bg-main-secondary rounded-2xl;
+}

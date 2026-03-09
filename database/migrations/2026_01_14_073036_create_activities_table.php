@@ -16,10 +16,11 @@ return new class extends Migration
             $table->foreignId('hobby_id')->constrained()->cascadeOnDelete();
             $table->string('title');
             $table->text('description');
-            $table->integer('duration_minutes'); 
-            $table->enum('energy_level', ['low', 'medium', 'high']);
+            $table->string('duration_minutes'); 
+            $table->enum('energy_level', ['Easy', 'Intermediate', 'Advanced']);
             $table->string('age_suitability')->nullable();
-            $table->boolean('neurodivergent_friendly')->default(false);
+            $table->enum('tier', ['Tier 1', 'Tier 2', 'Tier 3']);
+            $table->boolean('neurodivergent_friendly')->default(true);
             $table->timestamps();
         });
     }
