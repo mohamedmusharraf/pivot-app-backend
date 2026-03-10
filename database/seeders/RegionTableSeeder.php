@@ -19,7 +19,6 @@ class RegionTableSeeder extends Seeder
 
         $file = fopen($filePath, 'r');
 
-        // Skip header
         $header = fgetcsv($file);
 
         $countryCache = [];
@@ -29,22 +28,16 @@ class RegionTableSeeder extends Seeder
         $this->command->info("Starting to seed countries and regions...");
 
         while (($row = fgetcsv($file)) !== false) {
-            // Ensure the row has enough columns to avoid "Undefined offset" errors
             if (count($row) < 4) continue;
 
-            $regionName  = trim($row[1]); // Region column
-            $countryName = trim($row[2]); // Country column
-            $cityName    = trim($row[3]); // City column
+            $regionName  = trim($row[1]); 
+            $countryName = trim($row[2]); 
+            $cityName    = trim($row[3]); 
 
             if (!$countryName || !$regionName || !$cityName) {
                 continue;
             }
 
-            /*
-            |--------------------------------------------------------------------------
-            | Insert Country (if not exists)
-            |--------------------------------------------------------------------------
-            */
             if (!isset($countryCache[$countryName])) {
 
                 $country = DB::table('countries')
@@ -54,12 +47,9 @@ class RegionTableSeeder extends Seeder
                 if ($country) {
                     $countryCache[$countryName] = $country->id;
                 } else {
-                    // AUTO-GENERATE ISO CODE: 
-                    // Take first two letters, uppercase them. 
-                    // This ensures it returns a 'string' type, not an object.
+                    
                     $generatedIso = strtoupper(substr($countryName, 0, 2));
 
-                    // Safety check: if name is shorter than 2 chars, fallback to 'XX'
                     if (strlen($generatedIso) < 2) {
                         $generatedIso = 'XX';
                     }
@@ -79,11 +69,6 @@ class RegionTableSeeder extends Seeder
 
             $countryId = $countryCache[$countryName];
 
-            /*
-            |--------------------------------------------------------------------------
-            | Prepare Region Data for Batch Insert
-            |--------------------------------------------------------------------------
-            */
             $regions[] = [
                 'country_id' => $countryId,
                 'region'     => $regionName,
@@ -92,7 +77,6 @@ class RegionTableSeeder extends Seeder
                 'updated_at' => $now
             ];
 
-            // Every 1000 rows, insert into DB and clear array to save memory
             if (count($regions) >= 1000) {
                 DB::table('regions')->insert($regions);
                 $regions = [];
@@ -101,7 +85,6 @@ class RegionTableSeeder extends Seeder
 
         fclose($file);
 
-        // Insert any remaining regions in the array
         if (!empty($regions)) {
             DB::table('regions')->insert($regions);
         }

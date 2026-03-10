@@ -38,11 +38,7 @@ class ActivitiesSeeder extends Seeder
             $tier = $row[10];
             $duration = $row[14];
 
-            /*
-            |---------------------------------------------
-            | Insert hobby if not exists
-            |---------------------------------------------
-            */
+           
             if (!isset($hobbyCache[$category])) {
 
                 $hobby = DB::table('hobbies')
@@ -64,20 +60,11 @@ class ActivitiesSeeder extends Seeder
 
             $hobbyId = $hobbyCache[$category];
 
-            /*
-            |---------------------------------------------
-            | Normalize energy level
-            |---------------------------------------------
-            */
+
             if (!in_array($difficulty, ['Easy','Intermediate','Advanced'])) {
                 $difficulty = 'Easy';
             }
 
-            /*
-            |---------------------------------------------
-            | Normalize Tier
-            |---------------------------------------------
-            */
             if (!in_array($tier, ['Tier 1','Tier 2','Tier 3'])) {
                 $tier = 'Tier 1';
             }
@@ -95,11 +82,7 @@ class ActivitiesSeeder extends Seeder
                 'updated_at' => $now,
             ];
 
-            /*
-            |---------------------------------------------
-            | Batch Insert
-            |---------------------------------------------
-            */
+
             if (count($activities) >= $batchSize) {
                 DB::table('activities')->insert($activities);
                 $activities = [];
