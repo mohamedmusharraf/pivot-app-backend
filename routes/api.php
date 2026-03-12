@@ -31,6 +31,7 @@ Route::prefix('v1')->group(function () {
 
     Route::middleware('auth:sanctum')->group(function () {
         // User Profile Routes
+        Route::get('profile/me', [ProfileController::class, 'me']);
         Route::apiResource('profile', ProfileController::class);
 
         // Hobby Management Routes
@@ -45,5 +46,5 @@ Route::prefix('v1')->group(function () {
         // Research Management Routes
         Route::apiResource('research', ResearchController::class);
     });
-    
+
 });
