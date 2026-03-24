@@ -11,14 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('research_articles', function (Blueprint $table) {
+        Schema::create('snapshot', function (Blueprint $table) {
             $table->id();
-            $table->string('title');
-            $table->text('summary');
-            $table->text('full_content');
-            $table->string('files')->nullable();
-            // $table->string('category');
-            // $table->boolean('is_premium')->default(false);  
+            $table->string('snapshot_facts');
             $table->timestamps();
         });
     }
@@ -28,6 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('research_articles');
+        Schema::dropIfExists('snapshot');
     }
 };

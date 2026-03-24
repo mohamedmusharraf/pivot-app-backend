@@ -10,9 +10,8 @@ class Research extends Model
 
     protected $fillable = [
         'title',
-        'research_summary',
-        'research_full_text',
+        'summary',
+        'full_content',
         'files',
-        'category',
     ];
 }

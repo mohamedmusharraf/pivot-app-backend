@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Activity;
 use App\Http\Requests\ActivityRequest;
+use App\Http\Requests\ActivityFilterRequest;
 use App\Http\Resources\ActivityResource;
 use App\Services\ActivityService;
 
@@ -13,11 +14,12 @@ class ActivityController extends Controller
         protected ActivityService $activityService
     ) {}
 
-    public function index(Activity $activity)
+    public function index(ActivityFilterRequest $request)
     {
-        $activity = $this->activityService->list();
+        $activities = $this->activityService->list($request->validated());
+
         return response()->json([
-           ActivityResource::collection($activity->all())
+            ActivityResource::collection($activities)
         ]);
     }
 

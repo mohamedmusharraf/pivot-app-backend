@@ -8,10 +8,10 @@ class ResearchResource extends JsonResource
     {
         return [
             'title' => $this->title,
-            'research_summary' => $this->research_summary,
-            'research_full_text' => $this->research_full_text,
+            'summary' => $this->summary,
+            'full_content' => $this->full_content,
             'files' => $this->files,
-            'category' => $this->category,
+            // 'category' => $this->category,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

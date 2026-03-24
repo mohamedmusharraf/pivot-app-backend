@@ -12,6 +12,7 @@ class ActivityResource extends JsonResource
             'duration' => $this->duration_minutes,
             'energy'   => $this->energy_level,
             'age_suitability' => $this->age_suitability,
+            'tier' => $this->tier,
             'hobby'    => [
                 'id'   => $this->hobby->id,
                 'name' => $this->hobby->name,

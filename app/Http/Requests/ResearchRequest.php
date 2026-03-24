@@ -16,19 +16,19 @@ class ResearchRequest extends FormRequest
         if ($this->isMethod('post')) {
             return [
                 'title' => 'required|string|max:255',
-                'research_summary' => 'required|string',
-                'research_full_text' => 'required|string',
+                'summary' => 'required|string',
+                'full_content' => 'required|string',
                 'files' => 'nullable|file|mimes:pdf,doc,docx', 
-                'category' => 'required|string|max:255',
+                // 'category' => 'required|string|max:255',
             ];
         }
 
         return [
             'title' => 'sometimes|string|max:255',
-            'research_summary' => 'sometimes|string',
-            'research_full_text' => 'sometimes|string',
+            'summary' => 'sometimes|string',
+            'full_content' => 'sometimes|string',
             'files' => 'sometimes|nullable|file|mimes:pdf,doc,docx',
-            'category' => 'sometimes|string|max:255',
+            // 'category' => 'sometimes|string|max:255',
         ];
     }
 }

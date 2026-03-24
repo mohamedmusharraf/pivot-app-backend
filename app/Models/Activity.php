@@ -13,6 +13,7 @@ class Activity extends Model
         'duration_minutes',
         'energy_level',
         'age_suitability',
+        'tier',
         'neurodivergent_friendly',
     ];
 
