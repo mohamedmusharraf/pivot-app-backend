@@ -30,7 +30,7 @@ Route::prefix('v1')->group(function () {
 Route::prefix('v1')->group(function () {
 
     Route::middleware('auth:sanctum')->group(function () {
-        // User Profile Routes
+        // User Profile Routes 
         Route::get('profile/me', [ProfileController::class, 'me']);
         Route::apiResource('profile', ProfileController::class);
 
