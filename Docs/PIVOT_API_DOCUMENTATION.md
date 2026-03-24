@@ -1,6 +1,6 @@
 # Pivot App Backend - REST API Documentation
 
-**Version:** 1.2  
+**Version:** 1.3 (implementation-aligned)  
 **Base URL:** `/api/v1`  
 **Authentication:** Bearer Token (Laravel Sanctum)
 
@@ -8,37 +8,66 @@
 
 ## Table of Contents
 
-1. [Authentication](#1-authentication)
-2. [User Profile](#2-user-profile)
-3. [Hobbies](#3-hobbies)
-4. [User Hobbies](#4-user-hobbies)
-5. [Activities](#5-activities)
-6. [Additional Resources](#6-additional-resources)
+1. Authentication
+2. Profile
+3. Hobbies
+4. Activities
+5. User Hobbies
+6. Research
+7. Error Responses
+8. Notes and Caveats
 
 ---
 
-## Response Format
+## Response Behavior
 
-All API responses follow this standard format:
+The API does not use one single response envelope for all endpoints. Depending on the controller action, responses may be one of the following:
 
 ```json
 {
-    "message": "Success message or error description",
-    "data": {} // or []
+  "message": "..."
 }
 ```
 
-### HTTP Status Codes
+```json
+{
+  "user": {
+    "id": 1
+  }
+}
+```
 
-| Code | Description      |
-| ---- | ---------------- |
-| 200  | Success          |
-| 201  | Created          |
-| 400  | Bad Request      |
-| 401  | Unauthorized     |
-| 404  | Not Found        |
+```json
+[
+  {
+    "id": 1
+  }
+]
+```
+
+```json
+{
+  "data": [
+    {
+      "id": 1
+    }
+  ]
+}
+```
+
+---
+
+## HTTP Status Codes
+
+| Code | Description |
+| ---- | ----------- |
+| 200  | Success |
+| 201  | Created |
+| 400  | Bad Request |
+| 401  | Unauthorized |
+| 403  | Forbidden |
+| 404  | Not Found |
 | 422  | Validation Error |
-| 500  | Server Error     |
 
 ---
 
@@ -46,899 +75,32 @@ All API responses follow this standard format:
 
 ### 1.1 Register
 
-Creates a new user account.
-
 **Endpoint:** `POST /auth/register`  
 **Auth Required:** No
 
-**Request Body:**
+**Request Body (JSON):**
 
 ```json
 {
-    "name": "string (optional, max: 255)",
-    "email": "string (required, email, unique)",
-    "password": "string (required, min: 8)"
+  "name": "John Doe",
+  "email": "john@example.com",
+  "password": "password123",
+  "password_confirmation": "password123"
 }
 ```
 
-**Response (Success - 201):**
+**Validation:**
+
+- `name`: nullable, string, max 255
+- `email`: required, email, unique in `users`
+- `password`: required, string, min 6, confirmed
+- `password_confirmation`: required, string, min 6
+
+**Response (201):**
 
 ```json
 {
-    "token": "1|abcdef123456...",
-    "user": {
-        "id": 1,
-        "name": "John Doe",
-        "email": "john@example.com",
-        "provider": "email",
-        "created_at": "2026-01-20T10:30:00.000000Z"
-    }
-}
-```
-
-**Validation Rules:**
-
-- `name`: Optional, string, maximum 255 characters
-- `email`: Required, valid email format, must be unique in the system
-- `password`: Required, minimum 8 characters
-
-**cURL Example:**
-
-```bash
-curl -X POST http://localhost:8000/api/v1/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "John Doe",
-    "email": "john@example.com",
-    "password": "password123"
-  }'
-```
-
----
-
-### 1.2 Login
-
-Authenticates user and returns access token.
-
-**Endpoint:** `POST /auth/login`  
-**Auth Required:** No
-
-**Request Body:**
-
-```json
-{
-    "email": "string (required, email)",
-    "password": "string (required)"
-}
-```
-
-**Response (Success - 200):**
-
-```json
-{
-    "token": "1|abcdef123456...",
-    "user": {
-        "id": 1,
-        "name": "John Doe",
-        "email": "john@example.com",
-        "provider": "email",
-        "created_at": "2026-01-20T10:30:00.000000Z"
-    }
-}
-```
-
-**Error Responses:**
-
-**401 Unauthorized (Invalid Credentials):**
-
-```json
-{
-    "message": "Invalid credentials"
-}
-```
-
-**422 Unprocessable Entity (Different Provider):**
-
-```json
-{
-    "message": "Please login using google"
-}
-```
-
-**Validation Rules:**
-
-- `email`: Required, valid email format
-- `password`: Required
-
-**cURL Example:**
-
-```bash
-curl -X POST http://localhost:8000/api/v1/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "john@example.com",
-    "password": "password123"
-  }'
-```
-
-**Notes:**
-
-- User's `last_login_at` timestamp is updated upon successful login
-- Only users registered with email provider can login with this endpoint
-- Users registered via OAuth (Google, Facebook, etc.) must use their respective OAuth flow
-
----
-
-### 1.3 Logout
-
-Logs out current user and invalidates all tokens.
-
-**Endpoint:** `POST /auth/logout`  
-**Auth Required:** Yes
-
-**Request Headers:**
-
-```
-Authorization: Bearer YOUR_TOKEN_HERE
-```
-
-**Response (Success - 200):**
-
-```json
-{
-    "message": "Logged out successfully"
-}
-```
-
-**cURL Example:**
-
-```bash
-curl -X POST http://localhost:8000/api/v1/auth/logout \
-  -H "Authorization: Bearer 1|abcdef123456..." \
-  -H "Content-Type: application/json"
-```
-
-**Notes:**
-
-- This endpoint deletes ALL active tokens for the authenticated user
-- After logout, the token becomes invalid and cannot be reused
-- User must login again to get a new token
-
----
-
-### 1.4 Get Current User
-
-Retrieves currently authenticated user information.
-
-**Endpoint:** `GET /user/current-user`  
-**Auth Required:** Yes
-
-**Request Headers:**
-
-```
-Authorization: Bearer YOUR_TOKEN_HERE
-```
-
-**Response (Success - 200):**
-
-```json
-{
-    "id": 1,
-    "name": "John Doe",
-    "email": "john@example.com",
-    "provider": "email",
-    "created_at": "2026-01-20T10:30:00.000000Z"
-}
-```
-
-**cURL Example:**
-
-```bash
-curl -X GET http://localhost:8000/api/v1/user/current-user \
-  -H "Authorization: Bearer 1|abcdef123456..."
-```
-
----
-
-### 1.5 Forgot Password
-
-Sends a password reset link or token (route requires authentication per current routes).
-
-**Endpoint:** `POST /forgot-password`
-**Auth Required:** Yes
-
-**Request Body:**
-
-```json
-{
-    "email": "string (required, email)"
-}
-```
-
-**Response (200):**
-
-```json
-{
-    "message": "Password reset link sent"
-}
-```
-
-### 1.6 Reset Password
-
-Resets a user's password using a token.
-
-**Endpoint:** `POST /reset-password`
-**Auth Required:** Yes
-
-**Request Body:**
-
-```json
-{
-    "token": "string (required)",
-    "email": "string (required, email)",
-    "password": "string (required, min: 8)",
-    "password_confirmation": "string (required, same as password)"
-}
-```
-
-**Response (200):**
-
-```json
-{
-    "message": "Password has been reset"
-}
-```
-
-**Notes:**
-
-- Returns the user associated with the provided bearer token
-- Useful for verifying token validity and getting user details after login
-
----
-
-## 2. User Profile
-
-### 2.1 Create or Update Profile
-
-Creates a new profile or updates existing profile for the authenticated user.
-
-**Endpoint:** `POST /profile`  
-**Auth Required:** Yes
-
-**Request Headers:**
-
-```
-Authorization: Bearer YOUR_TOKEN_HERE
-Content-Type: application/json
-```
-
-**Request Body:**
-
-```json
-{
-    "country": "string (required, max: 100)",
-    "gender": "string (required, enum: male|female|other)",
-    "age_range": "string (required, enum: 5-18|18-30|30-45|45+)",
-    "screen_goal_hours": "integer (required, min: 1, max: 168)",
-    "onboarding_completed": "boolean (optional, default: false)"
-}
-```
-
-**Response (Success - 200):**
-
-```json
-{
-    "message": "Profile saved successfully",
-    "profile": {
-        "country": "United States",
-        "gender": "male",
-        "age_range": "18-30",
-        "screen_goal_hours": 40,
-        "onboarding_completed": true
-    }
-}
-```
-
-**Field Descriptions:**
-
-| Field                  | Type    | Required | Validation                    | Description                                                |
-| ---------------------- | ------- | -------- | ----------------------------- | ---------------------------------------------------------- |
-| `country`              | string  | Yes      | max: 100                      | User's country of residence                                |
-| `gender`               | string  | Yes      | enum: male, female, other     | User's gender identity                                     |
-| `age_range`            | string  | Yes      | enum: 5-18, 18-30, 30-45, 45+ | User's age range category                                  |
-| `screen_goal_hours`    | integer | Yes      | min: 1, max: 168              | Weekly screen time goal in hours (max: 1 week = 168 hours) |
-| `onboarding_completed` | boolean | No       | true/false                    | Whether user has completed onboarding process              |
-
-**cURL Example:**
-
-```bash
-curl -X POST http://localhost:8000/api/v1/user/profile \
-  -H "Authorization: Bearer 1|abcdef123456..." \
-  -H "Content-Type: application/json" \
-  -d '{
-    "country": "United States",
-    "gender": "male",
-    "age_range": "18-30",
-    "screen_goal_hours": 40,
-    "onboarding_completed": true
-  }'
-```
-
-**Validation Error Example (422):**
-
-```json
-{
-    "message": "The given data was invalid.",
-    "errors": {
-        "gender": ["The selected gender is invalid."],
-        "screen_goal_hours": [
-            "The screen goal hours must be at least 1.",
-            "The screen goal hours must not be greater than 168."
-        ]
-    }
-}
-```
-
-**Notes:**
-
-- This endpoint uses `updateOrCreate` logic - it will create a new profile if one doesn't exist, or update the existing one
-- Each user can only have one profile
-- The `onboarding_completed` field defaults to `false` if not provided
-- Screen goal hours represents weekly hours, so maximum is 168 (24 hours × 7 days)
-
----
-
-## 3. Hobbies
-
-### 3.1 List All Hobbies
-
-Retrieves a list of all hobbies.
-
-**Endpoint:** `GET /hobbies`  
-**Auth Required:** Yes
-
-**Request Headers:**
-
-```
-Authorization: Bearer YOUR_TOKEN_HERE
-```
-
-**Response (Success - 200):**
-
-```json
-{
-    "data": [
-        {
-            "id": 1,
-            "name": "Reading",
-            "description": "Reading books and articles",
-            "created_at": "2026-01-20T10:30:00.000000Z",
-            "updated_at": "2026-01-20T10:30:00.000000Z"
-        },
-        {
-            "id": 2,
-            "name": "Gaming",
-            "description": "Playing video games",
-            "created_at": "2026-01-20T10:31:00.000000Z",
-            "updated_at": "2026-01-20T10:31:00.000000Z"
-        }
-    ]
-}
-```
-
-**cURL Example:**
-
-```bash
-curl -X GET http://localhost:8000/api/v1/hobbies \
-  -H "Authorization: Bearer 1|abcdef123456..."
-```
-
----
-
-### 3.2 Get Hobby Details
-
-Retrieves details of a specific hobby.
-
-**Endpoint:** `GET /hobbies/{hobby}`  
-**Auth Required:** Yes
-
-**Path Parameters:**
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `hobby` | integer | Hobby ID |
-
-**Request Headers:**
-
-```
-Authorization: Bearer YOUR_TOKEN_HERE
-```
-
-**Response (Success - 200):**
-
-```json
-{
-    "data": {
-        "id": 1,
-        "name": "Reading",
-        "description": "Reading books and articles",
-        "created_at": "2026-01-20T10:30:00.000000Z",
-        "updated_at": "2026-01-20T10:30:00.000000Z"
-    }
-}
-```
-
-**Error Response (404):**
-
-```json
-{
-    "message": "Hobby not found"
-}
-```
-
-**cURL Example:**
-
-```bash
-curl -X GET http://localhost:8000/api/v1/hobbies/1 \
-  -H "Authorization: Bearer 1|abcdef123456..."
-```
-
----
-
-### 3.3 Create Hobby
-
-Creates a new hobby.
-
-**Endpoint:** `POST /hobbies`  
-**Auth Required:** Yes
-
-**Request Headers:**
-
-```
-Authorization: Bearer YOUR_TOKEN_HERE
-Content-Type: application/json
-```
-
-**Request Body:**
-
-```json
-{
-    "name": "string (required, max: 255)",
-    "description": "string (optional, max: 1000)"
-}
-```
-
-**Response (Success - 201):**
-
-```json
-{
-    "message": "Hobby created successfully",
-    "data": {
-        "id": 3,
-        "name": "Painting",
-        "description": "Creating artworks",
-        "created_at": "2026-01-25T14:20:00.000000Z",
-        "updated_at": "2026-01-25T14:20:00.000000Z"
-    }
-}
-```
-
-**cURL Example:**
-
-```bash
-curl -X POST http://localhost:8000/api/v1/hobbies \
-  -H "Authorization: Bearer 1|abcdef123456..." \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Painting",
-    "description": "Creating artworks"
-  }'
-```
-
----
-
-### 3.4 Update Hobby
-
-Updates an existing hobby.
-
-**Endpoint:** `PUT /hobbies/{hobby}`  
-**Auth Required:** Yes
-
-**Path Parameters:**
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `hobby` | integer | Hobby ID |
-
-**Request Headers:**
-
-```
-Authorization: Bearer YOUR_TOKEN_HERE
-Content-Type: application/json
-```
-
-**Request Body:**
-
-```json
-{
-    "name": "string (optional, max: 255)",
-    "description": "string (optional, max: 1000)"
-}
-```
-
-**Response (Success - 200):**
-
-```json
-{
-    "message": "Hobby updated successfully",
-    "data": {
-        "id": 3,
-        "name": "Digital Painting",
-        "description": "Creating digital artworks and illustrations",
-        "created_at": "2026-01-25T14:20:00.000000Z",
-        "updated_at": "2026-01-25T14:25:00.000000Z"
-    }
-}
-```
-
-**cURL Example:**
-
-```bash
-curl -X PUT http://localhost:8000/api/v1/hobbies/3 \
-  -H "Authorization: Bearer 1|abcdef123456..." \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Digital Painting",
-    "description": "Creating digital artworks and illustrations"
-  }'
-```
-
----
-
-### 3.5 Delete Hobby
-
-Deletes a hobby.
-
-**Endpoint:** `DELETE /hobbies/{hobby}`  
-**Auth Required:** Yes
-
-**Path Parameters:**
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `hobby` | integer | Hobby ID |
-
-**Request Headers:**
-
-```
-Authorization: Bearer YOUR_TOKEN_HERE
-```
-
-**Response (Success - 200):**
-
-```json
-{
-    "message": "Hobby deleted successfully"
-}
-```
-
-**Error Response (404):**
-
-```json
-{
-    "message": "Hobby not found"
-}
-```
-
-**cURL Example:**
-
-```bash
-curl -X DELETE http://localhost:8000/api/v1/hobbies/3 \
-  -H "Authorization: Bearer 1|abcdef123456..."
-```
-
----
-
-## 4. User Hobbies
-
-### 4.1 Add Hobby to User
-
-Adds a hobby to the authenticated user's hobby list.
-
-**Endpoint:** `POST /user/hobbies`  
-**Auth Required:** Yes
-
-**Request Headers:**
-
-```
-Authorization: Bearer YOUR_TOKEN_HERE
-Content-Type: application/json
-```
-
-**Request Body:**
-
-```json
-{
-    "hobby_id": "integer (required)"
-}
-```
-
-**Response (Success - 201):**
-
-```json
-{
-    "message": "Hobby added to user successfully",
-    "data": {
-        "id": 1,
-        "user_id": 1,
-        "hobby_id": 2,
-        "created_at": "2026-01-25T14:30:00.000000Z",
-        "updated_at": "2026-01-25T14:30:00.000000Z"
-    }
-}
-```
-
-**Validation Error (422):**
-
-```json
-{
-    "message": "The given data was invalid.",
-    "errors": {
-        "hobby_id": ["The hobby id field is required."]
-    }
-}
-```
-
-**cURL Example:**
-
-```bash
-curl -X POST http://localhost:8000/api/v1/user/hobbies \
-  -H "Authorization: Bearer 1|abcdef123456..." \
-  -H "Content-Type: application/json" \
-  -d '{
-    "hobby_id": 2
-  }'
-```
-
----
-
-## 5. Activities
-
-### 5.1 List All Activities
-
-Retrieves a list of all activities for the authenticated user.
-
-**Endpoint:** `GET /activities`  
-**Auth Required:** Yes
-
-**Request Headers:**
-
-```
-Authorization: Bearer YOUR_TOKEN_HERE
-```
-
-**Response (Success - 200):**
-
-```json
-{
-    "data": [
-        {
-            "id": 1,
-            "user_id": 1,
-            "name": "Read a chapter",
-            "description": "Read one chapter from current book",
-            "duration_minutes": 30,
-            "created_at": "2026-01-20T10:30:00.000000Z",
-            "updated_at": "2026-01-20T10:30:00.000000Z"
-        },
-        {
-            "id": 2,
-            "user_id": 1,
-            "name": "Play online game",
-            "description": "Play an hour of online multiplayer games",
-            "duration_minutes": 60,
-            "created_at": "2026-01-20T10:35:00.000000Z",
-            "updated_at": "2026-01-20T10:35:00.000000Z"
-        }
-    ]
-}
-```
-
-**cURL Example:**
-
-```bash
-curl -X GET http://localhost:8000/api/v1/activities \
-  -H "Authorization: Bearer 1|abcdef123456..."
-```
-
----
-
-### 5.2 Create Activity
-
-Creates a new activity for the authenticated user.
-
-**Endpoint:** `POST /activities`  
-**Auth Required:** Yes
-
-**Request Headers:**
-
-```
-Authorization: Bearer YOUR_TOKEN_HERE
-Content-Type: application/json
-```
-
-**Request Body:**
-
-```json
-{
-    "name": "string (required, max: 255)",
-    "description": "string (optional, max: 1000)",
-    "duration_minutes": "integer (optional, min: 1)"
-}
-```
-
-**Response (Success - 201):**
-
-```json
-{
-    "message": "Activity created successfully",
-    "data": {
-        "id": 3,
-        "user_id": 1,
-        "name": "Sketch for 45 minutes",
-        "description": "Freehand sketching practice",
-        "duration_minutes": 45,
-        "created_at": "2026-01-25T15:00:00.000000Z",
-        "updated_at": "2026-01-25T15:00:00.000000Z"
-    }
-}
-```
-
-**cURL Example:**
-
-```bash
-curl -X POST http://localhost:8000/api/v1/activities \
-  -H "Authorization: Bearer 1|abcdef123456..." \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Sketch for 45 minutes",
-    "description": "Freehand sketching practice",
-    "duration_minutes": 45
-  }'
-```
-
----
-
-### 5.3 Update Activity
-
-Updates an existing activity.
-
-**Endpoint:** `PUT /activities/{activity}`  
-**Auth Required:** Yes
-
-**Path Parameters:**
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `activity` | integer | Activity ID |
-
-**Request Headers:**
-
-```
-Authorization: Bearer YOUR_TOKEN_HERE
-Content-Type: application/json
-```
-
-**Request Body:**
-
-```json
-{
-    "name": "string (optional, max: 255)",
-    "description": "string (optional, max: 1000)",
-    "duration_minutes": "integer (optional, min: 1)"
-}
-```
-
-**Response (Success - 200):**
-
-```json
-{
-    "message": "Activity updated successfully",
-    "data": {
-        "id": 3,
-        "user_id": 1,
-        "name": "Sketch for one hour",
-        "description": "Advanced sketching practice with reference",
-        "duration_minutes": 60,
-        "created_at": "2026-01-25T15:00:00.000000Z",
-        "updated_at": "2026-01-25T15:10:00.000000Z"
-    }
-}
-```
-
-**cURL Example:**
-
-```bash
-curl -X PUT http://localhost:8000/api/v1/activities/3 \
-  -H "Authorization: Bearer 1|abcdef123456..." \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Sketch for one hour",
-    "description": "Advanced sketching practice with reference",
-    "duration_minutes": 60
-  }'
-```
-
----
-
-### 5.4 Delete Activity
-
-Deletes an activity.
-
-**Endpoint:** `DELETE /activities/{activity}`  
-**Auth Required:** Yes
-
-**Path Parameters:**
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `activity` | integer | Activity ID |
-
-**Request Headers:**
-
-```
-Authorization: Bearer YOUR_TOKEN_HERE
-```
-
-**Response (Success - 200):**
-
-```json
-{
-    "message": "Activity deleted successfully"
-}
-```
-
-**Error Response (404):**
-
-```json
-{
-    "message": "Activity not found"
-}
-```
-
-**cURL Example:**
-
-```bash
-curl -X DELETE http://localhost:8000/api/v1/activities/3 \
-  -H "Authorization: Bearer 1|abcdef123456..."
-```
-
----
-
-## 6. Additional Resources
-
-### Common Request Headers
-
-All authenticated endpoints require:
-
-```
-Authorization: Bearer YOUR_TOKEN_HERE
-Content-Type: application/json
-Accept: application/json
-```
-
----
-
-### Authentication Flow Example
-
-```bash
-# Step 1: Register a new user
-curl -X POST http://localhost:8000/api/v1/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "John Doe",
-    "email": "john@example.com",
-    "password": "password123"
-  }'
-
-# Response:
-{
-  "token": "1|abc123def456...",
+  "token": "1|abcdef123456...",
   "user": {
     "id": 1,
     "name": "John Doe",
@@ -947,225 +109,456 @@ curl -X POST http://localhost:8000/api/v1/auth/register \
     "created_at": "2026-01-20T10:30:00.000000Z"
   }
 }
-
-# Step 2: Create user profile
-curl -X POST http://localhost:8000/api/v1/user/profile \
-  -H "Authorization: Bearer 1|abc123def456..." \
-  -H "Content-Type: application/json" \
-  -d '{
-    "country": "United States",
-    "gender": "male",
-    "age_range": "18-30",
-    "screen_goal_hours": 40,
-    "onboarding_completed": true
-  }'
-
-# Step 3: Get current user information
-curl -X GET http://localhost:8000/api/v1/user/current-user \
-  -H "Authorization: Bearer 1|abc123def456..."
-
-# Step 4: Logout when done
-curl -X POST http://localhost:8000/api/v1/auth/logout \
-  -H "Authorization: Bearer 1|abc123def456..."
 ```
 
----
+### 1.2 Login
 
-### Error Handling
+**Endpoint:** `POST /auth/login`  
+**Auth Required:** No
 
-#### Validation Errors (422)
-
-When request data fails validation:
+**Request Body (JSON):**
 
 ```json
 {
-    "message": "The given data was invalid.",
-    "errors": {
-        "email": ["The email has already been taken."],
-        "password": ["The password must be at least 8 characters."]
-    }
+  "email": "john@example.com",
+  "password": "password123"
 }
 ```
 
-#### Authentication Errors (401)
+**Validation:**
 
-When token is missing or invalid:
+- `email`: required, email
+- `password`: required, string, min 6
+
+**Response (200):**
 
 ```json
 {
-    "message": "Unauthenticated."
+  "token": "1|abcdef123456...",
+  "user": {
+    "id": 1,
+    "name": "John Doe",
+    "email": "john@example.com",
+    "provider": "email",
+    "created_at": "2026-01-20T10:30:00.000000Z"
+  }
 }
 ```
 
-#### Authorization Errors (403)
+**Common Errors:**
 
-When user doesn't have permission:
+- `404`: `No account found with this email address.`
+- `401`: `Invalid credentials.`
+- `422`: `Please login using {Provider}`
+
+### 1.3 Logout
+
+**Endpoint:** `POST /auth/logout`  
+**Auth Required:** Yes
+
+**Response (200):**
 
 ```json
 {
-    "message": "This action is unauthorized."
+  "message": "Logged out successfully"
 }
 ```
 
-#### Not Found Errors (404)
+### 1.4 Current User
 
-When resource doesn't exist:
+**Endpoint:** `GET /user/current-user`  
+**Auth Required:** Yes
+
+**Response (200):**
 
 ```json
 {
-    "message": "Resource not found."
+  "user": {
+    "id": 1,
+    "name": "John Doe",
+    "email": "john@example.com",
+    "provider": "email",
+    "created_at": "2026-01-20T10:30:00.000000Z"
+  }
 }
 ```
 
-#### Server Errors (500)
+### 1.5 Forgot Password
 
-When server encounters an error:
+**Endpoint:** `POST /forgot-password`  
+**Auth Required:** Yes (current route setup)
+
+**Request Body (JSON):**
 
 ```json
 {
-    "message": "Server Error"
+  "email": "john@example.com"
 }
 ```
 
----
+**Validation:**
 
-### Token Management
+- `email`: required, email, exists in `users`
 
-**Token Lifecycle:**
-
-1. Token is created during registration or login
-2. Token must be included in `Authorization` header for protected endpoints
-3. Token remains valid until explicitly revoked via logout
-4. Logout deletes ALL tokens for the user
-
-**Token Format:**
-
-```
-Authorization: Bearer {token_id}|{token_string}
-```
-
-Example:
-
-```
-Authorization: Bearer 1|abcdefghijklmnopqrstuvwxyz123456789
-```
-
----
-
-### Best Practices
-
-1. **Secure Token Storage**
-    - Store tokens securely on client side (e.g., secure storage, keychain)
-    - Never expose tokens in logs or URLs
-    - Use HTTPS in production
-
-2. **Error Handling**
-    - Always check HTTP status codes
-    - Parse error messages for user-friendly display
-    - Handle 401 errors by redirecting to login
-
-3. **API Versioning**
-    - All endpoints are prefixed with `/api/v1`
-    - Version is included in URL for backward compatibility
-
-4. **Request Headers**
-    - Always include `Content-Type: application/json` for POST/PUT requests
-    - Include `Accept: application/json` to ensure JSON responses
-
-5. **Password Security**
-    - Minimum 8 characters required
-    - Use strong passwords with mix of characters
-    - Never store passwords in plain text on client
-
----
-
-### Database Schema
-
-#### Users Table
-
-| Column          | Type         | Nullable | Description                             |
-| --------------- | ------------ | -------- | --------------------------------------- |
-| `id`            | bigint       | No       | Primary key                             |
-| `name`          | varchar(255) | Yes      | User's full name                        |
-| `email`         | varchar(255) | No       | User's email (unique)                   |
-| `password`      | varchar(255) | No       | Hashed password                         |
-| `provider`      | varchar(50)  | Yes      | Auth provider (email, google, facebook) |
-| `last_login_at` | timestamp    | Yes      | Last login timestamp                    |
-| `created_at`    | timestamp    | No       | Record creation time                    |
-| `updated_at`    | timestamp    | No       | Record update time                      |
-
-#### User Profiles Table
-
-| Column                 | Type         | Nullable | Description                        |
-| ---------------------- | ------------ | -------- | ---------------------------------- |
-| `id`                   | bigint       | No       | Primary key                        |
-| `user_id`              | bigint       | No       | Foreign key to users table         |
-| `country`              | varchar(100) | No       | User's country                     |
-| `gender`               | enum         | No       | male, female, other                |
-| `age_range`            | enum         | No       | 5-18, 18-30, 30-45, 45+            |
-| `screen_goal_hours`    | integer      | No       | Weekly screen time goal (1-168)    |
-| `onboarding_completed` | boolean      | No       | Onboarding status (default: false) |
-| `created_at`           | timestamp    | No       | Record creation time               |
-| `updated_at`           | timestamp    | No       | Record update time                 |
-
----
-
-### Postman Collection
-
-To import this API into Postman:
-
-1. Create a new collection named "Pivot App API"
-2. Set base URL variable: `{{base_url}} = http://localhost:8000/api/v1`
-3. Set token variable after login: `{{token}} = YOUR_TOKEN`
-4. Import endpoints from this documentation
-
-**Environment Variables:**
+**Response (200):**
 
 ```json
 {
-    "base_url": "http://localhost:8000/api/v1",
-    "token": ""
+  "message": "Password reset email sent"
+}
+```
+
+### 1.6 Reset Password (OTP)
+
+**Endpoint:** `POST /reset-password`  
+**Auth Required:** Yes (current route setup)
+
+**Request Body (JSON):**
+
+```json
+{
+  "email": "john@example.com",
+  "otp": "123456",
+  "password": "new-password123",
+  "password_confirmation": "new-password123"
+}
+```
+
+**Validation:**
+
+- `email`: required, email
+- `otp`: required, 6 digits
+- `password`: required, min 8, confirmed
+
+**Response (200):**
+
+```json
+{
+  "message": "Password reset successful"
+}
+```
+
+**Common Errors:**
+
+- `400`: `Invalid OTP`
+- `400`: `OTP expired`
+
+---
+
+## 2. Profile (`apiResource`)
+
+All profile endpoints require auth.
+
+### Endpoints
+
+- `GET /profile`
+- `POST /profile`
+- `GET /profile/{profile}`
+- `PUT /profile/{profile}`
+- `DELETE /profile/{profile}`
+
+### Request Validation (`POST`/`PUT`)
+
+```json
+{
+  "user_id": 1,
+  "country_id": 14,
+  "gender": "male",
+  "age_range": "18-30",
+  "screen_goal_hours": 40,
+  "onboarding_completed": true
+}
+```
+
+- `user_id`: required, integer, exists:users,id
+- `country_id`: required, integer, max:100
+- `gender`: required, one of `male|female|other`
+- `age_range`: required, one of `5-18|18-30|30-45|45+`
+- `screen_goal_hours`: required, integer, 1-168
+- `onboarding_completed`: sometimes, boolean
+
+### Profile Resource Shape
+
+```json
+{
+  "user_id": 1,
+  "country_id": 14,
+  "gender": "male",
+  "age_range": "18-30",
+  "screen_goal_hours": 40,
+  "onboarding_done": true
+}
+```
+
+### Notable Responses
+
+- `POST /profile` returns `201` and an array containing one resource object.
+- `PUT /profile/{profile}` returns:
+
+```json
+{
+  "message": "data updated successfully"
+}
+```
+
+- `DELETE /profile/{profile}` returns:
+
+```json
+{
+  "message": "Profile deleted successfully"
 }
 ```
 
 ---
 
-### Rate Limiting
+## 3. Hobbies (`apiResource`)
 
-Currently, no specific rate limits are enforced. However, best practices recommend:
+All hobby endpoints require auth.
 
-- Implement client-side request throttling
-- Cache responses when appropriate
-- Avoid excessive API calls in loops
-- Use pagination for large datasets (when implemented)
+### Endpoints
+
+- `GET /hobbies`
+- `POST /hobbies`
+- `GET /hobbies/{hobby}`
+- `PUT /hobbies/{hobby}`
+- `DELETE /hobbies/{hobby}`
+
+### Request Validation (`POST`/`PUT`)
+
+```json
+{
+  "name": "Reading",
+  "icon_url": "https://cdn.example.com/icons/reading.svg"
+}
+```
+
+- `name`: required, string, max 255, unique in `hobbies` (ignores current id on update)
+- `icon_url`: nullable, string, max 255
+
+### Hobby Resource Shape
+
+```json
+{
+  "id": 1,
+  "name": "Reading",
+  "icon": "https://cdn.example.com/icons/reading.svg",
+  "activities": [],
+  "created_at": "2026-01-20T10:30:00.000000Z",
+  "updated_at": "2026-01-20T10:30:00.000000Z"
+}
+```
+
+### Notable Responses
+
+- `POST /hobbies` returns `201` with one resource object.
+- `DELETE /hobbies/{hobby}` returns:
+
+```json
+{
+  "message": "Hobby deleted successfully"
+}
+```
 
 ---
 
-### Changelog
+## 4. Activities (`apiResource`)
 
-**Version 1.1** (January 25, 2026)
+All activity endpoints require auth.
 
-- Added Hobby management endpoints (list, retrieve, create, update, delete)
-- Added User Hobbies endpoint (add hobby to user)
-- Added Activity management endpoints (list, create, update, delete)
+### Endpoints
 
-**Version 1.0** (January 20, 2026)
+- `GET /activities`
+- `POST /activities`
+- `GET /activities/{activity}`
+- `PUT /activities/{activity}`
+- `DELETE /activities/{activity}`
 
-- Initial API release
-- Authentication endpoints (register, login, logout)
-- User profile management
-- Current user retrieval
+### Request Validation (`POST`/`PUT`)
+
+```json
+{
+  "hobby_id": 1,
+  "title": "Read a chapter",
+  "description": "Read one chapter from current book",
+  "duration_minutes": 30,
+  "energy_level": "3",
+  "age_suitability": "18+",
+  "neurodiversity_friendly": true
+}
+```
+
+- `hobby_id`: nullable, exists:hobbies,id
+- `title`: nullable, string, max 255
+- `description`: nullable, string
+- `duration_minutes`: nullable, integer, min 1
+- `energy_level`: nullable, string, min 1, max 5
+- `age_suitability`: nullable, string, min 0, max 120
+- `neurodiversity_friendly`: nullable, boolean
+
+### Activity Resource Shape
+
+```json
+{
+  "id": 1,
+  "title": "Read a chapter",
+  "duration": 30,
+  "energy": "3",
+  "age_suitability": "18+",
+  "hobby": {
+    "id": 1,
+    "name": "Reading"
+  }
+}
+```
+
+### Notable Responses
+
+- `POST /activities` returns `201` with one resource object.
+- `DELETE /activities/{activity}` returns:
+
+```json
+{
+  "message": "Activity deleted successfully"
+}
+```
 
 ---
 
-### Support & Contact
+## 5. User Hobbies (`apiResource` on `user/hobbies`)
 
-For API support, issues, or feature requests:
+All user hobby endpoints require auth.
 
-- Email: support@pivot-app.com
-- Documentation: [API Documentation](https://docs.pivot-app.com)
-- GitHub: [Issues](https://github.com/pivot-app/backend/issues)
+### Endpoints
+
+- `GET /user/hobbies`
+- `POST /user/hobbies`
+- `GET /user/hobbies/{user_hobby}`
+- `PUT /user/hobbies/{user_hobby}`
+- `DELETE /user/hobbies/{user_hobby}`
+
+### Store / Update Request Validation
+
+```json
+{
+  "hobby_ids": [1, 2, 3]
+}
+```
+
+- `hobby_ids`: required, array, min 1
+- `hobby_ids.*`: must exist in `hobbies.id`
+
+### Notable Responses
+
+- `POST /user/hobbies` returns:
+
+```json
+{
+  "message": "Hobbies saved successfully"
+}
+```
+
+- `GET /user/hobbies` returns a hobby resource collection.
+- Unauthorized access to another user's item may return `403` with `Unauthorized access to this hobby`.
+- `DELETE /user/hobbies/{user_hobby}` returns:
+
+```json
+{
+  "message": "Hobby removed successfully"
+}
+```
 
 ---
 
-**Last Updated:** February 2, 2026
+## 6. Research (`apiResource`)
+
+All research endpoints require auth.
+
+### Endpoints
+
+- `GET /research`
+- `POST /research`
+- `GET /research/{research}`
+- `PUT /research/{research}`
+- `DELETE /research/{research}`
+
+### Create Research (`POST /research`)
+
+Use `multipart/form-data` when uploading a file.
+
+**Fields:**
+
+- `title`: required, string, max 255
+- `research_summary`: required, string
+- `research_full_text`: required, string
+- `files`: nullable file, allowed `pdf,doc,docx`
+- `category`: required, string, max 255
+
+### Update Research (`PUT /research/{research}`)
+
+All fields are `sometimes` for update. If a new `files` upload is provided, old stored file is deleted.
+
+### Research Resource Shape
+
+```json
+{
+  "title": "Screen Time and Sleep",
+  "research_summary": "Summary text...",
+  "research_full_text": "Full text...",
+  "files": "research_files/abc123.pdf",
+  "category": "Health",
+  "created_at": "2026-02-01T10:30:00.000000Z",
+  "updated_at": "2026-02-01T10:30:00.000000Z"
+}
+```
+
+### Delete Response
+
+```json
+{
+  "message": "Research deleted successfully"
+}
+```
+
+---
+
+## 7. Error Responses
+
+### Validation Error (422)
+
+```json
+{
+  "message": "The given data was invalid.",
+  "errors": {
+    "email": ["The email has already been taken."]
+  }
+}
+```
+
+### Unauthenticated (401)
+
+```json
+{
+  "message": "Unauthenticated."
+}
+```
+
+### Forbidden (403)
+
+```json
+{
+  "message": "Unauthorized access to this hobby"
+}
+```
+
+---
+
+## 8. Notes and Caveats
+
+- Password reset currently uses OTP (`otp`) not token.
+- `forgot-password` and `reset-password` are currently inside auth middleware, so bearer token is required.
+- Some endpoints return plain resources, some return arrays with resource objects, and some return `{ "message": ... }` objects.
+- `GET /activities` and `GET /hobbies` return global collections from repositories (not explicitly filtered by authenticated user in current implementation).
+
+---
+
+**Last Updated:** March 10, 2026

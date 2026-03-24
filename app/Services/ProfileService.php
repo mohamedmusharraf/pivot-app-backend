@@ -21,6 +21,11 @@ class ProfileService
         return $this->repository->all();
     }
 
+    public function getByUserId(int $userId): UserProfile
+    {
+        return $this->repository->findByUserId($userId);
+    }
+
     public function update(UserProfile $profile, array $data): UserProfile
     {
         return $this->repository->update($profile, $data);

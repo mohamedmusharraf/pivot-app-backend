@@ -4,10 +4,12 @@ namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ProfileRequest;
+use App\Http\Resources\UserResource;
 use App\Http\Resources\UserProfileResource;
 use App\Services\ProfileService;
 use Illuminate\Http\Request;
 use App\Models\UserProfile;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 
 class ProfileController extends Controller
@@ -20,25 +22,36 @@ class ProfileController extends Controller
     {
         $profile = $this->profileService->store($request->validated());
 
-        return response()->json([
-            new UserProfileResource($profile)
-        ], 201);
+        return (new UserProfileResource($profile))
+            ->response()
+            ->setStatusCode(201);
     }
 
     public function index()
     {
         $profiles = $this->profileService->list();
 
-        return response()->json([
-            UserProfileResource::collection($profiles)
-        ]);
+        return UserProfileResource::collection($profiles);
     }
 
     public function show(UserProfile $profile)
     {
+        return new UserProfileResource($profile);
+    }
+
+    public function me(Request $request)
+    {
+        try {
+            $profile = $this->profileService->getByUserId($request->user()->id);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'user' => new UserResource($request->user()),
+            ]);
+        }
 
         return response()->json([
-            new UserProfileResource($profile)
+            'user' => new UserResource($request->user()),
+            'profile' => new UserProfileResource($profile),
         ]);
     }
 
