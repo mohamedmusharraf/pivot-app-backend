@@ -27,11 +27,20 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
-            ->viteTheme('resources/css/filament/admin/theme.css')
             ->login()
+            ->brandName('Pivot App Dashboard')
+            ->globalSearch(false)
+
             ->colors([
                 'primary' => Color::Amber,
+                'danger' => Color::Rose,
+                'gray' => Color::Gray,
+                'info' => Color::Blue,
+                'success' => Color::Emerald,
+                'warning' => Color::Orange,
             ])
+
+            ->viteTheme('resources/css/filament/admin/theme.css')
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
@@ -39,8 +48,8 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
-                AccountWidget::class,
-                FilamentInfoWidget::class,
+                // AccountWidget::class,
+                // FilamentInfoWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,
@@ -57,14 +66,14 @@ class AdminPanelProvider extends PanelProvider
                 Authenticate::class,
             ])
 
-             ->colors([
-            'danger' => Color::Rose,
-            'gray' => Color::Gray,
-            'info' => Color::Blue,
-            'primary' => Color::Gray,
-            'success' => Color::Emerald,
-            'warning' => Color::Orange,
-        ])->viteTheme('resources/css/filament/admin/theme.css')
-        ->brandName('Pivot App Dashboard');
+            ->colors([
+                'danger' => Color::Rose,
+                'gray' => Color::Gray,
+                'info' => Color::Blue,
+                'primary' => Color::Gray,
+                'success' => Color::Emerald,
+                'warning' => Color::Orange,
+            ])->viteTheme('resources/css/filament/admin/theme.css')
+            ->brandName('Pivot App Dashboard');
     }
 }

@@ -13,16 +13,12 @@ return new class extends Migration
     {
         Schema::create('subscriptions', function (Blueprint $table) {
             $table->id();
-
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-
-            $table->enum('tier', ['tier1', 'tier2', 'tier3']);
-            $table->boolean('active')->default(false);
-
-            $table->string('store'); 
+            $table->foreignId('tier_id')->constrained('tier')->cascadeOnDelete();
+            $table->boolean('active')->default(true);
+            $table->string('store')->nullable();
             $table->string('product_id')->nullable();
             $table->string('revenuecat_user_id')->nullable();
-
             $table->timestamp('started_at')->nullable();
             $table->timestamp('expires_at')->nullable();
 

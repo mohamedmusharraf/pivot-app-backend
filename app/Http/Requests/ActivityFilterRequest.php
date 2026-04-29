@@ -13,15 +13,55 @@ class ActivityFilterRequest extends FormRequest
 
     protected function prepareForValidation()
     {
+        
+        //  AGE SUITABILITY
+        
         if ($this->has('age_suitability')) {
             $value = trim($this->age_suitability);
 
-            if ($value === '45') {
-                $value = '45+';
-            }
+            $value = str_replace(['–'], '-', $value); 
+            $value = preg_replace('/\s+/', ' ', $value);
 
             $this->merge([
                 'age_suitability' => $value,
+            ]);
+        }
+
+        //  TIER  
+        if ($this->has('tier')) {
+            $tier = trim($this->tier);
+
+            $map = [
+                'Tier 1' => '1',
+                'Tier 2' => '2',
+                'Tier 3' => '3',
+            ];
+
+            if (isset($map[$tier])) {
+                $tier = $map[$tier];
+            }
+
+            $this->merge([
+                'tier' => $tier
+            ]);
+        }
+
+        // MOOD MATCH
+     
+        if ($this->has('mood_match')) {
+
+            $moods = $this->mood_match;
+
+            if (is_string($moods)) {
+                $moods = explode(',', $moods);
+            }
+
+            $moods = array_map(function ($m) {
+                return ucfirst(strtolower(trim($m)));
+            }, $moods);
+
+            $this->merge([
+                'mood_match' => $moods
             ]);
         }
     }
@@ -29,9 +69,16 @@ class ActivityFilterRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'age_suitability' => "nullable|in:16-17,18-30,30-45,45+",
-            'tier' => 'nullable|in:Tier 1,Tier 2,Tier 3',
-            'energy_level' => 'nullable|in:Easy,Intermediate,Advanced',
+            'age_suitability' => [
+                'nullable',
+                'string',
+                'regex:/^(\d+\s*-\s*\d+|\d+\s*to\s*\d+|\d+\+)$/i'
+            ],
+
+            'tier' => 'nullable|in:1,2,3',
+
+            'mood_match' => 'nullable|array',
+            'mood_match.*' => 'string',
         ];
     }
 }

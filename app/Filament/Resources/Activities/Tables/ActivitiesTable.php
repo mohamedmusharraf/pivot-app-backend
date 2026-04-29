@@ -20,14 +20,14 @@ class ActivitiesTable
                     ->label('Hobby')
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('title')
+                TextColumn::make('activity_title')
                     ->searchable(),
                 TextColumn::make('duration_minutes')
                     ->numeric()
                     ->sortable(),
                 TextColumn::make('energy_level')
                     ->searchable(),
-                TextColumn::make('age_suitability')
+                TextColumn::make('age_range')
                     ->searchable(),
                 IconColumn::make('neurodivergent_friendly')
                     ->boolean(),

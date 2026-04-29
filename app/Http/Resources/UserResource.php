@@ -15,6 +15,9 @@ class UserResource extends JsonResource
             'email'    => $this->email,
             'provider' => $this->provider,
             'created_at' => $this->created_at,
+            'subscription' => new SubscriptionResource(
+                $this->whenLoaded('subscription') ?? $this->subscription
+            ),
         ];
     }
 }

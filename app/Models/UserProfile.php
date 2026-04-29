@@ -16,7 +16,7 @@ class UserProfile extends Model
         'user_id',
         'country_id',
         'gender',
-        'age_range',
+        'date_of_birth',
         'screen_goal_hours',
         'onboarding_completed',
     ];
@@ -34,6 +34,6 @@ class UserProfile extends Model
 
     public function user()
     {
-        return $this->belongsTo(Users::class, 'user_id');
-    } 
+        return $this->belongsTo(User::class, 'user_id');
+    }
 }

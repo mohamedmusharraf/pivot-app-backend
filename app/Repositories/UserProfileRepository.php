@@ -5,8 +5,11 @@ namespace App\Repositories;
 use App\Repositories\Contracts\UserProfileRepositoryInterface;
 use Illuminate\Support\Collection;
 use App\Models\UserProfile;
+use App\Models\Subscription;
+use Illuminate\Support\Facades\DB;
 
-class UserProfileRepository implements UserProfileRepositoryInterface{
+class UserProfileRepository implements UserProfileRepositoryInterface
+{
     public function all(): Collection
     {
         return UserProfile::all();
@@ -14,7 +17,24 @@ class UserProfileRepository implements UserProfileRepositoryInterface{
 
     public function create(array $data): UserProfile
     {
-        return UserProfile::create($data);
+        return DB::transaction(function () use ($data) {
+            $profile = UserProfile::create($data);
+
+            $defaultTierId = 1;
+
+            Subscription::create([
+                'user_id' => $data['user_id'],
+                'tier_id' => $defaultTierId,
+                'active' => true,
+                'store' => null,
+                'product_id' => null,
+                'revenuecat_user_id' => null,
+                'started_at' => null,
+                'expires_at' => null,
+            ]);
+
+            return $profile;
+        });
     }
 
     public function findByUserId(int $userId): UserProfile

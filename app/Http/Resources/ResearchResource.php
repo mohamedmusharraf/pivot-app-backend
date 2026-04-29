@@ -7,13 +7,10 @@ class ResearchResource extends JsonResource
     public function toArray($request)
     {
         return [
-            'title' => $this->title,
+            'fun_facts' => $this->fun_facts,
             'summary' => $this->summary,
             'full_content' => $this->full_content,
             'files' => $this->files,
-            // 'category' => $this->category,
-            'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at,
         ];
     }
 }

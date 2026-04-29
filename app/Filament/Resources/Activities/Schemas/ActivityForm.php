@@ -20,17 +20,29 @@ class ActivityForm
                     ->searchable()
                     ->preload()
                     ->required(),
-                TextInput::make('title')
+                TextInput::make('activity_title')
                     ->required(),
-                Textarea::make('description')
-                    ->required()
-                    ->columnSpanFull(),
+                Textarea::make('instruction')
+                    ->required(),
+                    // ->columnSpanFull(),
+                TextInput::make('activity_type'),
+                TextInput::make('subcategory'),
                 TextInput::make('duration_minutes')
                     ->required()
                     ->numeric(),
+                TextInput::make('tier'),
+                TextInput::make('cost'),
+                TextInput::make('location'),
+                TextInput::make('age_range'),
+                TextInput::make('sensory_tags'),
+                TextInput::make('social_type'),
+                TextInput::make('outcome_tag'),
+                TextInput::make('mood_match'),
                 TextInput::make('energy_level')
                     ->required(),
-                TextInput::make('age_suitability'),
+                TextInput::make('neurodivergent_notes')
+                    ->label('Neurodivergent Friendly Notes'),
+                    // ->columnSpanFull(),
                 Toggle::make('neurodivergent_friendly')
                     ->required(),
             ]);

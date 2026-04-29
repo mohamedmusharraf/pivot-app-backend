@@ -9,7 +9,7 @@ class Research extends Model
     protected $table = 'research_articles';
 
     protected $fillable = [
-        'title',
+        'fun_facts',
         'summary',
         'full_content',
         'files',

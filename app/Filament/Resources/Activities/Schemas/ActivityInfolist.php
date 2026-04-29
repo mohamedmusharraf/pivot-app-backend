@@ -15,16 +15,29 @@ class ActivityInfolist
                 TextEntry::make('hobby.name')
                     ->label('Hobby')
                     ->placeholder('-'),
-                TextEntry::make('title'),
-                TextEntry::make('description')
-                    ->columnSpanFull(),
+                TextEntry::make('activity_title'),
+                TextEntry::make('activity_type'),
+                TextEntry::make('subcategory'),
+                TextEntry::make('instruction'),
+                // ->columnSpanFull(),
                 TextEntry::make('duration_minutes')
                     ->numeric(),
-                TextEntry::make('energy_level'),
-                TextEntry::make('age_suitability')
+                TextEntry::make('tier'),
+                TextEntry::make('cost'),
+                TextEntry::make('location'),
+                TextEntry::make('age_range')
                     ->placeholder('-'),
                 IconEntry::make('neurodivergent_friendly')
                     ->boolean(),
+                TextEntry::make('neurodivergent_notes')
+                    ->label('Neurodivergent Friendly Notes')
+                    // ->columnSpanFull()
+                    ->placeholder('-'),
+                TextEntry::make('sensory_tags'),
+                TextEntry::make('social_type'),
+                TextEntry::make('energy_level'),
+                TextEntry::make('outcome_tag'),
+                TextEntry::make('mood_match'),
                 TextEntry::make('created_at')
                     ->dateTime()
                     ->placeholder('-'),

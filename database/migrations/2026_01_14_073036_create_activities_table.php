@@ -14,13 +14,24 @@ return new class extends Migration
         Schema::create('activities', function (Blueprint $table) {
             $table->id();
             $table->foreignId('hobby_id')->constrained()->cascadeOnDelete();
-            $table->string('title');
-            $table->text('description');
-            $table->string('duration_minutes'); 
-            $table->enum('energy_level', ['Easy', 'Intermediate', 'Advanced']);
-            $table->string('age_suitability')->nullable();
-            $table->enum('tier', ['Tier 1', 'Tier 2', 'Tier 3']);
-            $table->boolean('neurodivergent_friendly')->default(true);
+            $table->string('activity_title');
+            $table->text('instruction')->nullable();
+            $table->string('activity_type')->nullable();
+            $table->string('subcategory')->nullable();
+            $table->string('duration_minutes');
+            $table->enum('tier', ['1', '2', '3']);
+            $table->string('cost')->nullable();
+            $table->string('location')->nullable();
+            $table->string('age_range')->nullable();
+            $table->integer('min_age')->nullable();
+            $table->integer('max_age')->nullable();
+            $table->boolean('neurodivergent_friendly')->default(false);
+            $table->text('neurodivergent_notes')->nullable();
+            $table->string('sensory_tags')->nullable();
+            $table->string('social_type')->nullable();
+            $table->enum('energy_level', ['Low', 'Medium', 'High']);
+            $table->string('outcome_tag')->nullable();
+            $table->json('mood_match')->nullable();
             $table->timestamps();
         });
     }

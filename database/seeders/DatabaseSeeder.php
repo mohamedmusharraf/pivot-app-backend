@@ -17,8 +17,11 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             UsersTableSeeder::class,
-            RegionTableSeeder::class,
+            TierTableSeeder::class,
+            // RegionTableSeeder::class,
             ActivitiesSeeder::class,
+            // HobbiesSeeder::class,
+            CountriesTableSeeder::class,
         ]);
     }
 }

@@ -11,12 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('research_articles', function (Blueprint $table) {
+        Schema::create('tier', function (Blueprint $table) {
             $table->id();
-            $table->string('fun_facts')->nullable();
-            $table->text('summary')->nullable();
-            $table->text('full_content')->nullable();
-            $table->string('files')->nullable();  
+            $table->string('name')->unique();
             $table->timestamps();
         });
     }
@@ -26,6 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('research_articles');
+        Schema::dropIfExists('tier');
     }
 };

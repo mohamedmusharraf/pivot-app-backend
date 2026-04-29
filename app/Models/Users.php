@@ -25,16 +25,14 @@ class Users extends Model
         'password_hash',
     ];
 
-    /**
-     * Tell Laravel which column is the password
-     */
+
     public function getAuthPassword()
     {
         return $this->password_hash;
     }
     public function profile()
     {
-        return $this->hasOne(UserProfile::class);
+        return $this->hasOne(UserProfile::class, 'user_id', 'id');
     }
 
     public function hobbies()
@@ -55,6 +53,16 @@ class Users extends Model
     public function userProfile()
     {
         return $this->hasOne(UserProfile::class);
+    }
+
+    public function subscriptions()
+    {
+        return $this->hasMany(Subscription::class, 'user_id', 'id');
+    }
+
+    public function subscription()
+    {
+        return $this->hasOne(Subscription::class, 'user_id', 'id')->where('active', true)->latest();
     }
 
     protected $casts = [

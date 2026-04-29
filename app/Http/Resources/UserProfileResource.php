@@ -10,9 +10,9 @@ class UserProfileResource extends JsonResource
     {
         return [
             'user_id'              => $this->user_id,
-            'country_id'           => $this->country_id,
+            // 'country'           => $this->country,
             'gender'               => $this->gender,
-            'age_range'         => $this->age_range,
+            'date_of_birth'         => $this->date_of_birth,
             'screen_goal_hours' => $this->screen_goal_hours,
             'onboarding_done'   => $this->onboarding_completed,
         ];

@@ -11,13 +11,9 @@ class ActivityService
         protected ActivityRepositoryInterface $repository
     ) {}
 
-    public function list(array $filters = [])
+    public function list(array $filters = [], $user = null)
     {
-        if (!empty($filters)) {
-            return $this->repository->filter($filters);
-        }
-
-        return $this->repository->all();
+        return $this->repository->filter($filters, $user);
     }
 
     public function store(array $data): Activity

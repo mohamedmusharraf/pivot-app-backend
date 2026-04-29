@@ -16,7 +16,13 @@ class ActivityController extends Controller
 
     public function index(ActivityFilterRequest $request)
     {
-        $activities = $this->activityService->list($request->validated());
+
+        $user = $request->user();
+
+        $activities = $this->activityService->list(
+            $request->validated(),
+            $user
+        );
 
         return response()->json([
             ActivityResource::collection($activities)

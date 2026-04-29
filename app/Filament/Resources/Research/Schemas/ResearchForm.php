@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Research\Schemas;
 
+use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Schemas\Schema;
@@ -12,17 +14,54 @@ class ResearchForm
     {
         return $schema
             ->components([
-                TextInput::make('title')
+                TextInput::make('fun_facts')
+                    ->label('Fun Facts')
+                    ->columnSpanFull()
                     ->required(),
-                Textarea::make('research_summary')
+                RichEditor::make('summary')
+                    ->label('Summary')
+                    ->toolbarButtons([
+                        'attachFiles',
+                        'blockquote',
+                        'bold',
+                        'bulletList',
+                        'codeBlock',
+                        'h1',
+                        'h2',
+                        'h3',
+                        'italic',
+                        'link',
+                        'orderedList',
+                        'redo',
+                        'strike',
+                        'underline',
+                        'undo',
+                    ])
+                    ->columnSpanFull()
+                    ->disableToolbarButtons([
+                        'attachFiles',
+                    ])
                     ->required()
-                    ->columnSpanFull(),
-                Textarea::make('research_full_text')
-                    ->required()
-                    ->columnSpanFull(),
-                TextInput::make('files'),
-                TextInput::make('category')
-                    ->required(),
+                    ->live(onBlur: true)
+                    ->afterStateUpdated(function ($state, callable $set) {
+                        $clean = preg_replace('/(<p>.*?<\/p>)(\s*\1)+/s', '$1', $state);
+                        $set('summary', $clean);
+                    }),
+        
+                FileUpload::make('files')
+                    ->label('Files')
+                    ->directory('research-files')
+                    ->disk('public')
+                    ->preserveFilenames()
+                    ->acceptedFileTypes([
+                        'application/pdf',
+                        'application/msword',
+                        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                        'text/csv',
+                        'image/*',
+                    ])
+                    ->maxSize(10240),
             ]);
     }
 }

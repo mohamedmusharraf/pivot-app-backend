@@ -23,12 +23,43 @@ class ActivityRequest extends FormRequest
     {
         return [
             'hobby_id' => 'nullable|exists:hobbies,id',
-            'title' => 'nullable|string|max:255',
-            'description' => 'nullable|string',
-            'duration_minutes' => 'nullable|integer|min:1',
-            'energy_level' => 'nullable|string|min:1|max:5',
-            'age_suitability' => 'nullable|string|min:0|max:120',
-            'neurodiversity_friendly' => 'nullable|boolean',
+            'activity_title' => 'nullable|string|max:255',
+            'instruction' => 'nullable|string|max:1000',
+            'activity_type' => 'nullable|string|max:255',
+            'subcategory' => 'nullable|string|max:255',
+            'duration_minutes' => 'nullable|string|max:255',
+            'tier' => 'nullable|string|max:255',
+            'cost' => 'nullable|string|max:255',
+            'location' => 'nullable|string|max:255',
+            'age_range' => 'nullable|string|max:255',
+            'neurodivergent_friendly' => 'required|boolean',
+            'neurodivergent_notes' => 'nullable|string|max:1000',
+            'sensory_tags' => 'nullable|string|max:255',
+            'social_type' => 'nullable|string|max:255',
+            'energy_level' => 'nullable|in:Low,Medium,High',
+            'outcome_tag' => 'nullable|string|max:255',
+            'mood_match' => 'nullable|string|max:255',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'hobby_id.exists' => 'The specified hobby does not exist.',
+            'activity_title.required' => 'Activity title is required.',
+            'activity_title.string' => 'Activity title must be a string.',
+            'activity_title.max' => 'Activity title must not exceed 255 characters.',
+            'activity_type.required' => 'Activity type is required.',
+            'subcategory.required' => 'Subcategory is required.',
+            'duration_minutes.required' => 'Duration is required.',
+            'tier.required' => 'Tier is required.',
+            'cost.required' => 'Cost is required.',
+            'location.required' => 'Location is required.',
+            'age_range.required' => 'Age range is required.',
+            'neurodivergent_friendly.required' => 'Neurodivergent friendly status is required.',
+            'social_type.required' => 'Social type is required.',
+            'energy_level.required' => 'Energy level is required.',
+            'mood_match.required' => 'Mood match is required.',
         ];
     }
 }

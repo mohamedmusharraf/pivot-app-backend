@@ -51,6 +51,10 @@ class AuthService
         }
 
         $this->authRepositoryInterface->updateLastLogin($user);
+
+        // Load subscription relationship
+        $user->load('subscription');
+
         $token = $user->createToken('mobile')->plainTextToken;
 
         return compact('user', 'token');

@@ -15,16 +15,16 @@ class ResearchRequest extends FormRequest
     {
         if ($this->isMethod('post')) {
             return [
-                'title' => 'required|string|max:255',
-                'summary' => 'required|string',
-                'full_content' => 'required|string',
+                'fun_facts' => 'nullable|string|max:255',
+                'summary' => 'nullable|string',
+                'full_content' => 'nullable|string',
                 'files' => 'nullable|file|mimes:pdf,doc,docx', 
                 // 'category' => 'required|string|max:255',
             ];
         }
 
         return [
-            'title' => 'sometimes|string|max:255',
+            'fun_facts' => 'sometimes|string|max:255',
             'summary' => 'sometimes|string',
             'full_content' => 'sometimes|string',
             'files' => 'sometimes|nullable|file|mimes:pdf,doc,docx',

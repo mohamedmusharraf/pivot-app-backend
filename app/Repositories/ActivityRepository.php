@@ -1,34 +1,71 @@
 <?php
+
 namespace App\Repositories;
 
 use App\Models\Activity;
 use App\Repositories\Contracts\ActivityRepositoryInterface;
-
+use Carbon\Carbon;
 
 class ActivityRepository implements ActivityRepositoryInterface
 {
-    public function all()
+    public function filter(array $filters, $user)
     {
-        return Activity::with('hobby')->latest()->get();
+        $query = Activity::query()->with('hobby');
+
+
+        if ($user && $user->profile && $user->profile->date_of_birth) {
+
+            $age = Carbon::parse($user->profile->date_of_birth)->age;
+
+            $query->where(function ($q) use ($age) {
+                $q->where('min_age', '<=', $age)
+                    ->where(function ($q2) use ($age) {
+                        $q2->where('max_age', '>=', $age)
+                            ->orWhereNull('max_age');
+                    });
+            });
+        }
+
+        if (!empty($filters['mood_match'])) {
+
+            $moods = is_array($filters['mood_match'])
+                ? $filters['mood_match']
+                : [$filters['mood_match']];
+
+            $query->where(function ($q) use ($moods) {
+                foreach ($moods as $mood) {
+                    $q->orWhereJsonContains('mood_match', $mood);
+                }
+            });
+        }
+
+
+        if (!empty($filters['tier'])) {
+            $tier = $filters['tier'];
+
+            if ($tier == 1) {
+                $query->where('tier', 1);
+            } elseif ($tier == 2) {
+                $query->whereIn('tier', [1, 2]);
+            }
+        }
+
+
+        $query->orderByRaw("
+            CASE 
+                WHEN LOWER(cost) = 'free' THEN 0
+                ELSE 1
+            END
+        ");
+
+        $query->orderBy('tier', 'asc');
+
+        return $query->get();
     }
 
-    public function filter(array $filters)
+    public function all()
     {
-        return Activity::with('hobby')
-            ->when(
-                $filters['age_suitability'] ?? null,
-                fn ($query, $age) => $query->where('age_suitability', $age)
-            )
-            ->when(
-                $filters['tier'] ?? null,
-                fn ($query, $tier) => $query->where('tier', $tier)
-            )
-            ->when(
-                $filters['energy_level'] ?? null,
-                fn ($query, $level) => $query->where('energy_level', $level)
-            )
-            ->latest()
-            ->get();
+        return Activity::with('hobby')->get();
     }
 
     public function create(array $data): Activity
@@ -39,7 +76,7 @@ class ActivityRepository implements ActivityRepositoryInterface
     public function update(Activity $activity, array $data): Activity
     {
         $activity->update($data);
-        return $activity;
+        return $activity->fresh();
     }
 
     public function delete(Activity $activity): void
