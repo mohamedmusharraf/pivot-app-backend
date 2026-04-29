@@ -32,6 +32,7 @@ Route::prefix('v1')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         // User Profile Routes 
         Route::get('profile/me', [ProfileController::class, 'me']);
+        Route::get('profile/countries', [ProfileController::class, 'countries']);
         Route::apiResource('profile', ProfileController::class);
 
         // Hobby Management Routes

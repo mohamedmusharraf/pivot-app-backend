@@ -9,6 +9,7 @@ use App\Http\Resources\UserProfileResource;
 use App\Services\ProfileService;
 use Illuminate\Http\Request;
 use App\Models\UserProfile;
+use App\Models\country;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 
@@ -32,6 +33,23 @@ class ProfileController extends Controller
         $profiles = $this->profileService->list();
 
         return UserProfileResource::collection($profiles);
+    }
+
+    public function countries()
+    {
+        $options = country::query()
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get(['name'])
+            ->map(fn ($row) => [
+                'value' => $row->name,
+                'label' => $row->name,
+            ])
+            ->values();
+
+        return response()->json([
+            'countries' => $options,
+        ]);
     }
 
     public function show(UserProfile $profile)

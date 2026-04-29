@@ -22,9 +22,9 @@ class UsersByCountryChart extends ChartWidget
     protected function getData(): array
     {
         $rows = DB::table('user_profiles')
-            ->join('countries', 'countries.id', '=', 'user_profiles.country_id')
-            ->select('countries.name', DB::raw('count(*) as total'))
-            ->groupBy('countries.name')
+            ->whereNotNull('country')
+            ->select('country as name', DB::raw('count(*) as total'))
+            ->groupBy('country')
             ->orderByDesc('total')
             ->limit(8)
             ->get();

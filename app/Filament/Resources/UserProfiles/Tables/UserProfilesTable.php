@@ -19,11 +19,14 @@ class UserProfilesTable
                 TextColumn::make('user_id')
                     ->numeric()
                     ->sortable(),
+                TextColumn::make('country')
+                    ->searchable()
+                    ->sortable(),
                 TextColumn::make('gender')
                     ->searchable(),
-                TextColumn::make('age_range')
+                TextColumn::make('date_of_birth')
                     ->searchable(),
-                TextColumn::make('screen_goal_hours')
+                TextColumn::make('screen_goal_minutes')
                     ->numeric()
                     ->sortable(),
                 IconColumn::make('onboarding_completed')

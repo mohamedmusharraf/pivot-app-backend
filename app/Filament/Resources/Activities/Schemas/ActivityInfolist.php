@@ -25,8 +25,8 @@ class ActivityInfolist
                 TextEntry::make('tier'),
                 TextEntry::make('cost'),
                 TextEntry::make('location'),
-                TextEntry::make('age_range')
-                    ->placeholder('-'),
+                // TextEntry::make('age_range')
+                //     ->placeholder('-'),
                 IconEntry::make('neurodivergent_friendly')
                     ->boolean(),
                 TextEntry::make('neurodivergent_notes')

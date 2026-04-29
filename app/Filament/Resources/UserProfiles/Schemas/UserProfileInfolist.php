@@ -14,11 +14,13 @@ class UserProfileInfolist
             ->components([
                 TextEntry::make('user_id')
                     ->numeric(),
+                TextEntry::make('country')
+                    ->placeholder('-'),
                 TextEntry::make('gender')
                     ->placeholder('-'),
-                TextEntry::make('age_range')
-                    ->placeholder('-'),
-                TextEntry::make('screen_goal_hours')
+                TextEntry::make('date_of_birth')
+                    ->placeholder('Date of Birth'),
+                TextEntry::make('screen_goal_minutes')
                     ->numeric()
                     ->placeholder('-'),
                 IconEntry::make('onboarding_completed')

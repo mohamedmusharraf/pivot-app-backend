@@ -14,10 +14,10 @@ class UserProfile extends Model
      */
     protected $fillable = [
         'user_id',
-        'country_id',
+        'country',
         'gender',
         'date_of_birth',
-        'screen_goal_hours',
+        'screen_goal_minutes',
         'onboarding_completed',
     ];
 
