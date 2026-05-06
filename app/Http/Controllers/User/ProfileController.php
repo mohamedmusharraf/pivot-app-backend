@@ -7,6 +7,7 @@ use App\Http\Requests\ProfileRequest;
 use App\Http\Resources\UserResource;
 use App\Http\Resources\UserProfileResource;
 use App\Services\ProfileService;
+use App\Services\UserHobbyService;
 use Illuminate\Http\Request;
 use App\Models\UserProfile;
 use App\Models\country;
@@ -16,12 +17,21 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 class ProfileController extends Controller
 {
     public function __construct(
-        protected ProfileService $profileService
+        protected ProfileService $profileService,
+        protected UserHobbyService $userHobbyService
     ) {}
 
     public function store(ProfileRequest $request)
     {
-        $profile = $this->profileService->store($request->validated());
+        $validated = $request->validated();
+        $profile = $this->profileService->store($validated);
+
+        if (! empty($validated['hobby_ids'])) {
+            $this->userHobbyService->selectHobbies(
+                $request->user(),
+                $validated['hobby_ids']
+            );
+        }
 
         return (new UserProfileResource($profile))
             ->response()
@@ -41,7 +51,7 @@ class ProfileController extends Controller
             ->where('is_active', true)
             ->orderBy('name')
             ->get(['name'])
-            ->map(fn ($row) => [
+            ->map(fn($row) => [
                 'value' => $row->name,
                 'label' => $row->name,
             ])
@@ -75,10 +85,19 @@ class ProfileController extends Controller
 
     public function update(ProfileRequest $request, UserProfile $profile)
     {
+        $validated = $request->validated();
+
         $this->profileService->update(
             $profile,
-            $request->validated()
+            $validated
         );
+
+        if (! empty($validated['hobby_ids'])) {
+            $this->userHobbyService->selectHobbies(
+                $request->user(),
+                $validated['hobby_ids']
+            );
+        }
 
         return response()->json([
             'message' => "data updated successfully"

@@ -9,6 +9,8 @@ class Activity extends Model
     protected $fillable = [
         'hobby_id',
         'activity_title',
+        'description',
+        'time',
         'instruction',
         'activity_type',
         'subcategory',

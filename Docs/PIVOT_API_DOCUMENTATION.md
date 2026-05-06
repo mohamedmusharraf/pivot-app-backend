@@ -25,33 +25,33 @@ The API does not use one single response envelope for all endpoints. Depending o
 
 ```json
 {
-  "message": "..."
+    "message": "..."
 }
 ```
 
 ```json
 {
-  "user": {
-    "id": 1
-  }
+    "user": {
+        "id": 1
+    }
 }
 ```
 
 ```json
 [
-  {
-    "id": 1
-  }
+    {
+        "id": 1
+    }
 ]
 ```
 
 ```json
 {
-  "data": [
-    {
-      "id": 1
-    }
-  ]
+    "data": [
+        {
+            "id": 1
+        }
+    ]
 }
 ```
 
@@ -59,14 +59,14 @@ The API does not use one single response envelope for all endpoints. Depending o
 
 ## HTTP Status Codes
 
-| Code | Description |
-| ---- | ----------- |
-| 200  | Success |
-| 201  | Created |
-| 400  | Bad Request |
-| 401  | Unauthorized |
-| 403  | Forbidden |
-| 404  | Not Found |
+| Code | Description      |
+| ---- | ---------------- |
+| 200  | Success          |
+| 201  | Created          |
+| 400  | Bad Request      |
+| 401  | Unauthorized     |
+| 403  | Forbidden        |
+| 404  | Not Found        |
 | 422  | Validation Error |
 
 ---
@@ -82,10 +82,10 @@ The API does not use one single response envelope for all endpoints. Depending o
 
 ```json
 {
-  "name": "John Doe",
-  "email": "john@example.com",
-  "password": "password123",
-  "password_confirmation": "password123"
+    "name": "John Doe",
+    "email": "john@example.com",
+    "password": "password123",
+    "password_confirmation": "password123"
 }
 ```
 
@@ -100,14 +100,14 @@ The API does not use one single response envelope for all endpoints. Depending o
 
 ```json
 {
-  "token": "1|abcdef123456...",
-  "user": {
-    "id": 1,
-    "name": "John Doe",
-    "email": "john@example.com",
-    "provider": "email",
-    "created_at": "2026-01-20T10:30:00.000000Z"
-  }
+    "token": "1|abcdef123456...",
+    "user": {
+        "id": 1,
+        "name": "John Doe",
+        "email": "john@example.com",
+        "provider": "email",
+        "created_at": "2026-01-20T10:30:00.000000Z"
+    }
 }
 ```
 
@@ -120,8 +120,8 @@ The API does not use one single response envelope for all endpoints. Depending o
 
 ```json
 {
-  "email": "john@example.com",
-  "password": "password123"
+    "email": "john@example.com",
+    "password": "password123"
 }
 ```
 
@@ -134,14 +134,14 @@ The API does not use one single response envelope for all endpoints. Depending o
 
 ```json
 {
-  "token": "1|abcdef123456...",
-  "user": {
-    "id": 1,
-    "name": "John Doe",
-    "email": "john@example.com",
-    "provider": "email",
-    "created_at": "2026-01-20T10:30:00.000000Z"
-  }
+    "token": "1|abcdef123456...",
+    "user": {
+        "id": 1,
+        "name": "John Doe",
+        "email": "john@example.com",
+        "provider": "email",
+        "created_at": "2026-01-20T10:30:00.000000Z"
+    }
 }
 ```
 
@@ -160,7 +160,7 @@ The API does not use one single response envelope for all endpoints. Depending o
 
 ```json
 {
-  "message": "Logged out successfully"
+    "message": "Logged out successfully"
 }
 ```
 
@@ -173,13 +173,13 @@ The API does not use one single response envelope for all endpoints. Depending o
 
 ```json
 {
-  "user": {
-    "id": 1,
-    "name": "John Doe",
-    "email": "john@example.com",
-    "provider": "email",
-    "created_at": "2026-01-20T10:30:00.000000Z"
-  }
+    "user": {
+        "id": 1,
+        "name": "John Doe",
+        "email": "john@example.com",
+        "provider": "email",
+        "created_at": "2026-01-20T10:30:00.000000Z"
+    }
 }
 ```
 
@@ -192,7 +192,7 @@ The API does not use one single response envelope for all endpoints. Depending o
 
 ```json
 {
-  "email": "john@example.com"
+    "email": "john@example.com"
 }
 ```
 
@@ -204,7 +204,7 @@ The API does not use one single response envelope for all endpoints. Depending o
 
 ```json
 {
-  "message": "Password reset email sent"
+    "message": "Password reset email sent"
 }
 ```
 
@@ -217,10 +217,10 @@ The API does not use one single response envelope for all endpoints. Depending o
 
 ```json
 {
-  "email": "john@example.com",
-  "otp": "123456",
-  "password": "new-password123",
-  "password_confirmation": "new-password123"
+    "email": "john@example.com",
+    "otp": "123456",
+    "password": "new-password123",
+    "password_confirmation": "new-password123"
 }
 ```
 
@@ -234,7 +234,7 @@ The API does not use one single response envelope for all endpoints. Depending o
 
 ```json
 {
-  "message": "Password reset successful"
+    "message": "Password reset successful"
 }
 ```
 
@@ -261,12 +261,13 @@ All profile endpoints require auth.
 
 ```json
 {
-  "user_id": 1,
-  "country_id": 14,
-  "gender": "male",
-  "age_range": "18-30",
-  "screen_goal_hours": 40,
-  "onboarding_completed": true
+    "user_id": 1,
+    "country_id": 14,
+    "gender": "male",
+    "age_range": "18-30",
+    "set_your_goal": "40",
+    "category": "Nature & Outdoors",
+    "onboarding_completed": true
 }
 ```
 
@@ -274,19 +275,17 @@ All profile endpoints require auth.
 - `country_id`: required, integer, max:100
 - `gender`: required, one of `male|female|other`
 - `age_range`: required, one of `5-18|18-30|30-45|45+`
-- `screen_goal_hours`: required, integer, 1-168
-- `onboarding_completed`: sometimes, boolean
-
-### Profile Resource Shape
+- `set_your_goal`: required, string, 1-50
+- `category`: sometimes, string, must match a hobby name
 
 ```json
 {
-  "user_id": 1,
-  "country_id": 14,
-  "gender": "male",
-  "age_range": "18-30",
-  "screen_goal_hours": 40,
-  "onboarding_done": true
+    "user_id": 1,
+    "country_id": 14,
+    "gender": "male",
+    "age_range": "18-30",
+    "set_your_goal": "40",
+    "onboarding_done": true
 }
 ```
 
@@ -297,7 +296,7 @@ All profile endpoints require auth.
 
 ```json
 {
-  "message": "data updated successfully"
+    "message": "data updated successfully"
 }
 ```
 
@@ -305,7 +304,7 @@ All profile endpoints require auth.
 
 ```json
 {
-  "message": "Profile deleted successfully"
+    "message": "Profile deleted successfully"
 }
 ```
 
@@ -327,8 +326,8 @@ All hobby endpoints require auth.
 
 ```json
 {
-  "name": "Reading",
-  "icon_url": "https://cdn.example.com/icons/reading.svg"
+    "name": "Reading",
+    "icon_url": "https://cdn.example.com/icons/reading.svg"
 }
 ```
 
@@ -339,12 +338,12 @@ All hobby endpoints require auth.
 
 ```json
 {
-  "id": 1,
-  "name": "Reading",
-  "icon": "https://cdn.example.com/icons/reading.svg",
-  "activities": [],
-  "created_at": "2026-01-20T10:30:00.000000Z",
-  "updated_at": "2026-01-20T10:30:00.000000Z"
+    "id": 1,
+    "name": "Reading",
+    "icon": "https://cdn.example.com/icons/reading.svg",
+    "activities": [],
+    "created_at": "2026-01-20T10:30:00.000000Z",
+    "updated_at": "2026-01-20T10:30:00.000000Z"
 }
 ```
 
@@ -355,7 +354,7 @@ All hobby endpoints require auth.
 
 ```json
 {
-  "message": "Hobby deleted successfully"
+    "message": "Hobby deleted successfully"
 }
 ```
 
@@ -377,13 +376,13 @@ All activity endpoints require auth.
 
 ```json
 {
-  "hobby_id": 1,
-  "title": "Read a chapter",
-  "description": "Read one chapter from current book",
-  "duration_minutes": 30,
-  "energy_level": "3",
-  "age_suitability": "18+",
-  "neurodiversity_friendly": true
+    "hobby_id": 1,
+    "title": "Read a chapter",
+    "description": "Read one chapter from current book",
+    "duration_minutes": 30,
+    "energy_level": "3",
+    "age_suitability": "18+",
+    "neurodiversity_friendly": true
 }
 ```
 
@@ -399,15 +398,15 @@ All activity endpoints require auth.
 
 ```json
 {
-  "id": 1,
-  "title": "Read a chapter",
-  "duration": 30,
-  "energy": "3",
-  "age_suitability": "18+",
-  "hobby": {
     "id": 1,
-    "name": "Reading"
-  }
+    "title": "Read a chapter",
+    "duration": 30,
+    "energy": "3",
+    "age_suitability": "18+",
+    "hobby": {
+        "id": 1,
+        "name": "Reading"
+    }
 }
 ```
 
@@ -418,7 +417,7 @@ All activity endpoints require auth.
 
 ```json
 {
-  "message": "Activity deleted successfully"
+    "message": "Activity deleted successfully"
 }
 ```
 
@@ -440,7 +439,7 @@ All user hobby endpoints require auth.
 
 ```json
 {
-  "hobby_ids": [1, 2, 3]
+    "hobby_ids": [1, 2, 3]
 }
 ```
 
@@ -453,7 +452,7 @@ All user hobby endpoints require auth.
 
 ```json
 {
-  "message": "Hobbies saved successfully"
+    "message": "Hobbies saved successfully"
 }
 ```
 
@@ -463,7 +462,7 @@ All user hobby endpoints require auth.
 
 ```json
 {
-  "message": "Hobby removed successfully"
+    "message": "Hobby removed successfully"
 }
 ```
 
@@ -501,13 +500,13 @@ All fields are `sometimes` for update. If a new `files` upload is provided, old 
 
 ```json
 {
-  "title": "Screen Time and Sleep",
-  "research_summary": "Summary text...",
-  "research_full_text": "Full text...",
-  "files": "research_files/abc123.pdf",
-  "category": "Health",
-  "created_at": "2026-02-01T10:30:00.000000Z",
-  "updated_at": "2026-02-01T10:30:00.000000Z"
+    "title": "Screen Time and Sleep",
+    "research_summary": "Summary text...",
+    "research_full_text": "Full text...",
+    "files": "research_files/abc123.pdf",
+    "category": "Health",
+    "created_at": "2026-02-01T10:30:00.000000Z",
+    "updated_at": "2026-02-01T10:30:00.000000Z"
 }
 ```
 
@@ -515,7 +514,7 @@ All fields are `sometimes` for update. If a new `files` upload is provided, old 
 
 ```json
 {
-  "message": "Research deleted successfully"
+    "message": "Research deleted successfully"
 }
 ```
 
@@ -527,10 +526,10 @@ All fields are `sometimes` for update. If a new `files` upload is provided, old 
 
 ```json
 {
-  "message": "The given data was invalid.",
-  "errors": {
-    "email": ["The email has already been taken."]
-  }
+    "message": "The given data was invalid.",
+    "errors": {
+        "email": ["The email has already been taken."]
+    }
 }
 ```
 
@@ -538,7 +537,7 @@ All fields are `sometimes` for update. If a new `files` upload is provided, old 
 
 ```json
 {
-  "message": "Unauthenticated."
+    "message": "Unauthenticated."
 }
 ```
 
@@ -546,7 +545,7 @@ All fields are `sometimes` for update. If a new `files` upload is provided, old 
 
 ```json
 {
-  "message": "Unauthorized access to this hobby"
+    "message": "Unauthorized access to this hobby"
 }
 ```
 

@@ -17,7 +17,7 @@ class UserProfile extends Model
         'country',
         'gender',
         'date_of_birth',
-        'screen_goal_minutes',
+        'set_your_goal',
         'onboarding_completed',
     ];
 
@@ -26,6 +26,7 @@ class UserProfile extends Model
      */
     protected $casts = [
         'onboarding_completed' => 'boolean',
+        'set_your_goal' => 'string',
     ];
 
     /**

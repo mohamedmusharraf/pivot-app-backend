@@ -26,8 +26,7 @@ class UserProfilesTable
                     ->searchable(),
                 TextColumn::make('date_of_birth')
                     ->searchable(),
-                TextColumn::make('screen_goal_minutes')
-                    ->numeric()
+                TextColumn::make('set_your_goal')
                     ->sortable(),
                 IconColumn::make('onboarding_completed')
                     ->boolean(),

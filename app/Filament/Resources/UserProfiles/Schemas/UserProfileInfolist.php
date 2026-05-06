@@ -20,8 +20,7 @@ class UserProfileInfolist
                     ->placeholder('-'),
                 TextEntry::make('date_of_birth')
                     ->placeholder('Date of Birth'),
-                TextEntry::make('screen_goal_minutes')
-                    ->numeric()
+                TextEntry::make('set_your_goal')
                     ->placeholder('-'),
                 IconEntry::make('onboarding_completed')
                     ->boolean(),

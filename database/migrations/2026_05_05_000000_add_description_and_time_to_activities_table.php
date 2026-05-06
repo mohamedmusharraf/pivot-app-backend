@@ -11,8 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('user_profiles', function (Blueprint $table) {
-            $table->renameColumn('screen_goal_hours', 'screen_goal_minutes');
+        Schema::table('activities', function (Blueprint $table) {
+            $table->text('description')->nullable()->after('activity_title');
+            $table->string('time')->nullable()->after('description');
         });
     }
 
@@ -21,9 +22,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('user_profiles', function (Blueprint $table) {
-            $table->renameColumn('screen_goal_minutes', 'screen_goal_hours');
+        Schema::table('activities', function (Blueprint $table) {
+            $table->dropColumn(['description', 'time']);
         });
     }
 };
-

@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('country')->nullable();
             $table->enum('gender', ['male', 'female', 'other', 'prefer not to say'])->nullable();
             $table->string('date_of_birth', 50)->nullable();
-            $table->integer('screen_goal_hours')->nullable();
+            $table->string('set_your_goal', 50)->nullable();
             $table->boolean('onboarding_completed')->default(false);
             $table->timestamps();
         });
