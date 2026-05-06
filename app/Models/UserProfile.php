@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class UserProfile extends Model
 {
@@ -34,8 +36,20 @@ class UserProfile extends Model
      * Relationships
      */
 
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function hobbies(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Hobby::class,
+            'user_hobbies',
+            'user_id',
+            'hobby_id',
+            'user_id',
+            'id'
+        );
     }
 }

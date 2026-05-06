@@ -15,6 +15,7 @@ class UserProfileResource extends JsonResource
             'gender' => $this->gender,
             'date_of_birth' => $this->date_of_birth,
             'set_your_goal' => $this->weekly_goal_minutes ? (int) ($this->weekly_goal_minutes / 60) : null,
+            'category' => $this->hobbies->pluck('name')->values()->all(),
             'onboarding_done' => $this->onboarding_completed,
         ];
     }
