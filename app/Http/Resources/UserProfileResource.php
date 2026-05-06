@@ -11,10 +11,10 @@ class UserProfileResource extends JsonResource
     {
         return [
             'user_id' => $this->user_id,
-            'country' => $this->country,
+            'country_id' => $this->country_id,
             'gender' => $this->gender,
             'date_of_birth' => $this->date_of_birth,
-            'set_your_goal' => $this->set_your_goal,
+            'set_your_goal' => $this->weekly_goal_minutes ? (int) ($this->weekly_goal_minutes / 60) : null,
             'onboarding_done' => $this->onboarding_completed,
         ];
     }

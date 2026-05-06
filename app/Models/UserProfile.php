@@ -14,10 +14,11 @@ class UserProfile extends Model
      */
     protected $fillable = [
         'user_id',
-        'country',
+        'country_id',
         'gender',
         'date_of_birth',
         'set_your_goal',
+        'weekly_goal_minutes',
         'onboarding_completed',
     ];
 
@@ -26,7 +27,7 @@ class UserProfile extends Model
      */
     protected $casts = [
         'onboarding_completed' => 'boolean',
-        'set_your_goal' => 'string',
+        'weekly_goal_minutes' => 'integer',
     ];
 
     /**

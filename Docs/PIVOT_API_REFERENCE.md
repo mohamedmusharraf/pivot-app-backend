@@ -138,11 +138,12 @@ For research file upload, use `multipart/form-data`.
 ```json
 {
     "user_id": 1,
-    "country_id": 14,
+    "country_id": 2,
     "gender": "male",
-    "age_range": "18-30",
-    "set_your_goal": "40",
-    "category": "Nature & Outdoors"
+    "date_of_birth": "20.08.2000",
+    "set_your_goal": 5,
+    "category": ["Nature & Outdoors", "Creative Arts"],
+    "onboarding_completed": false
 }
 ```
 

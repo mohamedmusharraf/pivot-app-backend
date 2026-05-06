@@ -26,7 +26,9 @@ class UserProfilesTable
                     ->searchable(),
                 TextColumn::make('date_of_birth')
                     ->searchable(),
-                TextColumn::make('set_your_goal')
+                TextColumn::make('weekly_goal_minutes')
+                    ->label('Weekly Goal (Hours)')
+                    ->formatStateUsing(fn($state) => $state ? (int) ($state / 60) . ' hours' : '-')
                     ->sortable(),
                 IconColumn::make('onboarding_completed')
                     ->boolean(),

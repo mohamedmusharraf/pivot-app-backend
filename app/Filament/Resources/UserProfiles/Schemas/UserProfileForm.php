@@ -42,9 +42,14 @@ class UserProfileForm
                     ]),
                 DatePicker::make('date_of_birth'),
 
-                TextInput::make('set_your_goal')
-                    ->label('Set Your Goal')
-                    ->maxLength(50),
+                TextInput::make('weekly_goal_minutes')
+                    ->label('Weekly Goal (Hours)')
+                    ->numeric()
+                    ->minValue(1)
+                    ->maxValue(168)
+                    ->suffix('hours')
+                    ->formatStateUsing(fn($state) => $state ? (int) ($state / 60) : null)
+                    ->dehydrateStateUsing(fn($state) => $state ? (int) $state * 60 : null),
                 Toggle::make('onboarding_completed')
                     ->required(),
             ]);

@@ -20,8 +20,9 @@ class UserProfileInfolist
                     ->placeholder('-'),
                 TextEntry::make('date_of_birth')
                     ->placeholder('Date of Birth'),
-                TextEntry::make('set_your_goal')
-                    ->placeholder('-'),
+                TextEntry::make('weekly_goal_minutes')
+                    ->label('Weekly Goal (Hours)')
+                    ->formatStateUsing(fn($state) => $state ? (int) ($state / 60) . ' hours' : '-'),
                 IconEntry::make('onboarding_completed')
                     ->boolean(),
                 TextEntry::make('created_at')

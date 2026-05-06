@@ -265,18 +265,18 @@ All profile endpoints require auth.
     "country_id": 14,
     "gender": "male",
     "age_range": "18-30",
-    "set_your_goal": "40",
-    "category": "Nature & Outdoors",
+    "set_your_goal": 5,
+    "category": ["Nature & Outdoors", "Creative Arts"],
     "onboarding_completed": true
 }
 ```
 
 - `user_id`: required, integer, exists:users,id
-- `country_id`: required, integer, max:100
+- `country_id`: required, integer, exists:countries,id
 - `gender`: required, one of `male|female|other`
 - `age_range`: required, one of `5-18|18-30|30-45|45+`
-- `set_your_goal`: required, string, 1-50
-- `category`: sometimes, string, must match a hobby name
+- `set_your_goal`: required, integer, 1-168 (hours)
+- `category`: sometimes, array of hobby names
 
 ```json
 {
