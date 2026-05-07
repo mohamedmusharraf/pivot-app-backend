@@ -11,7 +11,7 @@ class ActivitiesSeeder extends Seeder
 {
     public function run(): void
     {
-        $filePath = base_path('CSVfile/First batch for Devs - approved.xlsx');
+        $filePath = base_path('CSVfile/Final 10k.xlsx');
 
         if (!file_exists($filePath)) {
             $this->command->error("File not found: {$filePath}");
