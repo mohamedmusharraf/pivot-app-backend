@@ -49,7 +49,7 @@ class ResearchForm
                     }),
         
                 FileUpload::make('files')
-                    ->label('Files')
+                    ->label('Article Files')
                     ->directory('research-files')
                     ->disk('public')
                     ->preserveFilenames()

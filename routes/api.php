@@ -8,6 +8,7 @@ use App\Http\Controllers\HobbyController;
 use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\UserHobbyController;
 use App\Http\Controllers\ResearchController;
+use App\Http\Controllers\CountriesController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -46,6 +47,9 @@ Route::prefix('v1')->group(function () {
 
         // Research Management Routes
         Route::apiResource('research', ResearchController::class);
+
+        // Countries Routes
+        Route::apiResource('countries', CountriesController::class)->only(['index']);
     });
 
 });

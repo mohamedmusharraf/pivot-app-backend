@@ -20,6 +20,8 @@ use App\Repositories\Auth\LogoutRepositoryInterface;
 use App\Repositories\LogoutRepository;
 use App\Repositories\Contracts\ResearchRepositoryInterface;
 use App\Repositories\ResearchRepository;
+use App\Repositories\Contracts\CountriesRepositoryInterface;
+use App\Repositories\CountriesRepository;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -36,6 +38,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(PasswordResetRepositoryInterface::class, PasswordResetRepository::class);
         $this->app->bind(LogoutRepositoryInterface::class, LogoutRepository::class);
         $this->app->bind(ResearchRepositoryInterface::class, ResearchRepository::class);
+        $this->app->bind(CountriesRepositoryInterface::class, CountriesRepository::class);
     }
 
     /**
