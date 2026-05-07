@@ -41,6 +41,11 @@ class UserProfile extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
+    public function country(): BelongsTo
+    {
+        return $this->belongsTo(Country::class, 'country_id');
+    }
+
     public function hobbies(): BelongsToMany
     {
         return $this->belongsToMany(

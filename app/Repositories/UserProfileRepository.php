@@ -12,7 +12,9 @@ class UserProfileRepository implements UserProfileRepositoryInterface
 {
     public function all(): Collection
     {
-        return UserProfile::all();
+        return UserProfile::query()
+            ->with(['user:id,name,email', 'country:id,name', 'hobbies:id,name'])
+            ->get();
     }
 
     public function create(array $data): UserProfile
@@ -40,6 +42,7 @@ class UserProfileRepository implements UserProfileRepositoryInterface
     public function findByUserId(int $userId): UserProfile
     {
         return UserProfile::query()
+            ->with(['user:id,name,email', 'country:id,name', 'hobbies:id,name'])
             ->where('user_id', $userId)
             ->firstOrFail();
     }
