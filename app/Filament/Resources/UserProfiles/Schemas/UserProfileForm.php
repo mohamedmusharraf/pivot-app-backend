@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\UserProfiles\Schemas;
 
-use App\Models\country;
+use App\Models\Country;
 use App\Models\User;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\DatePicker;
@@ -25,7 +25,7 @@ class UserProfileForm
                     ->preload()
                     ->required(),
                 Select::make('country')
-                    ->options(fn(): array => country::query()
+                    ->options(fn(): array => Country::query()
                         ->where('is_active', true)
                         ->orderBy('name')
                         ->pluck('name', 'name')
