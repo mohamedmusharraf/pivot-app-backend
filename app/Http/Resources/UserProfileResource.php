@@ -24,7 +24,7 @@ class UserProfileResource extends JsonResource
             'set_your_goal' => $goalHours,
             'Set_your_goal_minutes' => $goalMinutes,
             'category' => $this->hobbies->pluck('name')->values()->all(),
-            'onboarding_done' => $this->onboarding_completed,
+            'onboarding_completed' => $this->onboarding_completed,
         ];
     }
 }
