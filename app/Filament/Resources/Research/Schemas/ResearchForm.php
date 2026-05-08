@@ -2,10 +2,10 @@
 
 namespace App\Filament\Resources\Research\Schemas;
 
-use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Radio;
+use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Textarea;
 use Filament\Schemas\Schema;
 
 class ResearchForm
@@ -14,14 +14,15 @@ class ResearchForm
     {
         return $schema
             ->components([
+
                 TextInput::make('fun_facts')
                     ->label('Fun Facts')
                     ->columnSpanFull()
                     ->required(),
+
                 RichEditor::make('summary')
                     ->label('Summary')
                     ->toolbarButtons([
-                        'attachFiles',
                         'blockquote',
                         'bold',
                         'bulletList',
@@ -47,7 +48,21 @@ class ResearchForm
                         $clean = preg_replace('/(<p>.*?<\/p>)(\s*\1)+/s', '$1', $state);
                         $set('summary', $clean);
                     }),
-        
+
+                TextInput::make('video_link')
+                    ->label('Video Link')
+                    ->url()
+                    ->placeholder('https://video_link.com/watch?v=...'),
+
+                Radio::make('video_type')
+                    ->label('Video For')
+                    ->options([
+                        'fun_facts' => 'Fun Facts',
+                        'summary' => 'Summary',
+                        'both' => 'Both',
+                    ])
+                    ->inline(),
+
                 FileUpload::make('files')
                     ->label('Article Files')
                     ->directory('research-files')

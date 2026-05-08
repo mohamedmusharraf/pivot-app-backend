@@ -11,6 +11,8 @@ class Research extends Model
     protected $fillable = [
         'fun_facts',
         'summary',
+        'video_link',
+        'video_type',
         'full_content',
         'files',
     ];

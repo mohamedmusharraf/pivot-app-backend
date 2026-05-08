@@ -9,7 +9,9 @@ class ResearchResource extends JsonResource
         return [
             'fun_facts' => $this->fun_facts,
             'summary' => $this->summary,
-            'full_content' => $this->full_content,
+            'video_link' => $this->video_link,
+            'video_type' => $this->video_type,
+            // 'full_content' => $this->full_content,
             'files' => $this->files,
         ];
     }

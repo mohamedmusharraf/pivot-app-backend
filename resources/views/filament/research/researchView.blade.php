@@ -37,6 +37,33 @@
                 </div>
             </section>
 
+            {{-- VIDEO DETAILS --}}
+            @if($record->video_link || $record->video_type)
+            <section>
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="w-1 h-3 bg-rose-500 rounded-full"></span>
+                    <h3 class="text-[10px] font-black text-rose-600 dark:text-rose-400 uppercase tracking-wider">
+                        Video
+                    </h3>
+                </div>
+
+                <div class="bg-rose-50/40 dark:bg-rose-900/10 border border-rose-100 dark:border-rose-900/30 rounded-xl p-3 shadow-sm space-y-2">
+                    @if($record->video_type)
+                    <p class="text-xs sm:text-sm font-semibold text-gray-800 dark:text-gray-100">
+                        Type: {{ str_replace('_', ' ', ucfirst($record->video_type)) }}
+                    </p>
+                    @endif
+
+                    @if($record->video_link)
+                    <a href="{{ $record->video_link }}" target="_blank"
+                       class="inline-block px-3 py-2 text-[11px] font-bold text-white bg-rose-500 rounded-md hover:bg-rose-600 transition">
+                        Open Video
+                    </a>
+                    @endif
+                </div>
+            </section>
+            @endif
+
             {{-- FILES --}}
             @if($record->files)
             <section>

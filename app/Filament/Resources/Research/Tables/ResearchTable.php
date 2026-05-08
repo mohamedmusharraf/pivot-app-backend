@@ -2,15 +2,12 @@
 
 namespace App\Filament\Resources\Research\Tables;
 
-use Dom\Text;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-
-use const Dom\VALIDATION_ERR;
 
 class ResearchTable
 {
@@ -24,8 +21,16 @@ class ResearchTable
                     ->searchable(),
                 TextColumn::make('summary')
                     ->limit(50)
-                     ->formatStateUsing(fn ($state) => strip_tags($state))
+                    ->formatStateUsing(fn ($state) => strip_tags($state))
                     ->searchable(),
+                TextColumn::make('video_type')
+                    ->label('Video For')
+                    ->badge(),
+                TextColumn::make('video_link')
+                    ->label('Video Link')
+                    ->limit(40)
+                    ->url(fn ($record) => $record->video_link, shouldOpenInNewTab: true)
+                    ->toggleable(),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
