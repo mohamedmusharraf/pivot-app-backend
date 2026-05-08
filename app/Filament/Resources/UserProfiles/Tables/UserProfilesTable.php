@@ -19,7 +19,9 @@ class UserProfilesTable
                 TextColumn::make('user_id')
                     ->numeric()
                     ->sortable(),
-                TextColumn::make('country')
+                TextColumn::make('country.name')
+                    ->label('Country')
+                    ->placeholder('-')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('gender')
