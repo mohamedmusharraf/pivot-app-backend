@@ -26,4 +26,14 @@ class UserHobbyRequest extends FormRequest
             'hobby_ids.*' => 'exists:hobbies,id',
         ];
     }
+
+    public function messages(): array
+    {
+        return [
+            'hobby_ids.required' => 'Please select at least one hobby.',
+            'hobby_ids.array' => 'Hobbies must be sent as an array.',
+            'hobby_ids.min' => 'Please select at least one hobby.',
+            'hobby_ids.*.exists' => 'One or more selected hobbies are invalid.',
+        ];
+    }
 }

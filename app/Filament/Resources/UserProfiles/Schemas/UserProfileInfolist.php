@@ -14,7 +14,8 @@ class UserProfileInfolist
             ->components([
                 TextEntry::make('user_id')
                     ->numeric(),
-                TextEntry::make('country')
+                TextEntry::make('country.name')
+                    ->label('Country')
                     ->placeholder('-'),
                 TextEntry::make('gender')
                     ->placeholder('-'),

@@ -28,4 +28,16 @@ class HobbyRequest extends FormRequest
             'icon_url' => 'nullable|string|max:255'
         ];
     }
+
+    public function messages(): array
+    {
+        return [
+            'name.required' => 'Hobby name is required.',
+            'name.string' => 'Hobby name must be a valid string.',
+            'name.max' => 'Hobby name must not exceed 255 characters.',
+            'name.unique' => 'This hobby already exists.',
+            'icon_url.string' => 'Icon URL must be a valid string.',
+            'icon_url.max' => 'Icon URL must not exceed 255 characters.',
+        ];
+    }
 }

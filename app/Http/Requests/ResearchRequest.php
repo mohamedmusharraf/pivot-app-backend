@@ -35,4 +35,19 @@ class ResearchRequest extends FormRequest
             // 'category' => 'sometimes|string|max:255',
         ];
     }
+
+    public function messages(): array
+    {
+        return [
+            'fun_facts.string' => 'Fun facts must be valid text.',
+            'fun_facts.max' => 'Fun facts must not exceed 255 characters.',
+            'summary.string' => 'Summary must be valid text.',
+            'video_link.url' => 'Video link must be a valid URL.',
+            'video_link.max' => 'Video link must not exceed 2048 characters.',
+            'video_type.in' => 'Video type must be fun_facts, summary, or both.',
+            'full_content.string' => 'Full content must be valid text.',
+            'files.file' => 'Files must be an uploaded file.',
+            'files.mimes' => 'Files must be a PDF, DOC, or DOCX file.',
+        ];
+    }
 }

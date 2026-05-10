@@ -81,4 +81,15 @@ class ActivityFilterRequest extends FormRequest
             'mood_match.*' => 'string',
         ];
     }
+
+    public function messages(): array
+    {
+        return [
+            'age_suitability.string' => 'Age suitability must be a text value.',
+            'age_suitability.regex' => 'Age suitability must be in a valid format like 8-12, 8 to 12, or 18+.',
+            'tier.in' => 'Tier must be one of 1, 2, or 3.',
+            'mood_match.array' => 'Mood match must be an array of mood values.',
+            'mood_match.*.string' => 'Each mood value must be a valid string.',
+        ];
+    }
 }
