@@ -24,8 +24,6 @@ class ProfileController extends Controller
     public function store(ProfileRequest $request)
     {
         $validated = $request->validated();
-        $validated['set_your_goal'] = $request->input('set_your_goal');
-        $validated['weekly_goal_minutes'] = $request->input('weekly_goal_minutes');
         $profile = $this->profileService->store($validated);
 
         if (! empty($validated['hobby_ids'])) {
@@ -88,13 +86,20 @@ class ProfileController extends Controller
     public function update(ProfileRequest $request, UserProfile $profile)
     {
         $validated = $request->validated();
-        $validated['set_your_goal'] = $request->input('set_your_goal');
-        $validated['weekly_goal_minutes'] = $request->input('weekly_goal_minutes');
 
-        $this->profileService->update(
-            $profile,
-            $validated
-        );
+        if (array_key_exists('name', $validated)) {
+            $profile->user()->update([
+                'name' => $validated['name'],
+            ]);
+            unset($validated['name']);
+        }
+
+        if (! empty($validated)) {
+            $this->profileService->update(
+                $profile,
+                $validated
+            );
+        }
 
         if (! empty($validated['hobby_ids'])) {
             $this->userHobbyService->selectHobbies(

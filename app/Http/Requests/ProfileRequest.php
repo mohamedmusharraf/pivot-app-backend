@@ -82,12 +82,16 @@ class ProfileRequest extends FormRequest
      */
     public function rules(): array
     {
+        $isCreate = $this->isMethod('post');
+
         return [
-            'user_id' => 'required|integer|exists:users,id',
-            'country_id' => 'required|integer|exists:countries,id',
-            'gender' => 'required|in:male,female,other,prefer not to say',
-            'date_of_birth' => 'required|date|before:today',
-            'set_your_goal' => 'required|integer|min:1|max:168',
+            'name' => 'sometimes|string|max:255',
+            'user_id' => ($isCreate ? 'required' : 'sometimes') . '|integer|exists:users,id',
+            'country_id' => ($isCreate ? 'required' : 'sometimes') . '|integer|exists:countries,id',
+            'gender' => ($isCreate ? 'required' : 'sometimes') . '|in:male,female,other,prefer not to say',
+            'date_of_birth' => ($isCreate ? 'required' : 'sometimes') . '|date|before:today',
+            'set_your_goal' => ($isCreate ? 'required' : 'sometimes') . '|integer|min:1|max:168',
+            'weekly_goal_minutes' => 'sometimes|integer|min:60|max:10080',
             'category' => 'sometimes|array',
             'category.*' => 'string|exists:hobbies,name',
             'hobby_ids' => 'sometimes|array',
@@ -129,6 +133,8 @@ class ProfileRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'name.string' => 'Name must be a valid string.',
+            'name.max' => 'Name may not be greater than 255 characters.',
             'user_id.required' => 'User ID is required.',
             'user_id.integer' => 'User ID must be an integer.',
             'user_id.exists' => 'The specified user does not exist.',
@@ -143,6 +149,9 @@ class ProfileRequest extends FormRequest
             'set_your_goal.integer' => 'Set your goal must be an integer.',
             'set_your_goal.min' => 'Set your goal must be at least 1 hour.',
             'set_your_goal.max' => 'Set your goal must be 168 hours or less.',
+            'weekly_goal_minutes.integer' => 'Weekly goal minutes must be an integer.',
+            'weekly_goal_minutes.min' => 'Weekly goal minutes must be at least 60 minutes.',
+            'weekly_goal_minutes.max' => 'Weekly goal minutes must be 10080 minutes or less.',
             'category.array' => 'Category must be an array.',
             'category.*.string' => 'Each category must be a string.',
             'category.*.exists' => 'Selected category is invalid.',
