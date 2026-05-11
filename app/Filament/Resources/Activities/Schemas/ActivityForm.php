@@ -5,7 +5,6 @@ namespace App\Filament\Resources\Activities\Schemas;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
 
 class ActivityForm
@@ -43,7 +42,12 @@ class ActivityForm
                 TextInput::make('neurodivergent_notes')
                     ->label('Neurodivergent Friendly Notes'),
                     // ->columnSpanFull(),
-                Toggle::make('neurodivergent_friendly')
+                Select::make('neurodivergent_friendly')
+                    ->options([
+                        'Yes' => 'Yes',
+                        'No' => 'No',
+                        'Partial' => 'Partial',
+                    ])
                     ->required(),
             ]);
     }

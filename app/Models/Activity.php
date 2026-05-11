@@ -19,6 +19,8 @@ class Activity extends Model
         'cost',
         'location',
         'age_range',
+        'min_age',
+        'max_age',
         'neurodivergent_friendly',
         'neurodivergent_notes',
         'sensory_tags',

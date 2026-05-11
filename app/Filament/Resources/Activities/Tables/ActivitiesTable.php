@@ -6,7 +6,6 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
-use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -29,8 +28,9 @@ class ActivitiesTable
                     ->searchable(),
                 TextColumn::make('age_range')
                     ->searchable(),
-                IconColumn::make('neurodivergent_friendly')
-                    ->boolean(),
+                TextColumn::make('neurodivergent_friendly')
+                    ->badge()
+                    ->sortable(),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

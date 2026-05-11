@@ -11,6 +11,7 @@ class ActivityResource extends JsonResource
         return [
             'id'       => $this->id,
             'activity_title'    => $this->activity_title,
+            'description' => $this->description,
             'instruction' => $this->instruction,
             'activity_type' => $this->activity_type,
             'subcategory' => $this->subcategory,
@@ -27,6 +28,7 @@ class ActivityResource extends JsonResource
             'energy_level'   => $this->energy_level,
             'outcome_tag' => $this->outcome_tag,
             'mood_match' => $this->mood_match,
+            'time' => $this->time,
             'hobby'    => [
                 'id'   => $this->hobby->id,
                 'name' => $this->hobby->name,

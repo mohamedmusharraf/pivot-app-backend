@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\Activities\Schemas;
 
-use Filament\Infolists\Components\IconEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Schema;
 
@@ -27,8 +26,8 @@ class ActivityInfolist
                 TextEntry::make('location'),
                 // TextEntry::make('age_range')
                 //     ->placeholder('-'),
-                IconEntry::make('neurodivergent_friendly')
-                    ->boolean(),
+                TextEntry::make('neurodivergent_friendly')
+                    ->placeholder('-'),
                 TextEntry::make('neurodivergent_notes')
                     ->label('Neurodivergent Friendly Notes')
                     // ->columnSpanFull()

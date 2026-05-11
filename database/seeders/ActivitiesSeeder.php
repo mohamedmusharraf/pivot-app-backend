@@ -63,9 +63,9 @@ class ActivitiesSeeder extends Seeder
                 'tier' => isset($data['tier']) ? (int)$data['tier'] : 1,
                 'cost' => $data['cost'] ?? null,
                 'location' => $data['location'] ?? null,
-                'neurodivergent_friendly' => isset($data['neurodivergent_friendly'])
-                    ? filter_var($data['neurodivergent_friendly'], FILTER_VALIDATE_BOOLEAN)
-                    : false,
+                'neurodivergent_friendly' => $this->normalizeNeurodivergentFriendly(
+                    $data['neurodivergent_friendly'] ?? null
+                ),
                 'neurodivergent_notes' => $data['neurodivergent_notes'] ?? null,
                 'sensory_tags' => $data['sensory_tags'] ?? null,
                 'social_type' => $data['social_type'] ?? null,
@@ -91,5 +91,20 @@ class ActivitiesSeeder extends Seeder
         return array_values(array_filter(array_map(function ($mood) {
             return trim($mood);
         }, $moods)));
+    }
+
+    private function normalizeNeurodivergentFriendly($value): string
+    {
+        if ($value === null || $value === '') {
+            return 'No';
+        }
+
+        $normalized = strtolower(trim((string) $value));
+
+        return match ($normalized) {
+            'yes', 'true', '1' => 'Yes',
+            'partial' => 'Partial',
+            default => 'No',
+        };
     }
 }
