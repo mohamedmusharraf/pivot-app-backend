@@ -34,6 +34,7 @@ Route::prefix('v1')->group(function () {
         // User Profile Routes 
         Route::get('profile/me', [ProfileController::class, 'me']);
         Route::get('profile/countries', [ProfileController::class, 'countries']);
+        Route::patch('profile/activities', [ProfileController::class, 'updateActivities']);
         Route::apiResource('profile', ProfileController::class);
 
         // Hobby Management Routes

@@ -4,13 +4,16 @@ namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ProfileRequest;
+use App\Http\Requests\UpdateActivitiesRequest;
 use App\Http\Resources\UserResource;
 use App\Http\Resources\UserProfileResource;
+use App\Models\Country;
+use App\Models\Hobby;
+use App\Models\Users;
+use App\Models\UserProfile;
 use App\Services\ProfileService;
 use App\Services\UserHobbyService;
 use Illuminate\Http\Request;
-use App\Models\UserProfile;
-use App\Models\country;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 
@@ -47,7 +50,7 @@ class ProfileController extends Controller
 
     public function countries()
     {
-        $options = country::query()
+        $options = Country::query()
             ->where('is_active', true)
             ->orderBy('name')
             ->get(['name'])
@@ -86,13 +89,27 @@ class ProfileController extends Controller
     public function update(ProfileRequest $request, UserProfile $profile)
     {
         $validated = $request->validated();
+        $hobbyIds = $validated['hobby_ids'] ?? [];
 
+        $userData = [];
         if (array_key_exists('name', $validated)) {
-            $profile->user()->update([
-                'name' => $validated['name'],
-            ]);
-            unset($validated['name']);
+            $userData['name'] = $validated['name'];
         }
+        if (array_key_exists('email', $validated)) {
+            $userData['email'] = $validated['email'];
+        }
+
+        if (! empty($userData)) {
+            $profile->user()->update($userData);
+        }
+
+        unset(
+            $validated['name'],
+            $validated['user_name'],
+            $validated['email'],
+            $validated['country_name'],
+            $validated['hobby_ids']
+        );
 
         if (! empty($validated)) {
             $this->profileService->update(
@@ -101,15 +118,39 @@ class ProfileController extends Controller
             );
         }
 
-        if (! empty($validated['hobby_ids'])) {
+        if (! empty($hobbyIds)) {
+            $user = Users::query()->find($profile->user_id);
+            if (! $user) {
+                return response()->json([
+                    'message' => 'User not found for this profile',
+                ], 404);
+            }
+
             $this->userHobbyService->selectHobbies(
-                $request->user(),
-                $validated['hobby_ids']
+                $user,
+                $hobbyIds
             );
         }
 
         return response()->json([
             'message' => "data updated successfully"
+        ]);
+    }
+
+    public function updateActivities(UpdateActivitiesRequest $request)
+    {
+        $validated = $request->validated();
+        $user = Users::query()->findOrFail($validated['user_id']);
+
+        $hobbyIds = Hobby::query()
+            ->whereIn('name', $validated['activities'])
+            ->pluck('id')
+            ->all();
+
+        $this->userHobbyService->selectHobbies($user, $hobbyIds);
+
+        return response()->json([
+            'message' => 'Activities updated successfully',
         ]);
     }
 

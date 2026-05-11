@@ -2,13 +2,33 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Country;
 use App\Models\Hobby;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class ProfileRequest extends FormRequest
 {
     protected function prepareForValidation(): void
     {
+        if ($this->has('user_name') && ! $this->has('name')) {
+            $this->merge([
+                'name' => $this->input('user_name'),
+            ]);
+        }
+
+        if ($this->has('country_name') && ! $this->has('country_id')) {
+            $country = Country::query()
+                ->where('name', $this->input('country_name'))
+                ->first();
+
+            if ($country) {
+                $this->merge([
+                    'country_id' => $country->id,
+                ]);
+            }
+        }
+
         if ($this->has('set_your_goal') && ! $this->has('weekly_goal_minutes')) {
             $this->merge([
                 'weekly_goal_minutes' => (int) $this->input('set_your_goal') * 60
@@ -83,11 +103,21 @@ class ProfileRequest extends FormRequest
     public function rules(): array
     {
         $isCreate = $this->isMethod('post');
+        $profile = $this->route('profile');
+        $ignoreUserId = $profile?->user_id ?? $this->input('user_id') ?? $this->user()?->id;
 
         return [
             'name' => 'sometimes|string|max:255',
+            'user_name' => 'sometimes|string|max:255',
+            'email' => [
+                'sometimes',
+                'email',
+                'max:255',
+                Rule::unique('users', 'email')->ignore($ignoreUserId),
+            ],
             'user_id' => ($isCreate ? 'required' : 'sometimes') . '|integer|exists:users,id',
-            'country_id' => ($isCreate ? 'required' : 'sometimes') . '|integer|exists:countries,id',
+            'country_id' => ($isCreate ? 'required_without:country_name' : 'sometimes') . '|integer|exists:countries,id',
+            'country_name' => ($isCreate ? 'required_without:country_id' : 'sometimes') . '|string|exists:countries,name',
             'gender' => ($isCreate ? 'required' : 'sometimes') . '|in:male,female,other,prefer not to say',
             'date_of_birth' => ($isCreate ? 'required' : 'sometimes') . '|date|before:today',
             'set_your_goal' => ($isCreate ? 'required' : 'sometimes') . '|integer|min:1|max:168',
@@ -135,12 +165,19 @@ class ProfileRequest extends FormRequest
         return [
             'name.string' => 'Name must be a valid string.',
             'name.max' => 'Name may not be greater than 255 characters.',
+            'user_name.string' => 'User name must be a valid string.',
+            'user_name.max' => 'User name may not be greater than 255 characters.',
+            'email.email' => 'Email must be a valid email address.',
+            'email.unique' => 'This email is already in use.',
             'user_id.required' => 'User ID is required.',
             'user_id.integer' => 'User ID must be an integer.',
             'user_id.exists' => 'The specified user does not exist.',
             'country_id.required' => 'Country ID is required.',
+            'country_id.required_without' => 'Country ID is required when country name is not provided.',
             'country_id.integer' => 'Country ID must be an integer.',
             'country_id.exists' => 'Selected country is invalid.',
+            'country_name.required_without' => 'Country name is required when country ID is not provided.',
+            'country_name.exists' => 'Selected country name is invalid.',
             'gender.required' => 'Gender is required.',
             'date_of_birth.required' => 'Date of birth is required.',
             'date_of_birth.date' => 'Date of birth must be a valid date.',
