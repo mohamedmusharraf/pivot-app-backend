@@ -9,7 +9,6 @@ use App\Http\Resources\UserResource;
 use App\Http\Resources\UserProfileResource;
 use App\Models\Country;
 use App\Models\Hobby;
-use App\Models\Users;
 use App\Models\UserProfile;
 use App\Services\ProfileService;
 use App\Services\UserHobbyService;
@@ -119,7 +118,9 @@ class ProfileController extends Controller
         }
 
         if (! empty($hobbyIds)) {
-            $user = Users::query()->find($profile->user_id);
+            $profile->loadMissing('user');
+            $user = $profile->user;
+
             if (! $user) {
                 return response()->json([
                     'message' => 'User not found for this profile',
@@ -140,7 +141,15 @@ class ProfileController extends Controller
     public function updateActivities(UpdateActivitiesRequest $request)
     {
         $validated = $request->validated();
-        $user = Users::query()->findOrFail($validated['user_id']);
+        $profile = $this->profileService->getByUserId((int) $validated['user_id']);
+        $profile->loadMissing('user');
+        $user = $profile->user;
+
+        if (! $user) {
+            return response()->json([
+                'message' => 'User not found for this profile',
+            ], 404);
+        }
 
         $hobbyIds = Hobby::query()
             ->whereIn('name', $validated['activities'])

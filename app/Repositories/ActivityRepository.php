@@ -26,6 +26,21 @@ class ActivityRepository implements ActivityRepositoryInterface
             });
         }
 
+        $subscriptionTierId = 1;
+
+        if ($user) {
+            $user->loadMissing('subscription');
+            $subscriptionTierId = (int) ($user->subscription->tier_id ?? 1);
+        }
+
+        if ($subscriptionTierId === 1) {
+            $query->where('tier', 1);
+        } elseif ($subscriptionTierId === 2) {
+            $query->whereIn('tier', [1, 2]);
+        } elseif ($subscriptionTierId >= 3) {
+            $query->whereIn('tier', [1, 2, 3]);
+        }
+
         if (!empty($filters['mood_match'])) {
 
             $moods = is_array($filters['mood_match'])
@@ -39,17 +54,29 @@ class ActivityRepository implements ActivityRepositoryInterface
             });
         }
 
+        $categoryNames = [];
 
-        if (!empty($filters['tier'])) {
-            $tier = $filters['tier'];
-
-            if ($tier == 1) {
-                $query->where('tier', 1);
-            } elseif ($tier == 2) {
-                $query->whereIn('tier', [1, 2]);
-            }
+        if (!empty($filters['category'])) {
+            $categoryNames = is_array($filters['category'])
+                ? $filters['category']
+                : [$filters['category']];
+        } elseif ($user) {
+            $user->loadMissing('hobbies:id,name');
+            $categoryNames = $user->hobbies
+                ->pluck('name')
+                ->filter()
+                ->unique()
+                ->values()
+                ->all();
         }
 
+        if (!empty($categoryNames)) {
+            $query->whereHas('hobby', function ($hobbyQuery) use ($categoryNames) {
+                $hobbyQuery->whereIn('name', $categoryNames);
+            });
+        } elseif ($user) {
+            $query->whereRaw('1 = 0');
+        }
 
         $query->orderByRaw("
             CASE 
