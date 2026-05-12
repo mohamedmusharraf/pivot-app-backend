@@ -56,11 +56,7 @@ class ActivityRepository implements ActivityRepositoryInterface
 
         $categoryNames = [];
 
-        if (!empty($filters['category'])) {
-            $categoryNames = is_array($filters['category'])
-                ? $filters['category']
-                : [$filters['category']];
-        } elseif ($user) {
+        if ($user) {
             $user->loadMissing('hobbies:id,name');
             $categoryNames = $user->hobbies
                 ->pluck('name')

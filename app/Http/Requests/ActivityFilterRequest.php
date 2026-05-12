@@ -46,26 +46,6 @@ class ActivityFilterRequest extends FormRequest
             ]);
         }
 
-        // CATEGORY (hobby name)
-        if ($this->has('category')) {
-            $categories = $this->input('category');
-
-            if (is_string($categories)) {
-                $categories = array_filter(array_map('trim', explode(',', $categories)));
-            }
-
-            if (is_array($categories)) {
-                $categories = array_values(array_filter(array_map(function ($c) {
-                    return trim((string) $c);
-                }, $categories)));
-            } else {
-                $categories = [];
-            }
-
-            $this->merge([
-                'category' => $categories
-            ]);
-        }
     }
 
     public function rules(): array
@@ -79,8 +59,6 @@ class ActivityFilterRequest extends FormRequest
 
             'mood_match' => 'nullable|array',
             'mood_match.*' => 'string',
-            'category' => 'nullable|array',
-            'category.*' => 'string|exists:hobbies,name',
         ];
     }
 
@@ -91,9 +69,6 @@ class ActivityFilterRequest extends FormRequest
             'age_suitability.regex' => 'Age suitability must be in a valid format like 8-12, 8 to 12, or 18+.',
             'mood_match.array' => 'Mood match must be an array of mood values.',
             'mood_match.*.string' => 'Each mood value must be a valid string.',
-            'category.array' => 'Category must be an array or a comma-separated value.',
-            'category.*.string' => 'Each category must be a valid string.',
-            'category.*.exists' => 'One or more categories are invalid.',
         ];
     }
 }
