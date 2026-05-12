@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Hobby;
+use App\Models\User;
 use App\Models\UserHobby;
 use App\Models\Users;
 use App\Repositories\Contracts\UserHobbyRepositoryInterface;
@@ -14,7 +15,7 @@ class UserHobbyService
         protected UserHobbyRepositoryInterface $userHobbyRepository
     ) {}
 
-    public function selectHobbies(Users $user, array $hobbyIds)
+    public function selectHobbies(User|Users $user, array $hobbyIds): void
     {
         $user->hobbies()->sync($hobbyIds);
     }
