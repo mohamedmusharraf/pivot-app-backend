@@ -71,16 +71,26 @@ class ProfileController extends Controller
 
     public function me(Request $request)
     {
+        $user = $request->user()->loadMissing('subscription.tier');
+        $userTier = $user->subscription?->tier
+            ? [
+                'id' => $user->subscription->tier->id,
+                'name' => $user->subscription->tier->name,
+            ]
+            : null;
+
         try {
-            $profile = $this->profileService->getByUserId($request->user()->id);
+            $profile = $this->profileService->getByUserId($user->id);
         } catch (ModelNotFoundException $e) {
             return response()->json([
-                'user' => new UserResource($request->user()),
+                'user' => new UserResource($user),
+                'user_tier' => $userTier,
             ]);
         }
 
         return response()->json([
-            'user' => new UserResource($request->user()),
+            'user' => new UserResource($user),
+            'user_tier' => $userTier,
             'profile' => new UserProfileResource($profile),
         ]);
     }
