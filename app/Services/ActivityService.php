@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Activity;
 use App\Repositories\Contracts\ActivityRepositoryInterface;
+use App\Support\InstructionFormatter;
 
 class ActivityService
 {
@@ -18,11 +19,19 @@ class ActivityService
 
     public function store(array $data): Activity
     {
+        if (array_key_exists('instruction', $data)) {
+            $data['instruction'] = InstructionFormatter::normalize($data['instruction']);
+        }
+
         return $this->repository->create($data);
     }
 
     public function update(Activity $activity, array $data): Activity
     {
+        if (array_key_exists('instruction', $data)) {
+            $data['instruction'] = InstructionFormatter::normalize($data['instruction']);
+        }
+
         return $this->repository->update($activity, $data);
     }
 

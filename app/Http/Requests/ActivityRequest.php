@@ -2,10 +2,22 @@
 
 namespace App\Http\Requests;
 
+use App\Support\InstructionFormatter;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ActivityRequest extends FormRequest
 {
+    protected function prepareForValidation(): void
+    {
+        $instruction = $this->input('instruction', $this->input('insruction'));
+
+        if ($instruction !== null) {
+            $this->merge([
+                'instruction' => InstructionFormatter::normalize((string) $instruction),
+            ]);
+        }
+    }
+
     /**
      * Determine if the user is authorized to make this request.
      */

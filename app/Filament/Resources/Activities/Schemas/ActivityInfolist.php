@@ -17,8 +17,10 @@ class ActivityInfolist
                 TextEntry::make('activity_title'),
                 TextEntry::make('activity_type'),
                 TextEntry::make('subcategory'),
-                TextEntry::make('instruction'),
-                // ->columnSpanFull(),
+                TextEntry::make('instruction')
+                    ->formatStateUsing(fn (?string $state): string => $state ? nl2br(e($state)) : '-')
+                    ->html()
+                    ->columnSpanFull(),
                 TextEntry::make('duration_minutes')
                     ->numeric(),
                 TextEntry::make('tier'),

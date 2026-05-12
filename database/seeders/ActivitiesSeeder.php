@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Support\InstructionFormatter;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -51,7 +52,9 @@ class ActivitiesSeeder extends Seeder
                 'hobby_id' => $hobbyId,
                 'activity_title' => $data['activity_title'] ?? '',
                 'description' => $data['description'] ?? null,
-                'instruction' => $data['instruction'] ?? '',
+                'instruction' => InstructionFormatter::normalize(
+                    $data['instruction'] ?? ($data['insruction'] ?? '')
+                ),
                 'activity_type' => $data['activity_type'] ?? null,
                 'subcategory' => $data['subcategory'] ?? null,
                 'duration_minutes' => isset($data['duration_minutes']) 
