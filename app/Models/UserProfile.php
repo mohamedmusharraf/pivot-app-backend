@@ -33,6 +33,14 @@ class UserProfile extends Model
     ];
 
     /**
+     * Use user_id for implicit route model binding.
+     */
+    public function getRouteKeyName(): string
+    {
+        return 'user_id';
+    }
+
+    /**
      * Relationships
      */
 
