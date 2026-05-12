@@ -90,7 +90,7 @@ class ProfileController extends Controller
 
         return response()->json([
             'user' => new UserResource($user),
-            'user_tier' => $userTier,
+            // 'user_tier' => $userTier,
             'profile' => new UserProfileResource($profile),
         ]);
     }
