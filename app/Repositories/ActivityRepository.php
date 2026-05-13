@@ -83,7 +83,7 @@ class ActivityRepository implements ActivityRepositoryInterface
 
         $query->orderBy('tier', 'asc');
 
-        return $query->get();
+        return $query->paginate(10);
     }
 
     public function all()
