@@ -5,6 +5,7 @@ namespace App\Repositories;
 use App\Models\Activity;
 use App\Repositories\Contracts\ActivityRepositoryInterface;
 use Carbon\Carbon;
+use Illuminate\Support\Collection;
 
 class ActivityRepository implements ActivityRepositoryInterface
 {
@@ -98,7 +99,9 @@ class ActivityRepository implements ActivityRepositoryInterface
             $query->whereIn('tier', $allowedTiers);
         }
 
-        return $query->paginate(20)->shuffle()->values();
+        $activities = $query->paginate(20)->getCollection();
+
+        return $this->shuffleByHobby($activities);
     }
 
     public function all()
@@ -120,5 +123,36 @@ class ActivityRepository implements ActivityRepositoryInterface
     public function delete(Activity $activity): void
     {
         $activity->delete();
+    }
+
+    private function shuffleByHobby(Collection $activities): Collection
+    {
+        $grouped = $activities
+            ->groupBy(fn (Activity $activity) => $activity->hobby_id ?? 0)
+            ->map(fn (Collection $group) => $group->shuffle()->values());
+
+        $hobbyKeys = $grouped->keys()->shuffle()->values();
+        $shuffled = collect();
+
+        while ($hobbyKeys->isNotEmpty()) {
+            foreach ($hobbyKeys as $hobbyKey) {
+                /** @var \Illuminate\Support\Collection $bucket */
+                $bucket = $grouped->get($hobbyKey, collect());
+
+                if ($bucket->isEmpty()) {
+                    continue;
+                }
+
+                $shuffled->push($bucket->shift());
+                $grouped->put($hobbyKey, $bucket);
+            }
+
+            $hobbyKeys = $hobbyKeys
+                ->filter(fn ($hobbyKey) => $grouped->get($hobbyKey)?->isNotEmpty())
+                ->shuffle()
+                ->values();
+        }
+
+        return $shuffled->values();
     }
 }
