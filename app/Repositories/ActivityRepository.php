@@ -33,12 +33,11 @@ class ActivityRepository implements ActivityRepositoryInterface
             $subscriptionTierId = (int) ($user->subscription->tier_id ?? 1);
         }
 
-        if ($subscriptionTierId === 1) {
-            $query->where('tier', 1);
-        } elseif ($subscriptionTierId === 2) {
-            $query->whereIn('tier', [1, 2]);
+        $allowedTiers = [1];
+        if ($subscriptionTierId === 2) {
+            $allowedTiers = [1, 2];
         } elseif ($subscriptionTierId >= 3) {
-            $query->whereIn('tier', [1, 2, 3]);
+            $allowedTiers = [1, 2, 3];
         }
 
         if (!empty($filters['mood_match'])) {
@@ -66,7 +65,19 @@ class ActivityRepository implements ActivityRepositoryInterface
                 ->all();
         }
 
-        if (!empty($categoryNames)) {
+        if (!empty($filters['hobby_names'])) {
+            $hobbyNames = array_values(array_filter(array_map(function ($name) {
+                return is_string($name) ? trim($name) : null;
+            }, (array) $filters['hobby_names'])));
+
+            if (!empty($hobbyNames)) {
+                $query->whereHas('hobby', function ($hobbyQuery) use ($hobbyNames) {
+                    $hobbyQuery->whereIn('name', $hobbyNames);
+                });
+            }
+        } elseif (!empty($filters['hobby_ids'])) {
+            $query->whereIn('hobby_id', array_map('intval', (array) $filters['hobby_ids']));
+        } elseif (!empty($categoryNames)) {
             $query->whereHas('hobby', function ($hobbyQuery) use ($categoryNames) {
                 $hobbyQuery->whereIn('name', $categoryNames);
             });
@@ -74,16 +85,20 @@ class ActivityRepository implements ActivityRepositoryInterface
             $query->whereRaw('1 = 0');
         }
 
-        $query->orderByRaw("
-            CASE 
-                WHEN LOWER(cost) = 'free' THEN 0
-                ELSE 1
-            END
-        ");
+        if (!empty($filters['tier'])) {
+            $requestedTiers = array_map('intval', (array) $filters['tier']);
+            $tierFilter = array_values(array_intersect($allowedTiers, $requestedTiers));
 
-        $query->orderBy('tier', 'asc');
+            if (empty($tierFilter)) {
+                $query->whereRaw('1 = 0');
+            } else {
+                $query->whereIn('tier', $tierFilter);
+            }
+        } else {
+            $query->whereIn('tier', $allowedTiers);
+        }
 
-        return $query->paginate(10);
+        return $query->paginate(20)->shuffle()->values();
     }
 
     public function all()
