@@ -54,6 +54,24 @@ class ActivityRepository implements ActivityRepositoryInterface
             });
         }
 
+        $allowedSocialTypes = ['Solo', 'Optional Group'];
+
+        if (!empty($filters['social_type'])) {
+            $requestedSocialTypes = array_values(array_filter(array_map(function ($type) {
+                return is_string($type) ? trim($type) : null;
+            }, (array) $filters['social_type'])));
+
+            $socialTypeFilter = array_values(array_intersect($allowedSocialTypes, $requestedSocialTypes));
+
+            if (empty($socialTypeFilter)) {
+                $query->whereRaw('1 = 0');
+            } else {
+                $query->whereIn('social_type', $socialTypeFilter);
+            }
+        } else {
+            $query->whereIn('social_type', $allowedSocialTypes);
+        }
+
         $categoryNames = [];
 
         if ($user) {
@@ -107,6 +125,17 @@ class ActivityRepository implements ActivityRepositoryInterface
     public function all()
     {
         return Activity::with('hobby')->get();
+    }
+
+    public function groupActivities(int $perPage = 20)
+    {
+        $query = Activity::query()
+            ->with('hobby')
+            ->whereIn('social_type', ['Optional Group', 'Group 2-10']);
+
+        $activities = $query->paginate($perPage)->getCollection();
+
+        return $activities;
     }
 
     public function create(array $data): Activity

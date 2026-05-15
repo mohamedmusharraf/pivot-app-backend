@@ -33,21 +33,30 @@ class AuthService
     public function login(array $data): array
     {
         if (empty($data['email']) || empty($data['password'])) {
-            abort(422, 'Email and password are required.');
+            throw ValidationException::withMessages([
+                'email' => ['Email address is required.'],
+                'password' => ['Password is required.'],
+            ]);
         }
 
         $user = $this->authRepositoryInterface->findByEmail($data['email']);
 
         if (!$user) {
-            abort(404, 'No account found with this email address.');
+            throw ValidationException::withMessages([
+                'email' => ['No account found with this email address.'],
+            ]);
         }
 
         if (!Hash::check($data['password'], $user->password)) {
-            abort(401, 'Invalid credentials.');
+            throw ValidationException::withMessages([
+                'email' => ['Invalid email or password.'],
+            ]);
         }
 
         if ($user->provider !== 'email') {
-            abort(422, 'Please login using ' . ucfirst($user->provider));
+            throw ValidationException::withMessages([
+                'email' => ['Please login using ' . ucfirst($user->provider) . '.'],
+            ]);
         }
 
         $this->authRepositoryInterface->updateLastLogin($user);

@@ -39,4 +39,9 @@ class ActivityService
     {
         $this->repository->delete($activity);
     }
+
+    public function groupActivities()
+    {
+        return $this->repository->groupActivities();
+    }
 }

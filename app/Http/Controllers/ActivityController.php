@@ -67,4 +67,11 @@ class ActivityController extends Controller
             'message' => 'Activity deleted successfully'
         ]);
     }
+
+    public function groupActivities()
+    {
+        $activities = $this->activityService->groupActivities();
+
+        return ActivityResource::collection($activities);
+    }
 }
