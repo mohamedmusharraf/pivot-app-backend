@@ -51,17 +51,18 @@ class ResearchForm
 
                 TextInput::make('video_link')
                     ->label('Video Link')
+                    ->columnSpanFull()
                     ->url()
                     ->placeholder('https://video_link.com/watch?v=...'),
 
-                Radio::make('video_type')
-                    ->label('Video For')
-                    ->options([
-                        'fun_facts' => 'Fun Facts',
-                        'summary' => 'Summary',
-                        'both' => 'Both',
-                    ])
-                    ->inline(),
+                // Radio::make('video_type')
+                //     ->label('Video For')
+                //     ->options([
+                //         'fun_facts' => 'Fun Facts',
+                //         'summary' => 'Summary',
+                //         'both' => 'Both',
+                //     ])
+                //     ->inline(),
 
                 FileUpload::make('files')
                     ->label('Article Files')
@@ -76,7 +77,7 @@ class ResearchForm
                         'text/csv',
                         'image/*',
                     ])
-                    ->maxSize(10240),
+                    ->maxSize(1024 * 1024),
             ]);
     }
 }

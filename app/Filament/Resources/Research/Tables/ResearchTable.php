@@ -23,9 +23,9 @@ class ResearchTable
                     ->limit(50)
                     ->formatStateUsing(fn ($state) => strip_tags($state))
                     ->searchable(),
-                TextColumn::make('video_type')
-                    ->label('Video For')
-                    ->badge(),
+                // TextColumn::make('video_type')
+                //     ->label('Video For')
+                //     ->badge(),
                 TextColumn::make('video_link')
                     ->label('Video Link')
                     ->limit(40)
