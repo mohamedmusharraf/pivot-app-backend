@@ -10,6 +10,7 @@ use App\Http\Controllers\BetaDeviceController;
 use App\Http\Controllers\UserHobbyController;
 use App\Http\Controllers\ResearchController;
 use App\Http\Controllers\CountriesController;
+use App\Http\Controllers\RevenueCatWebhookController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -19,6 +20,7 @@ Route::prefix('v1')->group(function () {
 
     Route::post('/auth/register', [AuthController::class, 'register']);
     Route::post('/auth/login', [AuthController::class, 'login']);
+    Route::post('/webhooks/revenuecat', RevenueCatWebhookController::class);
 
     // Beta testing
     Route::post('/beta-login', [BetaDeviceController::class, 'checkDevice']);

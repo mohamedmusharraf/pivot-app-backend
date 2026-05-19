@@ -15,6 +15,8 @@ class SubscriptionResource extends JsonResource
                 'id' => $this->tier->id,
                 'name' => $this->tier->name,
             ] : null,
+            'type' => $this->type,
+            'environment' => $this->environment,
             'active' => $this->active,
             'store' => $this->store,
             'product_id' => $this->product_id,
