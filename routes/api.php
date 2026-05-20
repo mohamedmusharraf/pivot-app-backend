@@ -28,6 +28,7 @@ Route::prefix('v1')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/auth/logout', [AuthController::class, 'logout']);
         Route::get('/user/current-user', [AuthController::class, 'currentUser']);
+        Route::patch('/user/status', [AuthController::class, 'updateStatus']);
 
         Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
         Route::post('/reset-password', [AuthController::class, 'resetPassword']);

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Http\Requests\Auth\UpdateUserStatusRequest;
 use App\Http\Resources\UserResource;
 use App\Services\AuthService;
 use Illuminate\Http\Request;
@@ -52,6 +53,16 @@ class AuthController extends Controller
         return response()->json([
             'user' => new UserResource($user)
         ]);;
+    }
+
+    public function updateStatus(UpdateUserStatusRequest $request)
+    {
+        $user = $this->authService->updateCurrentUserStatus($request->validated()['status']);
+
+        return response()->json([
+            'message' => 'User status updated successfully',
+            'user' => new UserResource($user),
+        ]);
     }
 
     public function forgotPassword(ForgotPasswordRequest $request)

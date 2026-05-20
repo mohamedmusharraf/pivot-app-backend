@@ -29,6 +29,15 @@ class AuthRepository implements AuthRepositoryInterface
         $user->update(['last_login_at' => now()]);
     }
 
+    public function updateStatusByUserId(int $userId, string $status): Users
+    {
+        $user = Users::findOrFail($userId);
+        $user->status = $status;
+        $user->save();
+
+        return $user->fresh(['subscription']);
+    }
+
     public function updatePassword(string $email, string $password): void
     {
         Users::where('email', $email)->update([

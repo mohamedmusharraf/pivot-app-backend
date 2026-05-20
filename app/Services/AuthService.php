@@ -74,6 +74,17 @@ class AuthService
         return $this->authRepositoryInterface->getCurrentUser();
     }
 
+    public function updateCurrentUserStatus(string $status): Users
+    {
+        $user = $this->authRepositoryInterface->getCurrentUser();
+
+        if (! $user) {
+            abort(401, 'Authentication is required.');
+        }
+
+        return $this->authRepositoryInterface->updateStatusByUserId((int) $user->id, $status);
+    }
+
     public function logout(): void
     {
         $this->logoutRepositoryInterface->logoutCurrentUser();

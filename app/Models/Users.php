@@ -16,6 +16,7 @@ class Users extends Model
         'name',
         'email',
         'password',
+        'status',
         'provider',
         'provider_id',
         'last_login_at',

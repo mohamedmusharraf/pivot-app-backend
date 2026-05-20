@@ -13,6 +13,7 @@ class UserResource extends JsonResource
             'id'       => $this->id,
             'name'     => $this->name,
             'email'    => $this->email,
+            'status'   => $this->status,
             'provider' => $this->provider,
             'created_at' => $this->created_at,
             'subscription' => new SubscriptionResource(
