@@ -11,6 +11,7 @@ use App\Http\Controllers\UserHobbyController;
 use App\Http\Controllers\ResearchController;
 use App\Http\Controllers\CountriesController;
 use App\Http\Controllers\RevenueCatWebhookController;
+use App\Http\Controllers\TeamInviteController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -37,6 +38,8 @@ Route::prefix('v1')->group(function () {
 
 Route::prefix('v1')->group(function () {
 
+    Route::get('/teams/invites/{token}/preview',[TeamInviteController::class, 'preview']);
+
     Route::middleware('auth:sanctum')->group(function () {
         // User Profile Routes 
         Route::get('profile/me', [ProfileController::class, 'me']);
@@ -58,6 +61,9 @@ Route::prefix('v1')->group(function () {
 
         // Countries Routes
         Route::apiResource('countries', CountriesController::class)->only(['index']);
+
+        Route::post('/teams/invites/generate',[TeamInviteController::class, 'generate']);
+        Route::post('/teams/invites/accept',[TeamInviteController::class, 'accept']);
     });
 
 });
