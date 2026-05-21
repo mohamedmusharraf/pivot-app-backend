@@ -44,13 +44,17 @@ class RevenueCatWebhookController extends Controller
         }
 
         $subscription = Subscription::query()->firstWhere('user_id', $user->id);
-        $incomingTierId = $this->resolveTierId($payload['product_id'], $subscription?->tier_id);
+        $eventType = $payload['type'] ?? null;
+        $productId = $payload['product_id'] ?? null;
+        $incomingActive = $request->boolean('active');
+
+        $incomingTierId = $this->resolveTierId($productId, $subscription?->tier_id);
         $freeTierId = $this->resolveFreeTierId($subscription?->tier_id ?? 1);
         $purchasedAt = $this->fromMilliseconds($payload['purchased_at_ms'] ?? null);
         $expiresAt = $this->fromMilliseconds($payload['expiration_at_ms'] ?? null);
         $eventState = $this->resolveEventState(
-            $payload['type'],
-            (bool) $payload['active'],
+            $eventType,
+            $incomingActive,
             $incomingTierId,
             $freeTierId,
             $expiresAt,
@@ -61,11 +65,11 @@ class RevenueCatWebhookController extends Controller
             ['user_id' => $user->id],
             [
                 'tier_id' => $eventState['tier_id'],
-                'type' => $payload['type'],
+                'type' => $eventType,
                 'environment' => $payload['environment'] ?? null,
                 'active' => $eventState['active'],
                 'store' => $payload['store'] ?? null,
-                'product_id' => $payload['product_id'],
+                'product_id' => $productId,
                 'revenuecat_user_id' => $payload['app_user_id'],
                 'started_at' => $purchasedAt ?? $subscription?->started_at,
                 'expires_at' => $expiresAt ?? $subscription?->expires_at,
@@ -104,8 +108,12 @@ class RevenueCatWebhookController extends Controller
         return (int) $appUserId;
     }
 
-    private function resolveTierId(string $productId, ?int $fallbackTierId): int
+    private function resolveTierId(?string $productId, ?int $fallbackTierId): int
     {
+        if (! $productId) {
+            return $fallbackTierId ?? 1;
+        }
+
         $exactTier = Tier::query()->where('name', $productId)->value('id');
 
         if ($exactTier) {
@@ -154,7 +162,7 @@ class RevenueCatWebhookController extends Controller
     }
 
     private function resolveEventState(
-        string $eventType,
+        ?string $eventType,
         bool $incomingActive,
         int $incomingTierId,
         int $freeTierId,
