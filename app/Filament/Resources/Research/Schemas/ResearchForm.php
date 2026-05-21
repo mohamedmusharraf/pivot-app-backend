@@ -17,8 +17,8 @@ class ResearchForm
 
                 TextInput::make('fun_facts')
                     ->label('Fun Facts')
-                    ->columnSpanFull()
-                    ->required(),
+                    ->columnSpanFull(),
+                    // ->required(),
 
                 RichEditor::make('summary')
                     ->label('Summary')
@@ -42,7 +42,7 @@ class ResearchForm
                     ->disableToolbarButtons([
                         'attachFiles',
                     ])
-                    ->required()
+                    // ->required()
                     ->live(onBlur: true)
                     ->afterStateUpdated(function ($state, callable $set) {
                         $clean = preg_replace('/(<p>.*?<\/p>)(\s*\1)+/s', '$1', $state);
