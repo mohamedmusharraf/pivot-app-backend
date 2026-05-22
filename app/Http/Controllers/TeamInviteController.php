@@ -132,6 +132,110 @@ class TeamInviteController extends Controller
         ]);
     }
 
+    public function reject(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'invite_id' => ['required', 'integer', 'exists:invitations,id'],
+        ]);
+
+        $user = $request->user();
+        $invitation = Invitation::find($data['invite_id']);
+
+        if (! $invitation) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid invitation'
+            ], 404);
+        }
+
+        if ($invitation->status === Invitation::STATUS_REJECTED) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invitation already rejected'
+            ], 422);
+        }
+
+        if ($invitation->status === Invitation::STATUS_ACCEPTED) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invitation already accepted'
+            ], 422);
+        }
+
+        if ($invitation->status !== Invitation::STATUS_PENDING) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invitation is not redeemable'
+            ], 422);
+        }
+
+        if ($invitation->expires_at->isPast()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invitation expired'
+            ], 422);
+        }
+
+        if ($invitation->inviter_id == $user->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You cannot reject your own invite'
+            ], 400);
+        }
+
+        $invitation->update([
+            'status' => Invitation::STATUS_REJECTED
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Invitation rejected successfully'
+        ]);
+    }
+
+    public function connectedUsers(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $connections = TeamConnection::query()
+            ->where('user_id', $user->id)
+            ->with(['connectedUser.profile.country'])
+            ->latest()
+            ->get();
+
+        $connectedUsers = $connections
+            ->map(function (TeamConnection $connection) {
+                $connectedUser = $connection->connectedUser;
+
+                if (! $connectedUser) {
+                    return null;
+                }
+
+                return [
+                    'connection_id' => $connection->id,
+                    'connected_at' => $connection->created_at,
+                    'connected_user' => [
+                        'id' => $connectedUser->id,
+                        'name' => $connectedUser->name,
+                        'email' => $connectedUser->email,
+                        'status' => $connectedUser->status,
+                        'country' => $connectedUser->profile?->country?->name,
+                        'gender' => $connectedUser->profile?->gender,
+                        'date_of_birth' => $connectedUser->profile?->date_of_birth,
+                        'onboarding_completed' => $connectedUser->profile?->onboarding_completed,
+                    ],
+                ];
+            })
+            ->filter()
+            ->values();
+
+        return response()->json([
+            'success' => true,
+            'count' => $connectedUsers->count(),
+            'connections' => $connectedUsers,
+        ]);
+    }
+
     private function buildPreview(Invitation $invitation): JsonResponse
     {
         $memberCount = TeamConnection::where('user_id', $invitation->inviter_id)->count() + 1;

@@ -66,6 +66,8 @@ Route::prefix('v1')->group(function () {
 
         Route::post('/invites/generate', [TeamInviteController::class, 'generate']);
         Route::post('/invites/accept', [TeamInviteController::class, 'accept']);
+        Route::post('/invites/reject', [TeamInviteController::class, 'reject']);
+        Route::get('/teams/connections', [TeamInviteController::class, 'connectedUsers']);
     });
 
 });
