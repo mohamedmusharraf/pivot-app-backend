@@ -38,6 +38,8 @@ Route::prefix('v1')->group(function () {
 
 Route::prefix('v1')->group(function () {
 
+    Route::get('/invites/token/{token}', [TeamInviteController::class, 'resolveByToken']);
+    Route::post('/invites/code', [TeamInviteController::class, 'resolveByCode']);
     Route::get('/teams/invites/{token}/preview',[TeamInviteController::class, 'preview']);
 
     Route::middleware('auth:sanctum')->group(function () {
@@ -62,8 +64,8 @@ Route::prefix('v1')->group(function () {
         // Countries Routes
         Route::apiResource('countries', CountriesController::class)->only(['index']);
 
-        Route::post('/teams/invites/generate',[TeamInviteController::class, 'generate']);
-        Route::post('/teams/invites/accept',[TeamInviteController::class, 'accept']);
+        Route::post('/invites/generate', [TeamInviteController::class, 'generate']);
+        Route::post('/invites/accept', [TeamInviteController::class, 'accept']);
     });
 
 });

@@ -14,6 +14,7 @@ class Invitation extends Model
     protected $fillable = [
         'inviter_id',
         'token',
+        'code',
         'expires_at',
         'status'
     ];

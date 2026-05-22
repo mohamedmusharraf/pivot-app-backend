@@ -5,74 +5,75 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Invitation;
 use App\Models\TeamConnection;
+use App\Services\InviteService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 class TeamInviteController extends Controller
 {
+    public function __construct(
+        protected InviteService $inviteService
+    ) {}
+
     public function generate(Request $request): JsonResponse
     {
         $user = $request->user();
+        $result = $this->inviteService->createInvite($user);
+        $invitation = $result['invite'];
+        $token = $result['token'];
 
-        $token = $this->generateUniqueToken();
-
-        Invitation::create([
-            'inviter_id' => $user->id,
-            'token' => $token,
-            'expires_at' => now()->addHours(48),
-            'status' => Invitation::STATUS_PENDING
-        ]);
-
-        $inviteUrl = "https://pivotapp.com/invite?token={$token}";
+        $inviteUrl = "https://api.pivotirl.com.au/invite?token={$token}";
+        $shareMessage = "Join my team on Pivot!\nTap the link: {$inviteUrl}\nOr open the app and enter code: {$invitation->code}";
 
         return response()->json([
             'success' => true,
-            'invite_url' => $inviteUrl
+            'invite_id' => $invitation->id,
+            'invite_url' => $inviteUrl,
+            'code' => $invitation->code,
+            'expires_at' => $invitation->expires_at,
+            'share_message' => $shareMessage,
         ]);
     }
 
-    public function preview(string $token): JsonResponse
+    public function resolveByToken(string $token): JsonResponse
     {
-        $invitation = Invitation::with('inviter')
-            ->where('token', $token)
-            ->where('status', Invitation::STATUS_PENDING)
-            ->first();
-
-        if (!$invitation) {
+        $invitation = $this->inviteService->resolvePendingInviteByToken($token);
+        if (! $invitation) {
             return response()->json([
                 'success' => false,
-                'message' => 'Invalid invitation'
+                'message' => 'Invalid or expired invitation'
             ], 404);
         }
 
-        if ($invitation->expires_at->isPast()) {
+        return $this->buildPreview($invitation);
+    }
+
+    public function resolveByCode(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'code' => ['required', 'string', 'size:6', 'regex:/^[A-Za-z0-9]{6}$/'],
+        ]);
+
+        $invitation = $this->inviteService->resolvePendingInviteByCode($data['code']);
+        if (! $invitation) {
             return response()->json([
                 'success' => false,
-                'message' => 'Invitation expired'
-            ], 400);
+                'message' => 'Invalid or expired invitation'
+            ], 404);
         }
 
-        return response()->json([
-            'success' => true,
-            'inviter' => [
-                'id' => $invitation->inviter->id,
-                'name' => $invitation->inviter->name,
-                'avatar' => $invitation->inviter->avatar ?? null
-            ]
-        ]);
+        return $this->buildPreview($invitation);
     }
 
     public function accept(Request $request): JsonResponse
     {
-        $request->validate([
-            'token' => 'required|string'
+        $data = $request->validate([
+            'invite_id' => ['required', 'integer', 'exists:invitations,id'],
         ]);
 
         $user = $request->user();
-
-        $invitation = Invitation::where('token', $request->token)->first();
+        $invitation = Invitation::find($data['invite_id']);
 
         if (!$invitation) {
             return response()->json([
@@ -127,16 +128,34 @@ class TeamInviteController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Team member added successfully'
+            'message' => 'Joined successfully'
         ]);
     }
 
-    private function generateUniqueToken(): string
+    private function buildPreview(Invitation $invitation): JsonResponse
     {
-        do {
-            $token = Str::random(15);
-        } while (Invitation::where('token', $token)->exists());
+        $memberCount = TeamConnection::where('user_id', $invitation->inviter_id)->count() + 1;
 
-        return $token;
+        return response()->json([
+            'success' => true,
+            'invite_id' => $invitation->id,
+            'inviter' => [
+                'id' => $invitation->inviter->id,
+                'name' => $invitation->inviter->name,
+                'avatar' => $invitation->inviter->avatar ?? null,
+            ],
+            'team' => [
+                'name' => $invitation->inviter->name . "'s Team",
+                'member_count' => $memberCount,
+            ],
+            'code' => $invitation->code,
+            'expires_at' => $invitation->expires_at,
+        ]);
+    }
+
+    // Backward-compatible alias for old route.
+    public function preview(string $token): JsonResponse
+    {
+        return $this->resolveByToken($token);
     }
 }
