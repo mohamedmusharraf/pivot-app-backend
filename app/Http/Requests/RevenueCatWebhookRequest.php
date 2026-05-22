@@ -35,6 +35,9 @@ class RevenueCatWebhookRequest extends FormRequest
     {
         return [
             'app_user_id' => ['required', 'string'],
+            'original_app_user_id' => ['nullable', 'string'],
+            'aliases' => ['nullable', 'array'],
+            'aliases.*' => ['string'],
             'product_id' => ['nullable', 'string', 'max:255'],
             'type' => ['nullable', Rule::in(self::EVENT_TYPES)],
             'environment' => ['nullable', 'string', 'max:50'],

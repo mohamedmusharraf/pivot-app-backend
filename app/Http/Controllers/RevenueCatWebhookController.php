@@ -7,6 +7,7 @@ use App\Models\Subscription;
 use App\Models\Tier;
 use App\Models\Users;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 
 class RevenueCatWebhookController extends Controller
@@ -27,20 +28,12 @@ class RevenueCatWebhookController extends Controller
         }
 
         $payload = $request->validated();
-        $userId = $this->resolveUserId($payload['app_user_id']);
-
-        if (! $userId) {
-            return response()->json([
-                'message' => 'Invalid app_user_id. It must be your numeric user id.',
-            ], 422);
-        }
-
-        $user = Users::query()->find($userId);
+        $user = $this->resolveUser($payload);
 
         if (! $user) {
             return response()->json([
-                'message' => 'User not found.',
-            ], 404);
+                'message' => 'Unable to resolve user from RevenueCat ids. Send your numeric user id as app_user_id, or ensure this RevenueCat user id is already linked to a subscription.',
+            ], 422);
         }
 
         $subscription = Subscription::query()->firstWhere('user_id', $user->id);
@@ -99,13 +92,40 @@ class RevenueCatWebhookController extends Controller
         return hash_equals($expected, trim($authorizationHeader));
     }
 
-    private function resolveUserId(string $appUserId): ?int
+    private function resolveUser(array $payload): ?Users
     {
-        if (! ctype_digit($appUserId)) {
+        $candidateIds = array_filter([
+            $payload['app_user_id'] ?? null,
+            $payload['original_app_user_id'] ?? null,
+            ...Arr::wrap($payload['aliases'] ?? []),
+        ], static fn ($value) => is_string($value) && $value !== '');
+
+        foreach ($candidateIds as $candidateId) {
+            $user = $this->resolveUserFromCandidateId($candidateId);
+
+            if ($user) {
+                return $user;
+            }
+        }
+
+        return null;
+    }
+
+    private function resolveUserFromCandidateId(string $candidateId): ?Users
+    {
+        if (ctype_digit($candidateId)) {
+            return Users::query()->find((int) $candidateId);
+        }
+
+        $subscription = Subscription::query()
+            ->where('revenuecat_user_id', $candidateId)
+            ->first();
+
+        if (! $subscription) {
             return null;
         }
 
-        return (int) $appUserId;
+        return Users::query()->find($subscription->user_id);
     }
 
     private function resolveTierId(?string $productId, ?int $fallbackTierId): int
