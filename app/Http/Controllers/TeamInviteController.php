@@ -257,7 +257,6 @@ class TeamInviteController extends Controller
         ]);
     }
 
-    // Backward-compatible alias for old route.
     public function preview(string $token): JsonResponse
     {
         return $this->resolveByToken($token);

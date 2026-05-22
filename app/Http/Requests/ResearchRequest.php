@@ -20,7 +20,7 @@ class ResearchRequest extends FormRequest
                 'video_link' => 'nullable|url|max:2048',
                 'video_type' => 'nullable|in:fun_facts,summary,both',
                 'full_content' => 'nullable|string',
-                'files' => 'nullable|file|mimes:pdf,doc,docx|max:1048576',
+                'files' => 'nullable|file|mimes:pdf,doc,docx|max:10240',
                 // 'category' => 'required|string|max:255',
             ];
         }
@@ -31,7 +31,7 @@ class ResearchRequest extends FormRequest
             'video_link' => 'sometimes|nullable|url|max:2048',
             'video_type' => 'sometimes|nullable|in:fun_facts,summary,both',
             'full_content' => 'sometimes|string',
-            'files' => 'sometimes|nullable|file|mimes:pdf,doc,docx|max:1048576',
+            'files' => 'sometimes|nullable|file|mimes:pdf,doc,docx|max:10240',
             // 'category' => 'sometimes|string|max:255',
         ];
     }
@@ -48,7 +48,7 @@ class ResearchRequest extends FormRequest
             'full_content.string' => 'Full content must be valid text.',
             'files.file' => 'Files must be an uploaded file.',
             'files.mimes' => 'Files must be a PDF, DOC, or DOCX file.',
-            'files.max' => 'Files must not be greater than 1 GB.',
+            'files.max' => 'Files must not be greater than 10 MB.',
         ];
     }
 }

@@ -69,5 +69,5 @@ Route::prefix('v1')->group(function () {
         Route::post('/invites/reject', [TeamInviteController::class, 'reject']);
         Route::get('/teams/connections', [TeamInviteController::class, 'connectedUsers']);
     });
-
+// research artical file is locally uploading fine but server 2mb< above file only uploading i want server to upload 10mb file so how can i do that
 });
