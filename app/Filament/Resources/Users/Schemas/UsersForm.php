@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Users\Schemas;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
+use Illuminate\Support\Facades\Hash;
 
 class UsersForm
 {
@@ -19,7 +20,15 @@ class UsersForm
                     ->required(),
                 TextInput::make('password')
                     ->password()
-                    ->required(),
+                    ->required(fn (string $operation): bool => $operation === 'create')
+                    ->confirmed()
+                    ->dehydrated(fn (?string $state): bool => filled($state))
+                    ->dehydrateStateUsing(fn (string $state): string => Hash::make($state)),
+                TextInput::make('password_confirmation')
+                    ->label('Confirm password')
+                    ->password()
+                    ->required(fn (string $operation, callable $get): bool => $operation === 'create' || filled($get('password')))
+                    ->dehydrated(false),
                 TextInput::make('provider'),
                 TextInput::make('provider_id'),
                 DateTimePicker::make('last_login_at'),
