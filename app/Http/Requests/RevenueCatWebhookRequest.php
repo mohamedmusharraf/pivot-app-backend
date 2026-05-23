@@ -16,6 +16,11 @@ class RevenueCatWebhookRequest extends FormRequest
         'BILLING_ISSUE',
     ];
 
+    private const SUPPORTED_IOS_TIER_PRODUCTS = [
+        'tier_2_ios',
+        'tier_3_ios',
+    ];
+
     protected function prepareForValidation(): void
     {
         $payload = $this->input('event');
@@ -38,7 +43,22 @@ class RevenueCatWebhookRequest extends FormRequest
             'original_app_user_id' => ['nullable', 'string'],
             'aliases' => ['nullable', 'array'],
             'aliases.*' => ['string'],
-            'product_id' => ['nullable', 'string', 'max:255'],
+            'product_id' => [
+                'nullable',
+                'string',
+                'max:255',
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    if (! is_string($value) || $value === '') {
+                        return;
+                    }
+
+                    // Validate known iOS tier product ids used by RevenueCat.
+                    if (str_ends_with($value, '_ios') && str_starts_with($value, 'tier_')
+                        && ! in_array($value, self::SUPPORTED_IOS_TIER_PRODUCTS, true)) {
+                        $fail("The {$attribute} is not a supported iOS tier product.");
+                    }
+                },
+            ],
             'type' => ['nullable', Rule::in(self::EVENT_TYPES)],
             'environment' => ['nullable', 'string', 'max:50'],
             'active' => ['nullable', 'boolean'],

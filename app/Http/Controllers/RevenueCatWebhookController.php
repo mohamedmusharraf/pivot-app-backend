@@ -18,6 +18,10 @@ class RevenueCatWebhookController extends Controller
     private const EVENT_EXPIRATION = 'EXPIRATION';
     private const EVENT_PRODUCT_CHANGE = 'PRODUCT_CHANGE';
     private const EVENT_BILLING_ISSUE = 'BILLING_ISSUE';
+    private const PRODUCT_TIER_MAP = [
+        'tier_2_ios' => 2,
+        'tier_3_ios' => 3,
+    ];
 
     public function __invoke(RevenueCatWebhookRequest $request): JsonResponse
     {
@@ -134,24 +138,33 @@ class RevenueCatWebhookController extends Controller
             return $fallbackTierId ?? 1;
         }
 
+        if (array_key_exists($productId, self::PRODUCT_TIER_MAP)) {
+            return $this->resolveTierIdFromNumber(self::PRODUCT_TIER_MAP[$productId], $fallbackTierId);
+        }
+
         $exactTier = Tier::query()->where('name', $productId)->value('id');
 
         if ($exactTier) {
             return (int) $exactTier;
         }
 
-        if (preg_match('/(\d+)$/', $productId, $matches) === 1) {
-            $number = $matches[1];
+        if (preg_match('/(?:^|_)(\d+)(?:_|$)/', $productId, $matches) === 1) {
+            return $this->resolveTierIdFromNumber((int) $matches[1], $fallbackTierId);
+        }
 
-            $tierByName = Tier::query()->where('name', $number)->value('id');
-            if ($tierByName) {
-                return (int) $tierByName;
-            }
+        return $fallbackTierId ?? 1;
+    }
 
-            $tierById = Tier::query()->find($number);
-            if ($tierById) {
-                return (int) $tierById->id;
-            }
+    private function resolveTierIdFromNumber(int $number, ?int $fallbackTierId): int
+    {
+        $tierByName = Tier::query()->where('name', (string) $number)->value('id');
+        if ($tierByName) {
+            return (int) $tierByName;
+        }
+
+        $tierById = Tier::query()->find($number);
+        if ($tierById) {
+            return (int) $tierById->id;
         }
 
         return $fallbackTierId ?? 1;
