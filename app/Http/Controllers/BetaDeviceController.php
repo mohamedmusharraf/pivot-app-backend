@@ -5,10 +5,16 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Users;
 use App\Models\DeviceFingerprint;
+use App\Http\Resources\UserResource;
+use App\Services\AuthService;
 use Illuminate\Support\Facades\Hash;
 
 class BetaDeviceController extends Controller
 {
+    public function __construct(
+        protected AuthService $authService
+    ) {}
+
     public function checkDevice(Request $request)
     {
         $request->validate([
@@ -51,28 +57,22 @@ class BetaDeviceController extends Controller
                 'platform' => $request->platform,
                 'ip_address' => $request->ip(),
             ]);
-
-            return response()->json([
-                'success' => true,
-                'message' => 'User login successful',
-                'user' => $user
-            ]);
-        }
-
-        // Same device
-        if ($device->device_id === $request->device_id) {
-
-            return response()->json([
-                'success' => true,
-                'message' => 'User login successful',
-                'user' => $user
-            ]);
         }
 
         // Different device
+        if ($device && $device->device_id !== $request->device_id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'This account is already linked to another device'
+            ], 403);
+        }
+
+        $result = $this->authService->login($request->only('email', 'password'));
+        $result['user']->load('subscription.tier');
+
         return response()->json([
-            'success' => false,
-            'message' => 'This account is already linked to another device'
-        ], 403);
+            'token' => $result['token'],
+            'user'  => new UserResource($result['user']),
+        ]);
     }
 }
