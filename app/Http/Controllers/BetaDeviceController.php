@@ -44,8 +44,18 @@ class BetaDeviceController extends Controller
             ], 401);
         }
 
-        // Check saved device
+        // Check saved device for this user
         $device = DeviceFingerprint::where('user_id', $user->id)->first();
+
+        // Check if this device ID is already linked to a different user
+        $existingDevice = DeviceFingerprint::where('device_id', $request->device_id)->first();
+
+        if ($existingDevice && $existingDevice->user_id !== $user->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'This device is already linked to another account'
+            ], 409);
+        }
 
         // First login
         if (!$device) {
@@ -59,7 +69,7 @@ class BetaDeviceController extends Controller
             ]);
         }
 
-        // Different device
+        // Different device for same account
         if ($device && $device->device_id !== $request->device_id) {
             return response()->json([
                 'success' => false,
