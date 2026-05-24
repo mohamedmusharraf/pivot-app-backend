@@ -236,25 +236,33 @@ class TeamInviteController extends Controller
         ]);
     }
 
-    public function removeConnection(Request $request, TeamConnection $connection): JsonResponse
+    public function removeConnection(Request $request, int $connection): JsonResponse
     {
         $user = $request->user();
+        $teamConnection = TeamConnection::find($connection);
 
-        if ($connection->user_id !== $user->id) {
+        if (! $teamConnection) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Team member not found'
+            ], 404);
+        }
+
+        if ($teamConnection->user_id !== $user->id) {
             return response()->json([
                 'success' => false,
                 'message' => 'You are not authorized to remove this team member'
             ], 403);
         }
 
-        DB::transaction(function () use ($connection, $user) {
+        DB::transaction(function () use ($teamConnection, $user) {
             TeamConnection::query()
-                ->where(function ($query) use ($user, $connection) {
+                ->where(function ($query) use ($user, $teamConnection) {
                     $query->where('user_id', $user->id)
-                        ->where('connected_user_id', $connection->connected_user_id);
+                        ->where('connected_user_id', $teamConnection->connected_user_id);
                 })
-                ->orWhere(function ($query) use ($user, $connection) {
-                    $query->where('user_id', $connection->connected_user_id)
+                ->orWhere(function ($query) use ($user, $teamConnection) {
+                    $query->where('user_id', $teamConnection->connected_user_id)
                         ->where('connected_user_id', $user->id);
                 })
                 ->delete();
