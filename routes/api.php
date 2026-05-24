@@ -68,5 +68,12 @@ Route::prefix('v1')->group(function () {
         Route::post('/invites/accept', [TeamInviteController::class, 'accept']);
         Route::post('/invites/reject', [TeamInviteController::class, 'reject']);
         Route::get('/teams/connections', [TeamInviteController::class, 'connectedUsers']);
+        Route::delete('/connections/remove/{connection}', [TeamInviteController::class, 'removeConnection'])
+            ->missing(function () {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Team member not found',
+                ], 404);
+            });
     });
 });
