@@ -108,7 +108,7 @@ class RevenueCatWebhookController extends Controller
             $payload['app_user_id'] ?? null,
             $payload['original_app_user_id'] ?? null,
             ...Arr::wrap($payload['aliases'] ?? []),
-        ], static fn ($value) => is_string($value) && $value !== '');
+        ], static fn($value) => is_string($value) && $value !== '');
 
         foreach ($candidateIds as $candidateId) {
             $user = $this->resolveUserFromCandidateId($candidateId);
@@ -227,6 +227,16 @@ class RevenueCatWebhookController extends Controller
         $isExpired = $effectiveExpiresAt ? $effectiveExpiresAt->isPast() : false;
 
         if ($eventType === self::EVENT_EXPIRATION) {
+            // If RevenueCat sends an EXPIRATION event but the provided expiration
+            // timestamp is still in the future, keep the incoming tier as active
+            // until the expiration time actually passes. Otherwise downgrade to free.
+            if ($incomingExpiresAt && $incomingExpiresAt->isFuture()) {
+                return [
+                    'tier_id' => $incomingTierId,
+                    'active' => true,
+                ];
+            }
+
             return [
                 'tier_id' => $freeTierId,
                 'active' => false,
