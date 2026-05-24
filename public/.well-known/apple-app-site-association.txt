@@ -1,0 +1,11 @@
+{
+    "applinks": {
+        "apps": [],
+        "details": [
+            {
+                "appID": "WLVZJ946S9.com.pivotltr.pivot",
+                "paths": ["/invite*"]
+            }
+        ]
+    }
+}

@@ -11,7 +11,7 @@
             // iOS Detection (iPhone, iPad, iPod)
             if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
                 // Replace with your actual Apple App Store Link
-                window.location.replace("https://apps.apple.com/app/idYOUR_APPLE_ID");
+                window.location.replace("https://apps.apple.com/app/6760004980");
                 return;
             }
 
