@@ -19,6 +19,10 @@ class RevenueCatWebhookController extends Controller
     private const EVENT_PRODUCT_CHANGE = 'PRODUCT_CHANGE';
     private const EVENT_BILLING_ISSUE = 'BILLING_ISSUE';
     private const PRODUCT_TIER_MAP = [
+        'tier_2' => 2,
+        'tier_3' => 3,
+        'tier_2_android' => 2,
+        'tier_3_android' => 3,
         'tier_2_ios' => 2,
         'tier_3_ios' => 3,
     ];
@@ -43,9 +47,11 @@ class RevenueCatWebhookController extends Controller
         $subscription = Subscription::query()->firstWhere('user_id', $user->id);
         $eventType = $payload['type'] ?? null;
         $productId = $payload['product_id'] ?? null;
+        $entitlementId = $this->resolvePrimaryEntitlementId($payload['entitlement_ids'] ?? null);
         $incomingActive = $request->boolean('active');
 
-        $incomingTierId = $this->resolveTierId($productId, $subscription?->tier_id);
+        $tierIdentifier = $productId ?: $entitlementId;
+        $incomingTierId = $this->resolveTierId($tierIdentifier, $subscription?->tier_id);
         $freeTierId = $this->resolveFreeTierId($subscription?->tier_id ?? 1);
         $purchasedAt = $this->fromMilliseconds($payload['purchased_at_ms'] ?? null);
         $expiresAt = $this->fromMilliseconds($payload['expiration_at_ms'] ?? null);
@@ -66,7 +72,7 @@ class RevenueCatWebhookController extends Controller
                 'environment' => $payload['environment'] ?? null,
                 'active' => $eventState['active'],
                 'store' => $payload['store'] ?? null,
-                'product_id' => $productId,
+                'product_id' => $productId ?? $entitlementId,
                 'revenuecat_user_id' => $payload['app_user_id'],
                 'started_at' => $purchasedAt ?? $subscription?->started_at,
                 'expires_at' => $expiresAt ?? $subscription?->expires_at,
@@ -153,6 +159,21 @@ class RevenueCatWebhookController extends Controller
         }
 
         return $fallbackTierId ?? 1;
+    }
+
+    private function resolvePrimaryEntitlementId(mixed $entitlementIds): ?string
+    {
+        if (! is_array($entitlementIds) || $entitlementIds === []) {
+            return null;
+        }
+
+        foreach ($entitlementIds as $entitlementId) {
+            if (is_string($entitlementId) && $entitlementId !== '') {
+                return $entitlementId;
+            }
+        }
+
+        return null;
     }
 
     private function resolveTierIdFromNumber(int $number, ?int $fallbackTierId): int

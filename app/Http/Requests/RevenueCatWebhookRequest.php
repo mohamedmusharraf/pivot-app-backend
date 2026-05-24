@@ -21,6 +21,13 @@ class RevenueCatWebhookRequest extends FormRequest
         'tier_3_ios',
     ];
 
+    private const SUPPORTED_ANDROID_TIER_PRODUCTS = [
+        'tier_2',
+        'tier_3',
+        'tier_2_android',
+        'tier_3_android',
+    ];
+
     protected function prepareForValidation(): void
     {
         $payload = $this->input('event');
@@ -57,8 +64,16 @@ class RevenueCatWebhookRequest extends FormRequest
                         && ! in_array($value, self::SUPPORTED_IOS_TIER_PRODUCTS, true)) {
                         $fail("The {$attribute} is not a supported iOS tier product.");
                     }
+
+                    // Validate known Android tier product ids used by RevenueCat.
+                    if ((str_ends_with($value, '_android') || preg_match('/^tier_\d+$/', $value) === 1)
+                        && ! in_array($value, self::SUPPORTED_ANDROID_TIER_PRODUCTS, true)) {
+                        $fail("The {$attribute} is not a supported Android tier product.");
+                    }
                 },
             ],
+            'entitlement_ids' => ['nullable', 'array'],
+            'entitlement_ids.*' => ['string', 'max:255'],
             'type' => ['nullable', Rule::in(self::EVENT_TYPES)],
             'environment' => ['nullable', 'string', 'max:50'],
             'active' => ['nullable', 'boolean'],
