@@ -39,7 +39,6 @@ Route::prefix('v1')->group(function () {
 Route::prefix('v1')->group(function () {
 
     Route::get('/invites/token/{token}', [TeamInviteController::class, 'resolveByToken']);
-    // Route::post('/invites/code', [TeamInviteController::class, 'resolveByCode']);
     Route::get('/teams/invites/{token}/preview',[TeamInviteController::class, 'preview']);
 
     Route::middleware('auth:sanctum')->group(function () {

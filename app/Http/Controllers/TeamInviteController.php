@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\NewTeamConnectionAdded;
 use App\Http\Controllers\Controller;
 use App\Models\Invitation;
 use App\Models\TeamConnection;
+use App\Models\Users;
 use App\Services\InviteService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -89,25 +91,12 @@ class TeamInviteController extends Controller
             ], 400);
         }
 
-        DB::transaction(function () use ($invitation, $user) {
-            TeamConnection::firstOrCreate([
-                'user_id' => $invitation->inviter_id,
-                'connected_user_id' => $user->id
-            ]);
-
-            TeamConnection::firstOrCreate([
-                'user_id' => $user->id,
-                'connected_user_id' => $invitation->inviter_id
-            ]);
-
-            $invitation->update([
-                'status' => Invitation::STATUS_ACCEPTED
-            ]);
-        });
+        $connection = $this->acceptInvitation($invitation, $user);
 
         return response()->json([
             'success' => true,
-            'message' => 'Joined successfully'
+            'message' => 'Joined successfully',
+            'connection' => $connection,
         ]);
     }
 
@@ -155,25 +144,12 @@ class TeamInviteController extends Controller
             ], 400);
         }
 
-        DB::transaction(function () use ($invitation, $user) {
-            TeamConnection::firstOrCreate([
-                'user_id' => $invitation->inviter_id,
-                'connected_user_id' => $user->id
-            ]);
-
-            TeamConnection::firstOrCreate([
-                'user_id' => $user->id,
-                'connected_user_id' => $invitation->inviter_id
-            ]);
-
-            $invitation->update([
-                'status' => Invitation::STATUS_ACCEPTED
-            ]);
-        });
+        $connection = $this->acceptInvitation($invitation, $user);
 
         return response()->json([
             'success' => true,
-            'message' => 'Joined successfully'
+            'message' => 'Joined successfully',
+            'connection' => $connection,
         ]);
     }
 
@@ -343,5 +319,47 @@ class TeamInviteController extends Controller
     public function preview(string $token): JsonResponse
     {
         return $this->resolveByToken($token);
+    }
+
+    private function acceptInvitation(Invitation $invitation, Users $user): array
+    {
+        DB::transaction(function () use ($invitation, $user) {
+            TeamConnection::firstOrCreate([
+                'user_id' => $invitation->inviter_id,
+                'connected_user_id' => $user->id,
+            ]);
+
+            TeamConnection::firstOrCreate([
+                'user_id' => $user->id,
+                'connected_user_id' => $invitation->inviter_id,
+            ]);
+
+            $invitation->update([
+                'status' => Invitation::STATUS_ACCEPTED,
+            ]);
+        });
+
+        $invitation->loadMissing('inviter');
+
+        $connection = [
+            'invite_id' => $invitation->id,
+            'inviter' => [
+                'id' => $invitation->inviter->id,
+                'name' => $invitation->inviter->name,
+                'avatar' => $invitation->inviter->avatar ?? null,
+            ],
+            'connected_user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'avatar' => $user->avatar ?? null,
+            ],
+            'team_member_count' => TeamConnection::where('user_id', $invitation->inviter_id)->count() + 1,
+            'status' => Invitation::STATUS_ACCEPTED,
+            'accepted_at' => now()->toIso8601String(),
+        ];
+
+        event(new NewTeamConnectionAdded($connection));
+
+        return $connection;
     }
 }
