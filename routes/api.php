@@ -39,7 +39,7 @@ Route::prefix('v1')->group(function () {
 Route::prefix('v1')->group(function () {
 
     Route::get('/invites/token/{token}', [TeamInviteController::class, 'resolveByToken']);
-    Route::post('/invites/code', [TeamInviteController::class, 'resolveByCode']);
+    // Route::post('/invites/code', [TeamInviteController::class, 'resolveByCode']);
     Route::get('/teams/invites/{token}/preview',[TeamInviteController::class, 'preview']);
 
     Route::middleware('auth:sanctum')->group(function () {
@@ -65,6 +65,7 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('countries', CountriesController::class)->only(['index']);
 
         Route::post('/invites/generate', [TeamInviteController::class, 'generate']);
+        Route::post('/invites/code', [TeamInviteController::class, 'joinByCode']);
         Route::post('/invites/accept', [TeamInviteController::class, 'accept']);
         Route::post('/invites/reject', [TeamInviteController::class, 'reject']);
         Route::get('/teams/connections', [TeamInviteController::class, 'connectedUsers']);

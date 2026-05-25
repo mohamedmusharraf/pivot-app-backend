@@ -66,6 +66,51 @@ class TeamInviteController extends Controller
         return $this->buildPreview($invitation);
     }
 
+    public function joinByCode(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'code' => ['required', 'string', 'size:6', 'regex:/^[A-Za-z0-9]{6}$/'],
+        ]);
+
+        $user = $request->user();
+        $invitation = $this->inviteService->resolvePendingInviteByCode($data['code']);
+
+        if (! $invitation) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid or expired invitation'
+            ], 404);
+        }
+
+        if ($invitation->inviter_id == $user->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You cannot accept your own invite'
+            ], 400);
+        }
+
+        DB::transaction(function () use ($invitation, $user) {
+            TeamConnection::firstOrCreate([
+                'user_id' => $invitation->inviter_id,
+                'connected_user_id' => $user->id
+            ]);
+
+            TeamConnection::firstOrCreate([
+                'user_id' => $user->id,
+                'connected_user_id' => $invitation->inviter_id
+            ]);
+
+            $invitation->update([
+                'status' => Invitation::STATUS_ACCEPTED
+            ]);
+        });
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Joined successfully'
+        ]);
+    }
+
     public function accept(Request $request): JsonResponse
     {
         $data = $request->validate([
