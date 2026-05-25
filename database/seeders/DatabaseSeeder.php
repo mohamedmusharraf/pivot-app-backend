@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
             ActivitiesSeeder::class,
             // HobbiesSeeder::class,
             CountriesTableSeeder::class,
+            BetaTestersSeeder::class,
         ]);
     }
 }
