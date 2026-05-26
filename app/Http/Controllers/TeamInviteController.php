@@ -21,8 +21,8 @@ class TeamInviteController extends Controller
 
     public function generate(Request $request): JsonResponse
     {
-        $user = $request->user();
-        $result = $this->inviteService->createInvite($user);
+        $users = $request->user();
+        $result = $this->inviteService->createInvite($users);
         $invitation = $result['invite'];
         $token = $result['token'];
 
