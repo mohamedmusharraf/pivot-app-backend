@@ -1,0 +1,13 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.pivotirl.mobile",
+      "sha256_cert_fingerprints": [
+        "61:F3:21:55:0B:56:F6:96:74:45:2F:C4:00:60:64:10:2B:A1:43:0E:59:AE:E9:AD:A9:AD:E4:8C:82:BF:ED:EE",
+        "YOUR_GOOGLE_PLAY_INTERNAL_SHA256_HERE"
+      ]
+    }
+  }
+]

@@ -109,12 +109,14 @@ class ProfileRequest extends FormRequest
         return [
             'name' => 'sometimes|string|max:255',
             'user_name' => 'sometimes|string|max:255',
-            'email' => [
-                'sometimes',
-                'email',
-                'max:255',
-                Rule::unique('users', 'email')->ignore($ignoreUserId),
-            ],
+             'email' => [
+            'required',
+            'string',
+            'lowercase',
+            'email:rfc,dns',
+            'max:255',
+            'unique:users,email',
+        ],
             'user_id' => ($isCreate ? 'required' : 'sometimes') . '|integer|exists:users,id',
             'country_id' => ($isCreate ? 'required_without:country_name' : 'sometimes') . '|integer|exists:countries,id',
             'country_name' => ($isCreate ? 'required_without:country_id' : 'sometimes') . '|string|exists:countries,name',

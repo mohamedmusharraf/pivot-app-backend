@@ -11,6 +11,7 @@ use App\Services\InviteService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\DTO\TeamConnectionDTO;
 
 class TeamInviteController extends Controller
 {
@@ -321,9 +322,10 @@ class TeamInviteController extends Controller
         return $this->resolveByToken($token);
     }
 
-    private function acceptInvitation(Invitation $invitation, Users $user): array
+    private function acceptInvitation(Invitation $invitation, Users $user): TeamConnectionDTO
     {
         DB::transaction(function () use ($invitation, $user) {
+
             TeamConnection::firstOrCreate([
                 'user_id' => $invitation->inviter_id,
                 'connected_user_id' => $user->id,
@@ -339,27 +341,25 @@ class TeamInviteController extends Controller
             ]);
         });
 
-        $invitation->loadMissing('inviter');
+        $invitation->load('inviter');
 
-        $connection = [
-            'invite_id' => $invitation->id,
-            'inviter' => [
-                'id' => $invitation->inviter->id,
-                'name' => $invitation->inviter->name,
-                'avatar' => $invitation->inviter->avatar ?? null,
-            ],
-            'connected_user' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'avatar' => $user->avatar ?? null,
-            ],
-            'team_member_count' => TeamConnection::where('user_id', $invitation->inviter_id)->count() + 1,
-            'status' => Invitation::STATUS_ACCEPTED,
-            'accepted_at' => now()->toIso8601String(),
-        ];
+        $dto = new TeamConnectionDTO(
+            inviteId: $invitation->id,
+            inviterId: $invitation->inviter->id,
+            inviterName: $invitation->inviter->name,
+            inviterAvatar: $invitation->inviter->avatar,
 
-        event(new NewTeamConnectionAdded($connection));
+            connectedUserId: $user->id,
+            connectedUserName: $user->name,
+            connectedUserAvatar: $user->avatar,
 
-        return $connection;
+            teamMemberCount: TeamConnection::where('user_id', $invitation->inviter_id)->count() + 1,
+            status: Invitation::STATUS_ACCEPTED,
+            acceptedAt: now()->toIso8601String(),
+        );
+
+        event(new NewTeamConnectionAdded($dto));
+
+        return $dto;
     }
 }

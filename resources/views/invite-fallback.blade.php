@@ -18,7 +18,7 @@
             // Android Detection
             if (/android/i.test(userAgent)) {
                 // Replace with your actual Google Play Store Link
-                window.location.replace("https://play.google.com/store/apps/details?id=com.yourcompany.pivot");
+                window.location.replace("https://play.google.com/store/apps/details?id=com.pivotirl.mobile");
                 return;
             }
 

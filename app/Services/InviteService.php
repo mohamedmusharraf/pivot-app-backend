@@ -3,12 +3,13 @@
 namespace App\Services;
 
 use App\Models\Invitation;
-use App\Models\Users;
+use App\Models\User;
 use Illuminate\Support\Str;
+use App\DTO\TeamConnectionDTO;
 
 class InviteService
 {
-    public function createInvite(Users $inviter): array
+    public function createInvite(User $inviter): array
     {
         $rawToken = $this->generateUniqueRawToken();
 
