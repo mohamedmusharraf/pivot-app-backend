@@ -85,4 +85,33 @@ class BetaDeviceController extends Controller
             'user'  => new UserResource($result['user']),
         ]);
     }
+
+    public function deleteAll()
+    {
+        DeviceFingerprint::truncate();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'All devices have been deleted successfully.'
+        ]);
+    }
+
+    public function deleteById($id)
+    {
+        $device = DeviceFingerprint::find($id);
+        
+        if (!$device) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Device not found'
+            ], 404);
+        }
+
+        $device->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Device deleted successfully.'
+        ]);
+    }
 }
