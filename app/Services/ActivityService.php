@@ -44,4 +44,9 @@ class ActivityService
     {
         return $this->repository->groupActivities();
     }
+
+    public function userTierActivities($user)
+    {
+        return $this->repository->userTierActivities($user);
+    }
 }

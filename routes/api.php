@@ -54,6 +54,7 @@ Route::prefix('v1')->group(function () {
         // Activity Management Routes
         Route::apiResource('activities', ActivityController::class);
         Route::get('group-activities', [ActivityController::class, 'groupActivities']);
+        Route::get('user-tier-activities', [ActivityController::class, 'userTierActivities']);
         // User Hobby Management Routes
         Route::apiResource('user/hobbies', UserHobbyController::class);
 

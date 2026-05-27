@@ -138,6 +138,31 @@ class ActivityRepository implements ActivityRepositoryInterface
         return $activities;
     }
 
+    public function userTierActivities($user, int $perPage = 20)
+    {
+        $query = Activity::query()->with('hobby');
+
+        $subscriptionTierId = 1;
+
+        if ($user) {
+            $user->loadMissing('subscription');
+            $subscriptionTierId = (int) ($user->subscription->tier_id ?? 1);
+        }
+
+        $allowedTiers = [1];
+        if ($subscriptionTierId === 2) {
+            $allowedTiers = [1, 2];
+        } elseif ($subscriptionTierId >= 3) {
+            $allowedTiers = [1, 2, 3];
+        }
+
+        $query->whereIn('tier', $allowedTiers);
+
+        $activities = $query->paginate($perPage)->getCollection();
+
+        return $activities;
+    }
+
     public function create(array $data): Activity
     {
         return Activity::create($data);

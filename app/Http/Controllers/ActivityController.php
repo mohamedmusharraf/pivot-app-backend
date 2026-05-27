@@ -74,4 +74,15 @@ class ActivityController extends Controller
 
         return ActivityResource::collection($activities);
     }
+
+    public function userTierActivities(\Illuminate\Http\Request $request)
+    {
+        $user = $request->user();
+        
+        $activities = $this->activityService->userTierActivities($user);
+
+        return response()->json([
+            ActivityResource::collection($activities)
+        ]);
+    }
 }
