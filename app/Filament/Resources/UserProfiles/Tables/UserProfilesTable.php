@@ -26,8 +26,9 @@ class UserProfilesTable
                     ->sortable(),
                 TextColumn::make('gender')
                     ->searchable(),
-                TextColumn::make('date_of_birth')
-                    ->searchable(),
+                TextColumn::make('birth_year')
+                    ->numeric()
+                    ->sortable(),
                 TextColumn::make('weekly_goal_minutes')
                     ->label('Weekly Goal (Hours)')
                     ->formatStateUsing(fn($state) => $state ? (int) ($state / 60) . ' hours' : '-')

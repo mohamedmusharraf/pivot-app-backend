@@ -35,13 +35,7 @@ class ProfileRequest extends FormRequest
             ]);
         }
 
-        if ($this->has('date_of_birth') && preg_match('/^\d{2}\.\d{2}\.\d{4}$/', $this->input('date_of_birth'))) {
-            $date = \DateTime::createFromFormat('d.m.Y', $this->input('date_of_birth'));
 
-            if ($date !== false) {
-                $this->merge(['date_of_birth' => $date->format('Y-m-d')]);
-            }
-        }
 
         if ($this->has('category') && ! $this->has('hobby_ids')) {
             $category = $this->input('category');
@@ -110,7 +104,6 @@ class ProfileRequest extends FormRequest
             'name' => 'sometimes|string|max:255',
             'user_name' => 'sometimes|string|max:255',
              'email' => [
-            'required',
             'string',
             'lowercase',
             'email:rfc,dns',
@@ -121,7 +114,7 @@ class ProfileRequest extends FormRequest
             'country_id' => ($isCreate ? 'required_without:country_name' : 'sometimes') . '|integer|exists:countries,id',
             'country_name' => ($isCreate ? 'required_without:country_id' : 'sometimes') . '|string|exists:countries,name',
             'gender' => ($isCreate ? 'required' : 'sometimes') . '|in:male,female,other,prefer not to say',
-            'date_of_birth' => ($isCreate ? 'required' : 'sometimes') . '|date|before:today',
+            'birth_year' => ($isCreate ? 'required' : 'sometimes') . '|integer|min:1900|max:' . date('Y'),
             'set_your_goal' => ($isCreate ? 'required' : 'sometimes') . '|integer|min:1|max:168',
             'weekly_goal_minutes' => 'sometimes|integer|min:60|max:10080',
             'category' => 'sometimes|array',
@@ -181,9 +174,10 @@ class ProfileRequest extends FormRequest
             'country_name.required_without' => 'Country name is required when country ID is not provided.',
             'country_name.exists' => 'Selected country name is invalid.',
             'gender.required' => 'Gender is required.',
-            'date_of_birth.required' => 'Date of birth is required.',
-            'date_of_birth.date' => 'Date of birth must be a valid date.',
-            'date_of_birth.before' => 'Date of birth must be a date before today.',
+            'birth_year.required' => 'Birth year is required.',
+            'birth_year.integer' => 'Birth year must be an integer.',
+            'birth_year.min' => 'Birth year must be at least 1900.',
+            'birth_year.max' => 'Birth year cannot be in the future.',
             'set_your_goal.required' => 'Set your goal is required.',
             'set_your_goal.integer' => 'Set your goal must be an integer.',
             'set_your_goal.min' => 'Set your goal must be at least 1 hour.',

@@ -19,8 +19,8 @@ class UserProfileInfolist
                     ->placeholder('-'),
                 TextEntry::make('gender')
                     ->placeholder('-'),
-                TextEntry::make('date_of_birth')
-                    ->placeholder('Date of Birth'),
+                TextEntry::make('birth_year')
+                    ->placeholder('Birth Year'),
                 TextEntry::make('weekly_goal_minutes')
                     ->label('Weekly Goal (Hours)')
                     ->formatStateUsing(fn($state) => $state ? (int) ($state / 60) . ' hours' : '-'),

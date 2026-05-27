@@ -18,7 +18,7 @@ class UserProfile extends Model
         'user_id',
         'country_id',
         'gender',
-        'date_of_birth',
+        'birth_year',
         'set_your_goal',
         'weekly_goal_minutes',
         'onboarding_completed',

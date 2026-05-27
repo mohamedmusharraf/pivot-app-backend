@@ -14,10 +14,10 @@ class ActivityRepository implements ActivityRepositoryInterface
         $query = Activity::query()->with('hobby');
 
 
-        if ($user && $user->profile && $user->profile->date_of_birth) {
+        if ($user && $user->profile && $user->profile->birth_year) {
 
-            $age = Carbon::parse($user->profile->date_of_birth)->age;
-
+            $age = Carbon::now()->year - $user->profile->birth_year;
+            
             $query->where(function ($q) use ($age) {
                 $q->where('min_age', '<=', $age)
                     ->where(function ($q2) use ($age) {

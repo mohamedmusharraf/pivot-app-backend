@@ -29,11 +29,16 @@ class ProfileController extends Controller
         $profile = $this->profileService->store($validated);
 
         if (! empty($validated['hobby_ids'])) {
-            $this->userHobbyService->selectHobbies(
-                $request->user(),
-                $validated['hobby_ids']
-            );
+            $profile->loadMissing('user');
+            if ($profile->user) {
+                $this->userHobbyService->selectHobbies(
+                    $profile->user,
+                    $validated['hobby_ids']
+                );
+            }
         }
+
+        $profile->load('hobbies');
 
         return (new UserProfileResource($profile))
             ->response()

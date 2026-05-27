@@ -243,7 +243,7 @@ class TeamInviteController extends Controller
                         'status' => $connectedUser->status,
                         'country' => $connectedUser->profile?->country?->name,
                         'gender' => $connectedUser->profile?->gender,
-                        'date_of_birth' => $connectedUser->profile?->date_of_birth,
+                        'birth_year' => $connectedUser->profile?->birth_year,
                         'onboarding_completed' => $connectedUser->profile?->onboarding_completed,
                     ],
                 ];

@@ -40,8 +40,10 @@ class UserProfileForm
                         'other' => 'Other',
                         'prefer not to say' => 'Prefer not to say'
                     ]),
-                DatePicker::make('date_of_birth'),
-
+                TextInput::make('birth_year')
+                    ->numeric()
+                    ->minValue(1900)
+                    ->maxValue(date('Y')),
                 TextInput::make('weekly_goal_minutes')
                     ->label('Weekly Goal (Hours)')
                     ->numeric()
