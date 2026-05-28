@@ -114,4 +114,14 @@ class BetaDeviceController extends Controller
             'message' => 'Device deleted successfully.'
         ]);
     }
+
+    public function getAll()
+    {
+        $devices = DeviceFingerprint::all();
+
+        return response()->json([
+            'success' => true,
+            'data' => $devices
+        ]);
+    }
 }

@@ -25,6 +25,7 @@ Route::prefix('v1')->group(function () {
 
     // Beta testing
     Route::post('/beta-login', [BetaDeviceController::class, 'checkDevice']);
+    Route::get('/devices', [BetaDeviceController::class, 'getAll']);
     Route::delete('/devices', [BetaDeviceController::class, 'deleteAll']);
     Route::delete('/devices/{id}', [BetaDeviceController::class, 'deleteById']);
 
