@@ -10,6 +10,8 @@ use App\Services\AuthService;
 use Illuminate\Http\Request;
 use App\Http\Requests\ForgotPasswordRequest;
 use App\Http\Requests\ResetPasswordRequest;
+use App\Models\DeviceFingerprint;
+use App\Models\Subscription;
 
 class AuthController extends Controller
 {
@@ -81,5 +83,34 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'Password reset successful'
         ]);
+    }
+
+    public function deleteAccount(Request $request)
+    {
+        $user = $request->user();
+
+        if ($user) {
+            if ($user->profile) {
+                $user->profile()->delete();
+            }
+            $user->hobbies()->detach();
+            
+            DeviceFingerprint::where('user_id', $user->id)->delete();
+            
+            Subscription::where('user_id', $user->id)->delete();
+
+            $user->tokens()->delete();
+            $user->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'User account deleted successfully'
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'User not found'
+        ], 404);
     }
 }
