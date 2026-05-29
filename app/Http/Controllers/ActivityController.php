@@ -85,4 +85,26 @@ class ActivityController extends Controller
             ActivityResource::collection($activities)
         ]);
     }
+
+    public function userActivitiesFiltered(\Illuminate\Http\Request $request)
+    {
+        $user = $request->user();
+        
+        $activities = $this->activityService->getActivitiesPerCategoryAndTier($user, true);
+
+        return response()->json([
+            ActivityResource::collection($activities)
+        ]);
+    }
+
+    public function userActivitiesAll(\Illuminate\Http\Request $request)
+    {
+        $user = $request->user();
+        
+        $activities = $this->activityService->getActivitiesPerCategoryAndTier($user, false);
+
+        return response()->json([
+            ActivityResource::collection($activities)
+        ]);
+    }
 }

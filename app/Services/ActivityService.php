@@ -49,4 +49,9 @@ class ActivityService
     {
         return $this->repository->userTierActivities($user);
     }
+
+    public function getActivitiesPerCategoryAndTier($user, bool $excludeMicroMovement = true)
+    {
+        return $this->repository->getActivitiesPerCategoryAndTier($user, $excludeMicroMovement);
+    }
 }

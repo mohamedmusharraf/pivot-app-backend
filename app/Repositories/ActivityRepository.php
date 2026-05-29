@@ -163,6 +163,51 @@ class ActivityRepository implements ActivityRepositoryInterface
         return $activities;
     }
 
+    public function getActivitiesPerCategoryAndTier($user, bool $excludeMicroMovement = true)
+    {
+        $user->loadMissing(['subscription', 'hobbies']);
+        $subscriptionTierId = (int) ($user->subscription->tier_id ?? 1);
+
+        $allowedTiers = [1];
+        if ($subscriptionTierId === 2) {
+            $allowedTiers = [1, 2];
+        } elseif ($subscriptionTierId >= 3) {
+            $allowedTiers = [1, 2, 3];
+        }
+
+        $hobbies = $user->hobbies;
+
+        if ($excludeMicroMovement) {
+            $hobbies = $hobbies->filter(function ($hobby) {
+                return strtolower(trim($hobby->name)) !== 'micro-movement';
+            });
+        }
+
+        $hobbyIds = $hobbies->pluck('id')->toArray();
+
+        $resultActivities = collect();
+
+        if (empty($hobbyIds)) {
+            return $resultActivities;
+        }
+
+        foreach ($allowedTiers as $tier) {
+            foreach ($hobbyIds as $hobbyId) {
+                $activity = Activity::with('hobby')
+                    ->where('tier', $tier)
+                    ->where('hobby_id', $hobbyId)
+                    ->inRandomOrder()
+                    ->first();
+
+                if ($activity) {
+                    $resultActivities->push($activity);
+                }
+            }
+        }
+
+        return $resultActivities;
+    }
+
     public function create(array $data): Activity
     {
         return Activity::create($data);
