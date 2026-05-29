@@ -90,7 +90,7 @@ class ActivityController extends Controller
     {
         $user = $request->user();
         
-        $activities = $this->activityService->getActivitiesPerCategoryAndTier($user, true);
+        $activities = $this->activityService->getActivitiesPerCategoryAndTier($user, true, $request->all());
 
         return response()->json([
             ActivityResource::collection($activities)
@@ -101,7 +101,7 @@ class ActivityController extends Controller
     {
         $user = $request->user();
         
-        $activities = $this->activityService->getActivitiesPerCategoryAndTier($user, false);
+        $activities = $this->activityService->getActivitiesPerCategoryAndTier($user, false, $request->all());
 
         return response()->json([
             ActivityResource::collection($activities)

@@ -163,7 +163,7 @@ class ActivityRepository implements ActivityRepositoryInterface
         return $activities;
     }
 
-    public function getActivitiesPerCategoryAndTier($user, bool $excludeMicroMovement = true)
+    public function getActivitiesPerCategoryAndTier($user, bool $excludeMicroMovement = true, array $filters = [])
     {
         $user->loadMissing(['subscription', 'hobbies']);
         $subscriptionTierId = (int) ($user->subscription->tier_id ?? 1);
@@ -193,11 +193,23 @@ class ActivityRepository implements ActivityRepositoryInterface
 
         foreach ($allowedTiers as $tier) {
             foreach ($hobbyIds as $hobbyId) {
-                $activity = Activity::with('hobby')
+                $query = Activity::with('hobby')
                     ->where('tier', $tier)
-                    ->where('hobby_id', $hobbyId)
-                    ->inRandomOrder()
-                    ->first();
+                    ->where('hobby_id', $hobbyId);
+
+                if (!empty($filters['mood_match'])) {
+                    $moods = is_array($filters['mood_match'])
+                        ? $filters['mood_match']
+                        : [$filters['mood_match']];
+
+                    $query->where(function ($q) use ($moods) {
+                        foreach ($moods as $mood) {
+                            $q->orWhereJsonContains('mood_match', $mood);
+                        }
+                    });
+                }
+
+                $activity = $query->inRandomOrder()->first();
 
                 if ($activity) {
                     $resultActivities->push($activity);

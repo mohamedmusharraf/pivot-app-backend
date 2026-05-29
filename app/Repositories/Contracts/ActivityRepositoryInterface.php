@@ -9,7 +9,7 @@ interface ActivityRepositoryInterface
     public function filter(array $filters, $user);
     public function groupActivities();
     public function userTierActivities($user);
-    public function getActivitiesPerCategoryAndTier($user, bool $excludeMicroMovement = true);
+    public function getActivitiesPerCategoryAndTier($user, bool $excludeMicroMovement = true, array $filters = []);
     public function create(array $data);
     public function update(Activity $activity, array $data): Activity;
     public function delete(Activity $activity): void;
