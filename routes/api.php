@@ -51,6 +51,9 @@ Route::prefix('v1')->group(function () {
         Route::get('profile/me', [ProfileController::class, 'me']);
         Route::get('profile/countries', [ProfileController::class, 'countries']);
         Route::patch('profile/activities', [ProfileController::class, 'updateActivities']);
+        Route::get('profile/article-library', [UserDailyArticlesController::class, 'getArticleLibrary']);
+        Route::post('profile/article-library', [UserDailyArticlesController::class, 'addArticleLibrary']);
+        Route::delete('profile/article-library/{id}', [UserDailyArticlesController::class, 'deleteArticleLibrary']);
         Route::apiResource('profile', ProfileController::class);
 
         // Hobby Management Routes
