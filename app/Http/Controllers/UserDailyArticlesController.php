@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Research;
 use App\Models\UserDailyArticle;
+use App\Models\UserArticle;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -53,10 +54,10 @@ class UserDailyArticlesController extends Controller
         $user = $request->user();
 
         // Fetch all articles this user has unlocked over time, sorted by newest first
-        $unlockedArticles = Research::join('user_daily_articles', 'research_articles.id', '=', 'user_daily_articles.article_id')
-            ->where('user_daily_articles.user_id', $user->id)
-            ->orderBy('user_daily_articles.assigned_date', 'desc')
-            ->select('research_articles.*', 'user_daily_articles.assigned_date', 'user_daily_articles.id as user_daily_article_id')
+        $unlockedArticles = Research::join('user_articles', 'research_articles.id', '=', 'user_articles.article_id')
+            ->where('user_articles.user_id', $user->id)
+            ->orderBy('user_articles.created_at', 'desc')
+            ->select('research_articles.*', 'user_articles.created_at', 'user_articles.id as user_article_id')
             ->get();
 
         return response()->json($unlockedArticles);
@@ -69,10 +70,7 @@ class UserDailyArticlesController extends Controller
         ]);
 
         $user = $request->user();
-        $timezone = $request->header('Timezone') ?? config('app.timezone');
-        $today = Carbon::today($timezone)->toDateString();
-
-        $exists = UserDailyArticle::where('user_id', $user->id)
+        $exists = UserArticle::where('user_id', $user->id)
             ->where('article_id', $request->article_id)
             ->first();
 
@@ -80,28 +78,19 @@ class UserDailyArticlesController extends Controller
             return response()->json(['message' => 'Article already in library'], 400);
         }
 
-        $assignedToday = UserDailyArticle::where('user_id', $user->id)
-            ->where('assigned_date', $today)
-            ->first();
-
-        if ($assignedToday) {
-            return response()->json(['message' => 'You can only add one article to your library per day.'], 400);
-        }
-
-        $userDailyArticle = UserDailyArticle::create([
+        $userArticle = UserArticle::create([
             'user_id' => $user->id,
             'article_id' => $request->article_id,
-            'assigned_date' => $today,
         ]);
 
-        return response()->json($userDailyArticle, 201);
+        return response()->json($userArticle, 201);
     }
 
     public function deleteArticleLibrary(Request $request, $id)
     {
         $user = $request->user();
 
-        $deleted = UserDailyArticle::where('user_id', $user->id)
+        $deleted = UserArticle::where('user_id', $user->id)
             ->where('article_id', $id)
             ->delete();
 
