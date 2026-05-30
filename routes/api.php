@@ -12,6 +12,7 @@ use App\Http\Controllers\ResearchController;
 use App\Http\Controllers\CountriesController;
 use App\Http\Controllers\RevenueCatWebhookController;
 use App\Http\Controllers\TeamInviteController;
+use App\Http\Controllers\UserDailyArticlesController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -65,6 +66,7 @@ Route::prefix('v1')->group(function () {
 
         // Research Management Routes
         Route::apiResource('research', ResearchController::class);
+        Route::get('daily-article', [UserDailyArticlesController::class, 'getDailyArticle']);
 
         // Countries Routes
         Route::apiResource('countries', CountriesController::class)->only(['index']);
