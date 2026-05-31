@@ -21,6 +21,8 @@ class RevenueCatWebhookController extends Controller
     private const PRODUCT_TIER_MAP = [
         'tier_2' => 2,
         'tier_3' => 3,
+        'tier_2:tier2' => 2,
+        'tier_3:tier3' => 3,
         'tier_2_android' => 2,
         'tier_3_android' => 3,
         'tier_2_ios' => 2,
