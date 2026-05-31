@@ -76,7 +76,9 @@ class RevenueCatWebhookController extends Controller
                 'environment' => $payload['environment'] ?? null,
                 'active' => $eventState['active'],
                 'store' => $payload['store'] ?? null,
-                'product_id' => $productId ?? $entitlementId,
+                'product_id' => $eventType === self::EVENT_PRODUCT_CHANGE
+                    ? ($newProductId ?? $productId ?? $entitlementId)
+                    : ($productId ?? $entitlementId),
                 'revenuecat_user_id' => $payload['app_user_id'],
                 'started_at' => $purchasedAt ?? $subscription?->started_at,
                 'expires_at' => $expiresAt ?? $subscription?->expires_at,

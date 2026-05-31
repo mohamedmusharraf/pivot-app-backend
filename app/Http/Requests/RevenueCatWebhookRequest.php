@@ -19,6 +19,8 @@ class RevenueCatWebhookRequest extends FormRequest
     private const SUPPORTED_IOS_TIER_PRODUCTS = [
         'tier_2_ios',
         'tier_3_ios',
+        'tier_2:tier2' => 2,
+        'tier_3:tier3' => 3,
     ];
 
     private const SUPPORTED_ANDROID_TIER_PRODUCTS = [
