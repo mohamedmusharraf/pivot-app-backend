@@ -15,6 +15,9 @@ class ResearchTable
     {
         return $table
             ->columns([
+                TextColumn::make('row_number')
+                    ->label('No.')
+                    ->rowIndex(),
                 TextColumn::make('fun_facts')
                     ->label('Fun Facts')
                     ->limit(50)
