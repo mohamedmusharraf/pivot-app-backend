@@ -49,10 +49,12 @@ class RevenueCatWebhookController extends Controller
         $subscription = Subscription::query()->firstWhere('user_id', $user->id);
         $eventType = $payload['type'] ?? null;
         $productId = $payload['product_id'] ?? null;
+        $newProductId = $payload['new_product_id'] ?? null;
         $entitlementId = $this->resolvePrimaryEntitlementId($payload['entitlement_ids'] ?? null);
         $incomingActive = $request->boolean('active');
 
-        $tierIdentifier = $productId ?: $entitlementId;
+        // For PRODUCT_CHANGE events, use the new_product_id to determine the tier
+        $tierIdentifier = ($eventType === self::EVENT_PRODUCT_CHANGE ? $newProductId : $productId) ?: $entitlementId;
         $incomingTierId = $this->resolveTierId($tierIdentifier, $subscription?->tier_id);
         $freeTierId = $this->resolveFreeTierId($subscription?->tier_id ?? 1);
         $purchasedAt = $this->fromMilliseconds($payload['purchased_at_ms'] ?? null);
@@ -229,9 +231,7 @@ class RevenueCatWebhookController extends Controller
         $isExpired = $effectiveExpiresAt ? $effectiveExpiresAt->isPast() : false;
 
         if ($eventType === self::EVENT_EXPIRATION) {
-            // If RevenueCat sends an EXPIRATION event but the provided expiration
-            // timestamp is still in the future, keep the incoming tier as active
-            // until the expiration time actually passes. Otherwise downgrade to free.
+
             if ($incomingExpiresAt && $incomingExpiresAt->isFuture()) {
                 return [
                     'tier_id' => $incomingTierId,
