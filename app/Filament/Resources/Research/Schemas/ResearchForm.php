@@ -77,7 +77,7 @@ class ResearchForm
                         'text/csv',
                         'image/*',
                     ])
-                    ->maxSize(10240),
+                    ->maxSize(512000)
             ]);
     }
 }
