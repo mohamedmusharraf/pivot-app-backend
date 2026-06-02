@@ -14,7 +14,6 @@ class UsersInfolist
                 TextEntry::make('name')
                     ->placeholder('-'),
                 TextEntry::make('email')
-                    ->lowercase()
                     ->label('Email address'),
                 TextEntry::make('provider')
                     ->placeholder('-'),
