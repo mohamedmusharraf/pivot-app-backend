@@ -13,6 +13,7 @@ use App\Http\Controllers\CountriesController;
 use App\Http\Controllers\RevenueCatWebhookController;
 use App\Http\Controllers\TeamInviteController;
 use App\Http\Controllers\UserDailyArticlesController;
+use App\Http\Controllers\UserController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -45,7 +46,9 @@ Route::prefix('v1')->group(function () {
 
     Route::get('/invites/token/{token}', [TeamInviteController::class, 'resolveByToken']);
     Route::get('/teams/invites/{token}/preview',[TeamInviteController::class, 'preview']);
-
+// User Routes
+        Route::apiResource('users', UserController::class)->only(['index', 'show']);
+        
     Route::middleware('auth:sanctum')->group(function () {
         // User Profile Routes 
         Route::get('profile/me', [ProfileController::class, 'me']);
