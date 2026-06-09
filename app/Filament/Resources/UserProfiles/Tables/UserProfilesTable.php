@@ -16,6 +16,9 @@ class UserProfilesTable
     {
         return $table
             ->columns([
+                TextColumn::make('row_number')
+                    ->label('No.')
+                    ->rowIndex(),
                 TextColumn::make('user_id')
                     ->numeric()
                     ->sortable(),

@@ -63,11 +63,25 @@ class InviteService
         return $rawToken;
     }
 
+    private const CODE_CHARACTERS = 'BCDFGHJKLMNPQRSTVWXYZ0123456789';
+
     private function generateUniqueCode(): string
     {
         do {
-            $code = strtoupper(Str::random(6));
+            $code = $this->generateCodeFromAlphabet(self::CODE_CHARACTERS, 6);
         } while (Invitation::where('code', $code)->exists());
+
+        return $code;
+    }
+
+    private function generateCodeFromAlphabet(string $alphabet, int $length): string
+    {
+        $code = '';
+        $maxIndex = strlen($alphabet) - 1;
+
+        for ($i = 0; $i < $length; $i++) {
+            $code .= $alphabet[random_int(0, $maxIndex)];
+        }
 
         return $code;
     }
