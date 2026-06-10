@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Http\Resources\CountryResource;
 use App\Services\CountriesService;
 
 class CountriesController extends Controller
@@ -14,12 +15,12 @@ class CountriesController extends Controller
     public function index()
     {
         $countries = $this->countriesService->list();
-        return response()->json($countries);
+        return CountryResource::collection($countries);
     }
 
     public function details()
     {
         $countries = $this->countriesService->list();
-        return response()->json($countries);
+        return CountryResource::collection($countries);
     }
 }
