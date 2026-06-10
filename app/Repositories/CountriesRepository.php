@@ -11,10 +11,6 @@ class CountriesRepository implements CountriesRepositoryInterface
     public function all(): Collection
     {
         return Country::query()
-            ->select([
-                'id as country_id',
-                'name as country_name',
-            ])
             ->orderBy('name')
             ->get();
     }

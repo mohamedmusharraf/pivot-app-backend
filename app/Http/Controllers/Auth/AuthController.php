@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
@@ -54,7 +55,19 @@ class AuthController extends Controller
 
         return response()->json([
             'user' => new UserResource($user)
-        ]);;
+        ]);
+    }
+
+    public function currentUserCountry(Request $request)
+    {
+        $user = $request->user();
+        $user->loadMissing('profile.country');
+
+        $country = $user->profile?->country;
+
+        return response()->json([
+            'country' => $country,
+        ]);
     }
 
     public function updateStatus(UpdateUserStatusRequest $request)
@@ -94,9 +107,9 @@ class AuthController extends Controller
                 $user->profile()->delete();
             }
             $user->hobbies()->detach();
-            
+
             DeviceFingerprint::where('user_id', $user->id)->delete();
-            
+
             Subscription::where('user_id', $user->id)->delete();
 
             $user->tokens()->delete();

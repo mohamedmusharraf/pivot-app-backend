@@ -16,5 +16,9 @@ class Country extends Model
         'phone_code',
         'timezone',
         'is_active',
+        'police',
+        'ambulance',
+        'fire',
+        'notes',
     ];
 }

@@ -9,9 +9,15 @@ class CountriesController extends Controller
 {
     public function __construct(
         protected CountriesService $countriesService
-    ){}
+    ) {}
 
     public function index()
+    {
+        $countries = $this->countriesService->list();
+        return response()->json($countries);
+    }
+
+    public function details()
     {
         $countries = $this->countriesService->list();
         return response()->json($countries);

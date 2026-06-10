@@ -34,6 +34,7 @@ Route::prefix('v1')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/auth/logout', [AuthController::class, 'logout']);
         Route::get('/user/current-user', [AuthController::class, 'currentUser']);
+        Route::get('/user/country', [AuthController::class, 'currentUserCountry']);
         Route::patch('/user/status', [AuthController::class, 'updateStatus']);
         Route::delete('/user/delete', [AuthController::class, 'deleteAccount']);
 
@@ -45,10 +46,10 @@ Route::prefix('v1')->group(function () {
 Route::prefix('v1')->group(function () {
 
     Route::get('/invites/token/{token}', [TeamInviteController::class, 'resolveByToken']);
-    Route::get('/teams/invites/{token}/preview',[TeamInviteController::class, 'preview']);
-// User Routes
-        Route::apiResource('users', UserController::class)->only(['index', 'show']);
-        
+    Route::get('/teams/invites/{token}/preview', [TeamInviteController::class, 'preview']);
+    // User Routes
+    Route::apiResource('users', UserController::class)->only(['index', 'show']);
+
     Route::middleware('auth:sanctum')->group(function () {
         // User Profile Routes 
         Route::get('profile/me', [ProfileController::class, 'me']);
