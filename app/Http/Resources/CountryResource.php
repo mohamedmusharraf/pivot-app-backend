@@ -11,15 +11,15 @@ class CountryResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'countries' => $this->name,
-            // 'iso_code' => $this->iso_code,
-            // 'default_locale' => $this->default_locale,
-            // 'currency_code' => $this->currency_code,
-            // 'phone_code' => $this->phone_code,
-            // 'timezone' => $this->timezone,
-            // 'is_active' => (bool) $this->is_active,
-            // 'created_at' => optional($this->created_at)->toISOString(),
-            // 'updated_at' => optional($this->updated_at)->toISOString(),
+            'country' => $this->name,
+            'iso_code' => $this->iso_code,
+            'default_locale' => $this->default_locale,
+            'currency_code' => $this->currency_code,
+            'phone_code' => $this->phone_code,
+            'timezone' => $this->timezone,
+            'is_active' => (bool) $this->is_active,
+            'created_at' => optional($this->created_at)->toISOString(),
+            'updated_at' => optional($this->updated_at)->toISOString(),
         ];
     }
 }
