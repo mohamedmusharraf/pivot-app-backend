@@ -34,7 +34,7 @@ Route::prefix('v1')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/auth/logout', [AuthController::class, 'logout']);
         Route::get('/user/current-user', [AuthController::class, 'currentUser']);
-        Route::get('/user/country', [AuthController::class, 'currentUserCountry']);
+        Route::get('/user/emergency', [AuthController::class, 'currentUserCountry']);
         Route::patch('/user/status', [AuthController::class, 'updateStatus']);
         Route::delete('/user/delete', [AuthController::class, 'deleteAccount']);
 
