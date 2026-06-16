@@ -108,11 +108,11 @@
     </div>
 
     {{-- Sticky Bottom Button --}}
-    <div class="p-2 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a1c1e]">
+    <!-- <div class="p-2 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a1c1e]">
         <button class="w-full py-2 text-xs font-semibold bg-gray-100 dark:bg-gray-800 rounded-md">
             Close
         </button>
-    </div>
+    </div> -->
 
 </div>
 

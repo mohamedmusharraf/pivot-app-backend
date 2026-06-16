@@ -6,6 +6,11 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('/view-logs', function () {
+    return view('viewLogs');
+});
+
+
 
 Route::get('/invite', function () {
     return view('invite-fallback');
