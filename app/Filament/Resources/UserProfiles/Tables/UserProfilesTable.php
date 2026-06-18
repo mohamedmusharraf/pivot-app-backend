@@ -22,6 +22,10 @@ class UserProfilesTable
                 TextColumn::make('user_id')
                     ->numeric()
                     ->sortable(),
+                TextColumn::make('user.name')
+                    ->label('Name')
+                    ->searchable()
+                    ->sortable(),
                 TextColumn::make('country.name')
                     ->label('Country')
                     ->placeholder('-')
