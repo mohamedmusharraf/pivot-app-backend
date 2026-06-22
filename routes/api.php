@@ -84,5 +84,7 @@ Route::prefix('v1')->group(function () {
         Route::post('/invites/reject', [TeamInviteController::class, 'reject']);
         Route::get('/teams/connections', [TeamInviteController::class, 'connectedUsers']);
         Route::delete('/connections/remove/{connection}', [TeamInviteController::class, 'removeConnection']);
+
+        Route::post('/invites/link', [TeamInviteController::class, 'generateLink']);
     });
 });

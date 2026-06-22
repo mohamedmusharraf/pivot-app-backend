@@ -19,6 +19,24 @@ class TeamInviteController extends Controller
         protected InviteService $inviteService
     ) {}
 
+    public function generateLink(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $result = $this->inviteService->createInvite($user);
+        $invitation = $result['invite'];
+
+        $inviteUrl = "https://api.pivotirl.com.au/invite";
+        $shareMessage = "Hey! I'm using Pivot app and thought you might like it. Join me here: {$inviteUrl}";
+
+        return response()->json([
+            'success' => true,
+            'invite_id' => $invitation->id,
+            'invite_url' => $inviteUrl,
+            'expires_at' => $invitation->expires_at,
+            'share_message' => $shareMessage,
+        ]);
+    }
+
     public function generate(Request $request): JsonResponse
     {
         $users = $request->user();
