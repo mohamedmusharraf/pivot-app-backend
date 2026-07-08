@@ -14,6 +14,9 @@ use App\Http\Controllers\RevenueCatWebhookController;
 use App\Http\Controllers\TeamInviteController;
 use App\Http\Controllers\UserDailyArticlesController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\AppBlockLogController;
+use App\Http\Controllers\AppUsageLogsController;
+use App\Http\Controllers\ChallengeLogsController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -68,6 +71,7 @@ Route::prefix('v1')->group(function () {
         Route::get('user-tier-activities', [ActivityController::class, 'userTierActivities']);
         Route::get('user-activities', [ActivityController::class, 'userActivitiesFiltered']);
         Route::get('user-activities/all', [ActivityController::class, 'userActivitiesAll']);
+        Route::get('search-activities', [ActivityController::class, 'searchActivities']);
         // User Hobby Management Routes
         Route::apiResource('user/hobbies', UserHobbyController::class);
 
@@ -86,5 +90,18 @@ Route::prefix('v1')->group(function () {
         Route::delete('/connections/remove/{connection}', [TeamInviteController::class, 'removeConnection']);
 
         Route::post('/invites/link', [TeamInviteController::class, 'generateLink']);
+
+        // App Block Log Routes
+        Route::apiResource('app-block-log', AppBlockLogController::class);
+        Route::get('/app-block-log/user/logs', [AppBlockLogController::class, 'userLogs']);
+        Route::get('/app-block-log/user/statistics', [AppBlockLogController::class, 'statistics']);
+
+        // App Usage Log Routes
+        Route::apiResource('app-usage-log', AppUsageLogsController::class);
+        Route::get('/app-usage-log/daily-stats', [AppUsageLogsController::class, 'dailyStats']);
+        Route::get('/app-usage-log/summary', [AppUsageLogsController::class, 'summary']);
+
+        // challenge log routes
+        Route::apiResource('challenge-log', ChallengeLogsController::class);
     });
 });

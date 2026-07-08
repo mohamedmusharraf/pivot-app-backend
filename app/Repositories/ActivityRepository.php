@@ -266,4 +266,66 @@ class ActivityRepository implements ActivityRepositoryInterface
 
         return $shuffled->values();
     }
+
+    public function searchActivities(array $filters, $user = null)
+    {
+        $query = Activity::query()->with('hobby');
+
+        // Text Search
+        if (!empty($filters['activity_title'])) {
+            $search = $filters['activity_title'];
+            $query->where(function ($q) use ($search) {
+                $operator = config('database.default') === 'pgsql' ? 'ilike' : 'like';
+                $q->where('activity_title', $operator, "%{$search}%")
+                  ->orWhere('description', $operator, "%{$search}%");
+            });
+        }
+
+        // Apply Tier Logic
+        $subscriptionTierId = 1;
+        if ($user) {
+            $user->loadMissing('subscription');
+            $subscriptionTierId = (int) ($user->subscription->tier_id ?? 1);
+        }
+
+        $allowedTiers = [1];
+        if ($subscriptionTierId === 2) {
+            $allowedTiers = [1, 2];
+        } elseif ($subscriptionTierId >= 3) {
+            $allowedTiers = [1, 2, 3];
+        }
+
+        if (!empty($filters['tier'])) {
+            $requestedTier = (int) $filters['tier'];
+            if (in_array($requestedTier, $allowedTiers)) {
+                $query->where('tier', $requestedTier);
+            } else {
+                $query->whereRaw('1 = 0');
+            }
+        } else {
+            $query->whereIn('tier', $allowedTiers);
+        }
+
+        // Other filters
+        if (!empty($filters['hobby_ids'])) {
+            $query->whereIn('hobby_id', array_map('intval', (array) $filters['hobby_ids']));
+        }
+
+        if (!empty($filters['social_type'])) {
+            $query->where('social_type', trim($filters['social_type']));
+        }
+
+        if (!empty($filters['mood_match'])) {
+            $moods = is_array($filters['mood_match']) ? $filters['mood_match'] : [$filters['mood_match']];
+            $query->where(function ($q) use ($moods) {
+                foreach ($moods as $mood) {
+                    $q->orWhereJsonContains('mood_match', $mood);
+                }
+            });
+        }
+
+        $perPage = !empty($filters['per_page']) ? (int) $filters['per_page'] : 1;
+
+        return $query->paginate($perPage);
+    }
 }

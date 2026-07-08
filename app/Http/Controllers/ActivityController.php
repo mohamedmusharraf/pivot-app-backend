@@ -7,6 +7,7 @@ use App\Http\Requests\ActivityRequest;
 use App\Http\Requests\ActivityFilterRequest;
 use App\Http\Resources\ActivityResource;
 use App\Services\ActivityService;
+use App\Http\Requests\ActivitySearchRequest;
 
 class ActivityController extends Controller
 {
@@ -102,6 +103,19 @@ class ActivityController extends Controller
         $user = $request->user();
         
         $activities = $this->activityService->getActivitiesPerCategoryAndTier($user, false, $request->all());
+
+        return response()->json([
+            ActivityResource::collection($activities)
+        ]);
+    }
+
+    public function searchActivities(ActivitySearchRequest $request)
+    {
+        $user = $request->user();
+        $activities = $this->activityService->searchActivities(
+            $request->validated(),
+            $user
+        );
 
         return response()->json([
             ActivityResource::collection($activities)

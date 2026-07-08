@@ -13,4 +13,5 @@ interface ActivityRepositoryInterface
     public function create(array $data);
     public function update(Activity $activity, array $data): Activity;
     public function delete(Activity $activity): void;
+    public function searchActivities(array $filters, $user = null);
 }

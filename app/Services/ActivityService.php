@@ -54,4 +54,9 @@ class ActivityService
     {
         return $this->repository->getActivitiesPerCategoryAndTier($user, $excludeMicroMovement, $filters);
     }
+
+    public function searchActivities(array $filters, $user = null)
+    {
+        return $this->repository->searchActivities($filters, $user);
+    }
 }
