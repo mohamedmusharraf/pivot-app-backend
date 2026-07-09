@@ -30,6 +30,7 @@ class UserProfile extends Model
     protected $casts = [
         'onboarding_completed' => 'boolean',
         'weekly_goal_minutes' => 'integer',
+        'set_your_goal' => 'decimal:2',
     ];
 
     /**
