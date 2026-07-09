@@ -31,7 +31,7 @@ class ProfileRequest extends FormRequest
 
         if ($this->has('set_your_goal') && ! $this->has('weekly_goal_minutes')) {
             $this->merge([
-                'weekly_goal_minutes' => (int) $this->input('set_your_goal') * 60
+                'weekly_goal_minutes' => (int) round((float) $this->input('set_your_goal') * 60),
             ]);
         }
 
@@ -103,19 +103,19 @@ class ProfileRequest extends FormRequest
         return [
             'name' => 'sometimes|string|max:255',
             'user_name' => 'sometimes|string|max:255',
-             'email' => [
-            'string',
-            'lowercase',
-            'email:rfc,dns',
-            'max:255',
-            'unique:users,email',
-        ],
+            'email' => [
+                'string',
+                'lowercase',
+                'email:rfc,dns',
+                'max:255',
+                'unique:users,email',
+            ],
             'user_id' => ($isCreate ? 'required' : 'sometimes') . '|integer|exists:users,id',
             'country_id' => ($isCreate ? 'required_without:country_name' : 'sometimes') . '|integer|exists:countries,id',
             'country_name' => ($isCreate ? 'required_without:country_id' : 'sometimes') . '|string|exists:countries,name',
             'gender' => ($isCreate ? 'required' : 'sometimes') . '|in:male,female,other,prefer not to say',
             'birth_year' => ($isCreate ? 'required' : 'sometimes') . '|integer|min:1900|max:' . date('Y'),
-            'set_your_goal' => ($isCreate ? 'required' : 'sometimes') . '|integer|min:1|max:168',
+            'set_your_goal' => ($isCreate ? 'required' : 'sometimes') . '|numeric|min:1|max:168',
             'weekly_goal_minutes' => 'sometimes|integer|min:60|max:10080',
             'category' => 'sometimes|array|min:5',
             'category.*' => 'string|exists:hobbies,name',
@@ -179,7 +179,7 @@ class ProfileRequest extends FormRequest
             'birth_year.min' => 'Birth year must be at least 1900.',
             'birth_year.max' => 'Birth year cannot be in the future.',
             'set_your_goal.required' => 'Set your goal is required.',
-            'set_your_goal.integer' => 'Set your goal must be an integer.',
+            'set_your_goal.numeric' => 'Set your goal must be a valid number.',
             'set_your_goal.min' => 'Set your goal must be at least 1 hour.',
             'set_your_goal.max' => 'Set your goal must be 168 hours or less.',
             'weekly_goal_minutes.integer' => 'Weekly goal minutes must be an integer.',
