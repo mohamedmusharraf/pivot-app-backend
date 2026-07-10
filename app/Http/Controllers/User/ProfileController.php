@@ -27,10 +27,11 @@ class ProfileController extends Controller
     {
         $validated = $request->validated();
 
-        if (! empty($validated['user_id']) && UserProfile::query()->where('user_id', $validated['user_id'])->exists()) {
-            return response()->json([
-                'message' => 'Profile already exists for this user.',
-            ], 409);
+        if (! empty($validated['user_id'])) {
+            $existingProfile = UserProfile::query()->where('user_id', $validated['user_id'])->first();
+            if ($existingProfile) {
+                return $this->update($request, $existingProfile);
+            }
         }
 
         $profile = $this->profileService->store($validated);
