@@ -14,6 +14,7 @@ class RevenueCatWebhookRequest extends FormRequest
         'EXPIRATION',
         'PRODUCT_CHANGE',
         'BILLING_ISSUE',
+        'NON_RENEWING_PURCHASE',
     ];
 
     private const SUPPORTED_IOS_TIER_PRODUCTS = [
@@ -61,7 +62,6 @@ class RevenueCatWebhookRequest extends FormRequest
                         return;
                     }
 
-                    // Validate known iOS tier product ids used by RevenueCat.
                     if (
                         str_ends_with($value, '_ios') && str_starts_with($value, 'tier_')
                         && ! in_array($value, self::SUPPORTED_IOS_TIER_PRODUCTS, true)
@@ -69,7 +69,6 @@ class RevenueCatWebhookRequest extends FormRequest
                         $fail("The {$attribute} is not a supported iOS tier product.");
                     }
 
-                    // Validate known Android tier product ids used by RevenueCat.
                     if ((str_ends_with($value, '_android') || preg_match('/^tier_\d+$/', $value) === 1)
                         && ! in_array($value, self::SUPPORTED_ANDROID_TIER_PRODUCTS, true)
                     ) {
@@ -89,7 +88,6 @@ class RevenueCatWebhookRequest extends FormRequest
                         return;
                     }
 
-                    // Validate known iOS tier product ids used by RevenueCat.
                     if (
                         str_ends_with($value, '_ios') && str_starts_with($value, 'tier_')
                         && ! in_array($value, self::SUPPORTED_IOS_TIER_PRODUCTS, true)
@@ -97,7 +95,6 @@ class RevenueCatWebhookRequest extends FormRequest
                         $fail("The {$attribute} is not a supported iOS tier product.");
                     }
 
-                    // Validate known Android tier product ids used by RevenueCat.
                     if ((str_ends_with($value, '_android') || preg_match('/^tier_\d+$/', $value) === 1)
                         && ! in_array($value, self::SUPPORTED_ANDROID_TIER_PRODUCTS, true)
                     ) {

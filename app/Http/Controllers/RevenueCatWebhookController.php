@@ -18,16 +18,7 @@ class RevenueCatWebhookController extends Controller
     private const EVENT_EXPIRATION = 'EXPIRATION';
     private const EVENT_PRODUCT_CHANGE = 'PRODUCT_CHANGE';
     private const EVENT_BILLING_ISSUE = 'BILLING_ISSUE';
-    private const PRODUCT_TIER_MAP = [
-        'tier_2' => 2,
-        'tier_3' => 3,
-        'tier_2:tier2' => 2,
-        'tier_3:tier3' => 3,
-        'tier_2_android' => 2,
-        'tier_3_android' => 3,
-        'tier_2_ios' => 2,
-        'tier_3_ios' => 3,
-    ];
+    private const EVENT_NON_RENEWING_PURCHASE = 'NON_RENEWING_PURCHASE';
 
     public function __invoke(RevenueCatWebhookRequest $request): JsonResponse
     {
@@ -53,7 +44,6 @@ class RevenueCatWebhookController extends Controller
         $entitlementId = $this->resolvePrimaryEntitlementId($payload['entitlement_ids'] ?? []);
         $incomingActive = $request->boolean('active');
 
-        // For PRODUCT_CHANGE events, use the new_product_id to determine the tier
         $tierIdentifier = ($eventType === self::EVENT_PRODUCT_CHANGE ? $newProductId : $productId) ?: $entitlementId;
         $incomingTierId = $this->resolveTierId($entitlementId,$subscription?->tier_id);
         $freeTierId = $this->resolveFreeTierId($subscription?->tier_id ?? 1);
@@ -161,29 +151,6 @@ class RevenueCatWebhookController extends Controller
         return $fallbackTierId ?? 1;
     }
 
-    // private function resolveTierId(?string $productId, ?int $fallbackTierId): int
-    // {
-    //     if (! $productId) {
-    //         return $fallbackTierId ?? 1;
-    //     }
-
-    //     if (array_key_exists($productId, self::PRODUCT_TIER_MAP)) {
-    //         return $this->resolveTierIdFromNumber(self::PRODUCT_TIER_MAP[$productId], $fallbackTierId);
-    //     }
-
-    //     $exactTier = Tier::query()->where('name', $productId)->value('id');
-
-    //     if ($exactTier) {
-    //         return (int) $exactTier;
-    //     }
-
-    //     if (preg_match('/(?:^|_)(\d+)(?:_|$)/', $productId, $matches) === 1) {
-    //         return $this->resolveTierIdFromNumber((int) $matches[1], $fallbackTierId);
-    //     }
-
-    //     return $fallbackTierId ?? 1;
-    // }
-
     private function resolvePrimaryEntitlementId(mixed $entitlementIds): ?string
     {
         if (! is_array($entitlementIds) || $entitlementIds === []) {
@@ -197,21 +164,6 @@ class RevenueCatWebhookController extends Controller
         }
 
         return null;
-    }
-
-    private function resolveTierIdFromNumber(int $number, ?int $fallbackTierId): int
-    {
-        $tierByName = Tier::query()->where('name', (string) $number)->value('id');
-        if ($tierByName) {
-            return (int) $tierByName;
-        }
-
-        $tierById = Tier::query()->find($number);
-        if ($tierById) {
-            return (int) $tierById->id;
-        }
-
-        return $fallbackTierId ?? 1;
     }
 
     private function fromMilliseconds(int|float|string|null $milliseconds): ?Carbon
@@ -282,6 +234,13 @@ class RevenueCatWebhookController extends Controller
             return [
                 'tier_id' => $incomingTierId,
                 'active' => true,
+            ];
+        }
+
+        if ($eventType === self::EVENT_NON_RENEWING_PURCHASE) {
+            return [
+                'tier_id' => $incomingTierId,
+                'active' => $incomingActive,
             ];
         }
 
