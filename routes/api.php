@@ -17,6 +17,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\AppBlockLogController;
 use App\Http\Controllers\AppUsageLogsController;
 use App\Http\Controllers\ChallengeLogsController;
+use App\Http\Controllers\ActivityLogsController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -102,6 +103,11 @@ Route::prefix('v1')->group(function () {
         Route::get('/app-usage-log/summary', [AppUsageLogsController::class, 'summary']);
 
         // challenge log routes
-        Route::apiResource('challenge-log', ChallengeLogsController::class);
+        // Route::apiResource('challenge-log', ChallengeLogsController::class);
+
+        // Activity Logs Routes
+        Route::apiResource('activity-log', ActivityLogsController::class);
+
+        // Focus 
     });
 });

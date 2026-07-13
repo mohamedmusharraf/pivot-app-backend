@@ -7,6 +7,8 @@ use App\Repositories\Contracts\HobbyRepositoryInterface;
 use App\Repositories\HobbyRepository;
 use App\Repositories\Contracts\ActivityRepositoryInterface;
 use App\Repositories\ActivityRepository;
+use App\Repositories\Contracts\ActivityLogsRepositoryInterface;
+use App\Repositories\ActivityLogsRepository;
 use App\Repositories\Auth\AuthRepositoryInterface;
 use App\Repositories\Contracts\UserHobbyRepositoryInterface;
 use App\Repositories\UserHobbyRepository;
@@ -39,6 +41,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->bind(HobbyRepositoryInterface::class, HobbyRepository::class);
         $this->app->bind(ActivityRepositoryInterface::class, ActivityRepository::class);
+        $this->app->bind(ActivityLogsRepositoryInterface::class, ActivityLogsRepository::class);
         $this->app->bind(UserHobbyRepositoryInterface::class, UserHobbyRepository::class);
         $this->app->bind(UserProfileRepositoryInterface::class, UserProfileRepository::class);
         $this->app->bind(AuthRepositoryInterface::class, AuthRepository::class);
