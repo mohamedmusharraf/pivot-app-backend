@@ -50,12 +50,12 @@ class RevenueCatWebhookController extends Controller
         $eventType = $payload['type'] ?? null;
         $productId = $payload['product_id'] ?? null;
         $newProductId = $payload['new_product_id'] ?? null;
-        $entitlementId = $this->resolvePrimaryEntitlementId($payload['entitlement_ids'] ?? null);
+        $entitlementId = $this->resolvePrimaryEntitlementId($payload['entitlement_ids'] ?? []);
         $incomingActive = $request->boolean('active');
 
         // For PRODUCT_CHANGE events, use the new_product_id to determine the tier
         $tierIdentifier = ($eventType === self::EVENT_PRODUCT_CHANGE ? $newProductId : $productId) ?: $entitlementId;
-        $incomingTierId = $this->resolveTierId($tierIdentifier, $subscription?->tier_id);
+        $incomingTierId = $this->resolveTierId($entitlementId,$subscription?->tier_id);
         $freeTierId = $this->resolveFreeTierId($subscription?->tier_id ?? 1);
         $purchasedAt = $this->fromMilliseconds($payload['purchased_at_ms'] ?? null);
         $expiresAt = $this->fromMilliseconds($payload['expiration_at_ms'] ?? null);
@@ -123,7 +123,6 @@ class RevenueCatWebhookController extends Controller
                 return $user;
             }
         }
-
         return null;
     }
 
@@ -140,32 +139,50 @@ class RevenueCatWebhookController extends Controller
         if (! $subscription) {
             return null;
         }
-
         return Users::query()->find($subscription->user_id);
     }
 
-    private function resolveTierId(?string $productId, ?int $fallbackTierId): int
+    private function resolveTierId(?string $entitlementId, ?int $fallbackTierId): int
     {
-        if (! $productId) {
+        if (!$entitlementId) {
             return $fallbackTierId ?? 1;
         }
 
-        if (array_key_exists($productId, self::PRODUCT_TIER_MAP)) {
-            return $this->resolveTierIdFromNumber(self::PRODUCT_TIER_MAP[$productId], $fallbackTierId);
+        if (preg_match('/tier_(\d+)/', $entitlementId, $matches)) {
+
+            $tier = Tier::query()
+                ->where('name', $matches[1])
+                ->first();
+
+            if ($tier) {
+                return $tier->id;
+            }
         }
-
-        $exactTier = Tier::query()->where('name', $productId)->value('id');
-
-        if ($exactTier) {
-            return (int) $exactTier;
-        }
-
-        if (preg_match('/(?:^|_)(\d+)(?:_|$)/', $productId, $matches) === 1) {
-            return $this->resolveTierIdFromNumber((int) $matches[1], $fallbackTierId);
-        }
-
         return $fallbackTierId ?? 1;
     }
+
+    // private function resolveTierId(?string $productId, ?int $fallbackTierId): int
+    // {
+    //     if (! $productId) {
+    //         return $fallbackTierId ?? 1;
+    //     }
+
+    //     if (array_key_exists($productId, self::PRODUCT_TIER_MAP)) {
+    //         return $this->resolveTierIdFromNumber(self::PRODUCT_TIER_MAP[$productId], $fallbackTierId);
+    //     }
+
+    //     $exactTier = Tier::query()->where('name', $productId)->value('id');
+
+    //     if ($exactTier) {
+    //         return (int) $exactTier;
+    //     }
+
+    //     if (preg_match('/(?:^|_)(\d+)(?:_|$)/', $productId, $matches) === 1) {
+    //         return $this->resolveTierIdFromNumber((int) $matches[1], $fallbackTierId);
+    //     }
+
+    //     return $fallbackTierId ?? 1;
+    // }
 
     private function resolvePrimaryEntitlementId(mixed $entitlementIds): ?string
     {
