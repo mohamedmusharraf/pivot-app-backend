@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use App\Models\Subscription;
 
 class UserRepository
 {
@@ -47,6 +48,20 @@ class UserRepository
                 'status' => 'not_ready',
             ]);
 
+            $subscription = Subscription::create([
+                'user_id' => $user->id,
+                'tier_id' => 1,
+                'start_date' => null,
+                'end_date' => null,
+                'type' => null,
+                'environment' => null,
+                'active' => true,
+                'store' => null,
+                'product_id' => null,
+                'revenuecat_user_id' => null,
+                'started_at' => null,
+                'expires_at' => null,
+            ]);
             // $user->profile()->create([
             //     'country_id' => null,
             //     'gender' => null,
