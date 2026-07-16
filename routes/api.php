@@ -19,6 +19,7 @@ use App\Http\Controllers\AppUsageLogsController;
 use App\Http\Controllers\ChallengeLogsController;
 use App\Http\Controllers\ActivityLogsController;
 use App\Http\Controllers\ChallengePacksWebhookController;
+use App\Http\Controllers\GoogleAuthController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -28,6 +29,7 @@ Route::prefix('v1')->group(function () {
 
     Route::post('/auth/register', [AuthController::class, 'register']);
     Route::post('/auth/login', [AuthController::class, 'login']);
+    Route::post('/auth/google', [GoogleAuthController::class, 'GoogleLogin']);
     Route::post('/webhooks/revenuecat', RevenueCatWebhookController::class);
     Route::post('/webhooks/revenuecat/challenge-packs', [ChallengePacksWebhookController::class, 'handleChallengePackWebhook']);
 
