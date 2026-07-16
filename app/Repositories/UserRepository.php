@@ -47,14 +47,14 @@ class UserRepository
                 'status' => 'not_ready',
             ]);
 
-            $user->profile()->create([
-                'country_id' => null,
-                'gender' => null,
-                'birth_year' => null,
-                'set_your_goal' => 0,
-                'weekly_goal_minutes' => 0,
-                'onboarding_completed' => false,
-            ]);
+            // $user->profile()->create([
+            //     'country_id' => null,
+            //     'gender' => null,
+            //     'birth_year' => null,
+            //     'set_your_goal' => 0,
+            //     'weekly_goal_minutes' => 0,
+            //     'onboarding_completed' => false,
+            // ]);
 
             return $user;
         });
