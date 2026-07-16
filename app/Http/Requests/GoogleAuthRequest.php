@@ -22,7 +22,7 @@ class GoogleAuthRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'token' => ['required', 'string'],
+            'id_token' => ['required', 'string'],
         ];
     }
 }
