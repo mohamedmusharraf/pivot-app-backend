@@ -5,6 +5,7 @@ namespace App\Repositories;
 use App\Models\User;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 
 class UserRepository
 {
@@ -19,13 +20,14 @@ class UserRepository
         $user = User::where('email', $googleUser['email'])->first();
 
         if ($user) {
-            if (!$user->provider || !$user->provider_id) {
+
+            if (!$user->provider_id) {
                 $user->update([
                     'provider' => 'google',
                     'provider_id' => $googleUser['sub'],
                 ]);
             }
-            
+
             $user->update([
                 'last_login_at' => now(),
             ]);
@@ -33,15 +35,28 @@ class UserRepository
             return $user;
         }
 
-        // Create new user
-        return User::create([
-            'name' => $googleUser['name'] ?? explode('@', $googleUser['email'])[0],
-            'email' => $googleUser['email'],
-            'password' => Hash::make(Str::random(32)),
-            'provider' => 'google',
-            'provider_id' => $googleUser['sub'],
-            'last_login_at' => now(),
-            'status' => 'not_ready',
-        ]);
+        return DB::transaction(function () use ($googleUser) {
+
+            $user = User::create([
+                'name' => $googleUser['name'] ?? explode('@', $googleUser['email'])[0],
+                'email' => $googleUser['email'],
+                'password' => Hash::make(Str::random(32)),
+                'provider' => 'google',
+                'provider_id' => $googleUser['sub'],
+                'last_login_at' => now(),
+                'status' => 'not_ready',
+            ]);
+
+            $user->profile()->create([
+                'country_id' => null,
+                'gender' => null,
+                'birth_year' => null,
+                'set_your_goal' => 0,
+                'weekly_goal_minutes' => 0,
+                'onboarding_completed' => false,
+            ]);
+
+            return $user;
+        });
     }
 }
