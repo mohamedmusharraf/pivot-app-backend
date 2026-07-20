@@ -22,7 +22,6 @@ class StoreActivityLogsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'user_id' => ['required', 'integer'],
             'activity_id' => ['nullable', 'integer'],
             'duration_minutes' => ['nullable', 'integer'],
             'completed' => ['nullable', 'boolean'],
@@ -33,8 +32,6 @@ class StoreActivityLogsRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'user_id.required' => 'User ID is required.',
-            'user_id.integer' => 'User ID must be an integer.', 
             'activity_id.integer' => 'Activity ID must be an integer.',
             'duration_minutes.integer' => 'Duration must be an integer.',
             'completed.boolean' => 'Completed must be a boolean.',

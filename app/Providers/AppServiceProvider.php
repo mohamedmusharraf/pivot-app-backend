@@ -15,7 +15,7 @@ use App\Repositories\UserHobbyRepository;
 use App\Repositories\UserProfileRepository;
 use Illuminate\Http\Resources\Json\JsonResource;
 use App\Repositories\Contracts\UserProfileRepositoryInterface;
-use App\Repositories\AuthRepository;;
+use App\Repositories\AuthRepository;
 
 use App\Repositories\PasswordResetRepository;
 use App\Repositories\Auth\PasswordResetRepositoryInterface;
@@ -29,8 +29,14 @@ use App\Repositories\Contracts\AppBlockLogRepositoryInterface;
 use App\Repositories\AppBlockLogRepository;
 use App\Repositories\Contracts\AppUsageLogsRepositoryInterface;
 use App\Repositories\AppUsageLogsRepository;
+use App\Repositories\Contracts\FocusSessionLogsRepositoryInterface;
+use App\Repositories\FocusSessionLogsRepository;
 use App\Repositories\Contracts\ChallengeLogRepositoryInterface;
 use App\Repositories\ChallengeLogRepository;
+use App\Repositories\Contracts\GoalLogsRepositoryInterface;
+use App\Repositories\GoalLogsRepository;
+use App\Repositories\Contracts\EmotionLogsRepositoryInterface;
+use App\Repositories\EmotionLogsRepository;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -51,7 +57,10 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(CountriesRepositoryInterface::class, CountriesRepository::class);
         $this->app->bind(AppBlockLogRepositoryInterface::class, AppBlockLogRepository::class);
         $this->app->bind(AppUsageLogsRepositoryInterface::class, AppUsageLogsRepository::class);
+        $this->app->bind(FocusSessionLogsRepositoryInterface::class, FocusSessionLogsRepository::class);
         $this->app->bind(ChallengeLogRepositoryInterface::class, ChallengeLogRepository::class);
+        $this->app->bind(GoalLogsRepositoryInterface::class, GoalLogsRepository::class);
+        $this->app->bind(EmotionLogsRepositoryInterface::class, EmotionLogsRepository::class);
     }
 
     /**

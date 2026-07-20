@@ -20,6 +20,10 @@ use App\Http\Controllers\ChallengeLogsController;
 use App\Http\Controllers\ActivityLogsController;
 use App\Http\Controllers\ChallengePacksWebhookController;
 use App\Http\Controllers\GoogleAuthController;
+use App\Http\Controllers\FocusSessionLogsController;
+use App\Http\Controllers\GoalLogsController;
+use App\Http\Controllers\EmotionLogsController;
+use App\Http\Controllers\StreakLogsController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -107,11 +111,21 @@ Route::prefix('v1')->group(function () {
         Route::get('/app-usage-log/summary', [AppUsageLogsController::class, 'summary']);
 
         // challenge log routes
-        // Route::apiResource('challenge-log', ChallengeLogsController::class);
+        Route::apiResource('challenge-log', ChallengeLogsController::class);
 
         // Activity Logs Routes
         Route::apiResource('activity-log', ActivityLogsController::class);
 
-        // Focus 
+        // Focus logs Routes
+        Route::apiResource('focus-log', FocusSessionLogsController::class);
+
+        // Goal Logs Routes
+        Route::apiResource('goal-log', GoalLogsController::class);
+
+        // Emotion Logs Routes
+        Route::apiResource('emotion-log', EmotionLogsController::class);
+
+        // Streak Logs Routes
+        Route::apiResource('streak-log', StreakLogsController::class);
     });
 });

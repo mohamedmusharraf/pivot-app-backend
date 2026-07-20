@@ -16,8 +16,9 @@ class ActivityLogsController extends Controller
     public function store(StoreActivityLogsRequest $request)
     {
         try {
-            $activityLog = $this->activityLogsService->store($request->validated());
-
+            $data = $request->validated();
+            $data['user_id'] = $request->user()->id;
+            $activityLog = $this->activityLogsService->store($data);
             return response()->json([
                 'message' => 'Activity log created successfully.',
                 'data' => $activityLog
