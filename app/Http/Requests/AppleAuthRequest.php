@@ -22,7 +22,7 @@ class AppleAuthRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'id_token' => ['required', 'string'],
+            'identityToken' => ['required', 'string'],
             'name' => ['nullable', 'string'],
         ];
     }

@@ -16,7 +16,7 @@ class AppleAuthController extends Controller
     public function appleLogin(AppleAuthRequest $request): JsonResponse
     {
         $user = $this->appleAuthService->authenticate(
-            $request->id_token,
+            $request->identityToken,
             $request->name
         );
 
