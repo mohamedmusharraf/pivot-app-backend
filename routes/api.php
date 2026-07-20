@@ -24,6 +24,7 @@ use App\Http\Controllers\FocusSessionLogsController;
 use App\Http\Controllers\GoalLogsController;
 use App\Http\Controllers\EmotionLogsController;
 use App\Http\Controllers\StreakLogsController;
+use App\Http\Controllers\AppleAuthController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -34,6 +35,7 @@ Route::prefix('v1')->group(function () {
     Route::post('/auth/register', [AuthController::class, 'register']);
     Route::post('/auth/login', [AuthController::class, 'login']);
     Route::post('/auth/google', [GoogleAuthController::class, 'GoogleLogin']);
+    Route::post('/auth/apple', [AppleAuthController::class, 'appleLogin']);
     Route::post('/webhooks/revenuecat', RevenueCatWebhookController::class);
     Route::post('/webhooks/revenuecat/challenge-packs', [ChallengePacksWebhookController::class, 'handleChallengePackWebhook']);
 
