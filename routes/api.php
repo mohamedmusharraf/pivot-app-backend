@@ -25,6 +25,7 @@ use App\Http\Controllers\GoalLogsController;
 use App\Http\Controllers\EmotionLogsController;
 use App\Http\Controllers\StreakLogsController;
 use App\Http\Controllers\AppleAuthController;
+use App\Http\Controllers\ChallengePackController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -38,6 +39,9 @@ Route::prefix('v1')->group(function () {
     Route::post('/auth/apple', [AppleAuthController::class, 'appleLogin']);
     Route::post('/webhooks/revenuecat', RevenueCatWebhookController::class);
     Route::post('/webhooks/revenuecat/challenge-packs', [ChallengePacksWebhookController::class, 'handleChallengePackWebhook']);
+    Route::get('challenge-pack', [ChallengePackController::class, 'index']);
+    Route::patch('challenge-pack/decrement', [ChallengePackController::class, 'decrementRemaining']);
+    Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
 
     // Beta testing
     Route::post('/beta-login', [BetaDeviceController::class, 'checkDevice']);
@@ -52,7 +56,6 @@ Route::prefix('v1')->group(function () {
         Route::patch('/user/status', [AuthController::class, 'updateStatus']);
         Route::delete('/user/delete', [AuthController::class, 'deleteAccount']);
 
-        Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
         Route::post('/reset-password', [AuthController::class, 'resetPassword']);
     });
 });

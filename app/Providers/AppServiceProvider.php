@@ -5,6 +5,8 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use App\Repositories\Contracts\HobbyRepositoryInterface;
 use App\Repositories\HobbyRepository;
+use App\Repositories\Contracts\ChallengePackRepositoryInterface;
+use App\Repositories\ChallengePackRepository;
 use App\Repositories\Contracts\ActivityRepositoryInterface;
 use App\Repositories\ActivityRepository;
 use App\Repositories\Contracts\ActivityLogsRepositoryInterface;
@@ -61,6 +63,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(ChallengeLogRepositoryInterface::class, ChallengeLogRepository::class);
         $this->app->bind(GoalLogsRepositoryInterface::class, GoalLogsRepository::class);
         $this->app->bind(EmotionLogsRepositoryInterface::class, EmotionLogsRepository::class);
+        $this->app->bind(ChallengePackRepositoryInterface::class, ChallengePackRepository::class);
     }
 
     /**
