@@ -4,7 +4,9 @@ namespace App\Repositories\Contracts;
 
 interface ChallengePackRepositoryInterface
 {
-    public function getChallengePackDetails(int $userId, string $revenueCatEventId);
-    public function decrementRemaining(int $userId, string $revenueCatEventId);
+    public function getByUserId(int $userId);
+    public function getChallengePackDetails(int $userId, string $transactionId);
+    public function decrementRemaining(int $userId, string $transactionId, int $usageCount);
 }
+
 

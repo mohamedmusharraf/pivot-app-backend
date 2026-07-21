@@ -7,26 +7,34 @@ use App\Repositories\Contracts\ChallengePackRepositoryInterface;
 
 class ChallengePackRepository implements ChallengePackRepositoryInterface
 {
-    public function getChallengePackDetails(int $userId, string $revenueCatEventId)
+    public function getByUserId(int $userId)
     {
         return ChallengePacksWebhook::where('user_id', $userId)
-            ->where('revenuecat_event_id', $revenueCatEventId)
+            ->get();
+    }
+
+    public function getChallengePackDetails(int $userId, string $transactionId)
+    {
+        return ChallengePacksWebhook::where('user_id', $userId)
+            ->where('transaction_id', $transactionId)
             ->first();
     }
 
-    public function decrementRemaining(int $userId, string $revenueCatEventId)
+    public function decrementRemaining(int $userId, string $transactionId, int $usageCount)
     {
-        $pack = $this->getChallengePackDetails($userId, $revenueCatEventId);
-        
+        $pack = $this->getChallengePackDetails($userId, $transactionId);
+
         if ($pack && $pack->remaining > 0) {
-            $pack->decrement('remaining');
-            $pack->refresh();
-
-            if ($pack->remaining == 0) {
-                $pack->update(['status' => 'used']);
+            if ($pack->remaining <= $usageCount) {
+                $pack->update([
+                    'remaining' => 0,
+                    'status' => 'used'
+                ]);
+            } else {
+                $pack->decrement('remaining', $usageCount);
             }
-
-            return $pack;
+            
+            return $pack->fresh();
         }
         
         return null;

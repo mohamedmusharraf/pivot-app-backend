@@ -30,7 +30,7 @@ class ChallengePacksWebhookController extends Controller
         ChallengePacksWebhook::create([
             'app_id'               => $event['app_id'],
             'user_id'              => $event['app_user_id'],
-            'revenuecat_event_id'  => $event['id'],
+            'transaction_id'  => $event['transaction_id'],
             'price'                => $event['price'],
             'product_id'           => $event['product_id'],
             'total'                => $total,

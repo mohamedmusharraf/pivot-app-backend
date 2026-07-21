@@ -15,7 +15,7 @@ class ChallengePacksWebhook extends Model
         'environment',
         'store',
         'type',
-        'revenuecat_event_id',
+        'transaction_id',
         'total',
         'remaining',
         'status',

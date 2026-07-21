@@ -4,38 +4,47 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use App\Repositories\Contracts\ChallengePackRepositoryInterface;
+use App\Services\ChallengePackService;
 
 class ChallengePackController extends Controller
 {
-    private ChallengePackRepositoryInterface $challengePackRepository;
+    private ChallengePackService $challengePackService;
 
-    public function __construct(ChallengePackRepositoryInterface $challengePackRepository)
+    public function __construct(ChallengePackService $challengePackService)
     {
-        $this->challengePackRepository = $challengePackRepository;
+        $this->challengePackService = $challengePackService;
     }
 
     public function index(Request $request): JsonResponse
     {
         $request->validate([
-            'user_id' => 'required|integer',
-            'revenuecat_event_id' => 'required|string',
+            'user_id'        => 'required|integer',
+            'transaction_id' => 'nullable|string',
         ]);
 
-        $details = $this->challengePackRepository->getChallengePackDetails(
+        $result = $this->challengePackService->index(
             (int) $request->user_id,
-            $request->revenuecat_event_id
+            $request->transaction_id
         );
 
-        if (!$details) {
+        // Single record lookup (user_id + transaction_id)
+        if ($request->filled('transaction_id')) {
+            if (!$result) {
+                return response()->json([
+                    'message' => 'Challenge pack not found for the given criteria.'
+                ], 404);
+            }
+
             return response()->json([
-                'message' => 'Challenge pack details not found for the given criteria.'
-            ], 404);
+                'message' => 'Challenge pack details retrieved successfully.',
+                'data'    => $result
+            ], 200);
         }
 
+        // All-records lookup (user_id only)
         return response()->json([
-            'message' => 'Challenge pack details retrieved successfully.',
-            'data' => $details
+            'message' => 'Challenge packs retrieved successfully.',
+            'data'    => $result
         ], 200);
     }
 
@@ -43,12 +52,14 @@ class ChallengePackController extends Controller
     {
         $request->validate([
             'user_id' => 'required|integer',
-            'revenuecat_event_id' => 'required|string',
+            'transaction_id' => 'required|string',
+            'usage_count' => 'required|integer'
         ]);
 
-        $details = $this->challengePackRepository->decrementRemaining(
+        $details = $this->challengePackService->update(
             (int) $request->user_id,
-            $request->revenuecat_event_id
+            $request->transaction_id,
+            (int) $request->usage_count
         );
 
         if (!$details) {
@@ -63,4 +74,5 @@ class ChallengePackController extends Controller
         ], 200);
     }
 }
+
 

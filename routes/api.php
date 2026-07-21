@@ -39,8 +39,7 @@ Route::prefix('v1')->group(function () {
     Route::post('/auth/apple', [AppleAuthController::class, 'appleLogin']);
     Route::post('/webhooks/revenuecat', RevenueCatWebhookController::class);
     Route::post('/webhooks/revenuecat/challenge-packs', [ChallengePacksWebhookController::class, 'handleChallengePackWebhook']);
-    Route::get('challenge-pack', [ChallengePackController::class, 'index']);
-    Route::patch('challenge-pack/decrement', [ChallengePackController::class, 'decrementRemaining']);
+    
     Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
 
     // Beta testing
@@ -57,6 +56,10 @@ Route::prefix('v1')->group(function () {
         Route::delete('/user/delete', [AuthController::class, 'deleteAccount']);
 
         Route::post('/reset-password', [AuthController::class, 'resetPassword']);
+
+        // Challenge pack routes
+        Route::get('challenge-pack', [ChallengePackController::class, 'index']);
+        Route::patch('challenge-pack', [ChallengePackController::class, 'decrementRemaining']);
     });
 });
 
