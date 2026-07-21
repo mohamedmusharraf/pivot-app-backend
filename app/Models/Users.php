@@ -66,6 +66,11 @@ class Users extends Model
         return $this->hasOne(Subscription::class, 'user_id', 'id')->where('active', true)->latest();
     }
 
+    public function subscriptionLogs()
+    {
+        return $this->hasMany(SubscriptionLogs::class, 'user_id', 'id');
+    }
+
     protected $casts = [
         'last_login_at' => 'datetime',
     ];

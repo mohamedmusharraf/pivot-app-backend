@@ -6,6 +6,7 @@ use App\Http\Requests\RevenueCatWebhookRequest;
 use App\Models\Subscription;
 use App\Models\Tier;
 use App\Models\Users;
+use App\Models\SubscriptionLogs;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
@@ -74,6 +75,21 @@ class RevenueCatWebhookController extends Controller
                 'expires_at' => $expiresAt ?? $subscription?->expires_at,
             ]
         );
+
+        $subscriptionLog = SubscriptionLogs::query()->create([
+            'user_id' => $user->id,
+            'tier_id' => $eventState['tier_id'],
+            'type' => $eventType,
+            'environment' => $payload['environment'] ?? null,
+            'active' => $eventState['active'],
+            'store' => $payload['store'] ?? null,
+            'product_id' => $eventType === self::EVENT_PRODUCT_CHANGE
+                ? ($newProductId ?? $productId ?? $entitlementId)
+                : ($productId ?? $entitlementId),
+            'revenuecat_user_id' => $payload['app_user_id'],
+            'started_at' => $purchasedAt ?? $subscription?->started_at,
+            'expires_at' => $expiresAt ?? $subscription?->expires_at,
+        ]);
 
         return response()->json([
             'message' => 'Subscription synced successfully.',
