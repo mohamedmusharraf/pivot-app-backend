@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class ForgotPasswordRequest extends FormRequest
+class VerifyOtpRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,7 +22,8 @@ class ForgotPasswordRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'email:rfc,dns', 'exists:users,email'],
+            'email' => ['required', 'email'],
+            'otp'   => ['required', 'digits:6'],
         ];
     }
 
@@ -31,7 +32,16 @@ class ForgotPasswordRequest extends FormRequest
         return [
             'email.required' => 'Email address is required.',
             'email.email'    => 'Please provide a valid email address.',
-            'email.exists'   => 'No account found with that email address.',
+            'otp.required'   => 'OTP code is required.',
+            'otp.digits'     => 'OTP must be exactly 6 digits.',
+        ];
+    }
+
+    public function attributes(): array
+    {
+        return [
+            'email' => 'email address',
+            'otp'   => 'OTP code',
         ];
     }
 }

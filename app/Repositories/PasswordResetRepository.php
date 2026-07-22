@@ -27,6 +27,14 @@ class PasswordResetRepository implements PasswordResetRepositoryInterface
             ->first();
     }
 
+    public function getOtpRecord(string $email, string $otp)
+    {
+        return DB::table('password_reset_tokens')
+            ->where('email', $email)
+            ->where('otp', $otp)
+            ->first();
+    }
+
     public function deleteOtp(string $email): void
     {
         DB::table('password_reset_tokens')

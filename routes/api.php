@@ -40,7 +40,10 @@ Route::prefix('v1')->group(function () {
     Route::post('/webhooks/revenuecat', RevenueCatWebhookController::class);
     Route::post('/webhooks/revenuecat/challenge-packs', [ChallengePacksWebhookController::class, 'handleChallengePackWebhook']);
     
-    Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
+    Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])
+        ->middleware('throttle:forgot-password');
+    Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
+    Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 
     // Beta testing
     Route::post('/beta-login', [BetaDeviceController::class, 'checkDevice']);
@@ -54,8 +57,6 @@ Route::prefix('v1')->group(function () {
         Route::get('/user/emergency', [AuthController::class, 'currentUserCountry']);
         Route::patch('/user/status', [AuthController::class, 'updateStatus']);
         Route::delete('/user/delete', [AuthController::class, 'deleteAccount']);
-
-        Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 
         // Challenge pack routes
         Route::get('challenge-pack', [ChallengePackController::class, 'index']);

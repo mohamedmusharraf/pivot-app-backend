@@ -40,6 +40,11 @@ use App\Repositories\GoalLogsRepository;
 use App\Repositories\Contracts\EmotionLogsRepositoryInterface;
 use App\Repositories\EmotionLogsRepository;
 
+use Illuminate\Routing\Middleware\ThrottleRequests;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Http\Request;
+
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -72,5 +77,16 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         JsonResource::withoutWrapping();
+
+        RateLimiter::for('forgot-password', function (Request $request) {
+            return Limit::perHour(3)
+                ->by($request->input('email') . '|' . $request->ip())
+                ->response(function () {
+                    return response()->json([
+                        'status'  => 'error',
+                        'message' => 'Too many requests. Please wait before trying again.',
+                    ], 429);
+                });
+        });
     }
 }

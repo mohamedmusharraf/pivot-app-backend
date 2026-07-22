@@ -13,6 +13,10 @@ use App\Repositories\Auth\AuthRepositoryInterface;
 use App\Repositories\Auth\PasswordResetRepositoryInterface;
 use App\Repositories\Auth\LogoutRepositoryInterface;
 use Carbon\Carbon;
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
+use Firebase\JWT\ExpiredException;
+use Firebase\JWT\SignatureInvalidException;
 
 class AuthService
 {
@@ -89,7 +93,7 @@ class AuthService
         $user = $this->authRepositoryInterface->findByEmail($email);
 
         if (!$user) {
-            abort(404, 'User not found');
+            abort(404, 'No account found with that email address.');
         }
 
         $otp = $this->generateOtp();
@@ -99,23 +103,65 @@ class AuthService
         $this->sendMail($email, $otp, $user->name);
     }
 
-    public function resetPassword(array $data): void
+    public function verifyOtp(array $data): string
     {
-        $record = $this->passwordResetRepositoryInterface->getValidOtp(
+        $record = $this->passwordResetRepositoryInterface->getOtpRecord(
             $data['email'],
             $data['otp']
         );
 
         if (!$record) {
-            abort(400, 'Invalid OTP');
+            abort(400, 'Invalid OTP. Please check the code and try again.');
         }
 
         if (Carbon::parse($record->expires_at)->isPast()) {
-            abort(400, 'OTP expired');
+            $this->passwordResetRepositoryInterface->deleteOtp($data['email']);
+            abort(400, 'OTP has expired. Please request a new one.');
+        }
+
+        $this->passwordResetRepositoryInterface->deleteOtp($data['email']);
+
+        $payload = [
+            'iss'   => config('app.url'),
+            'sub'   => $data['email'],
+            'iat'   => Carbon::now()->timestamp,
+            'exp'   => Carbon::now()->addMinutes(15)->timestamp,
+            'scope' => 'password_reset',
+        ];
+
+        $secret = config('app.key');
+
+        return JWT::encode($payload, $secret, 'HS256');
+    }
+
+    public function resetPassword(array $data): void
+    {
+        $secret = config('app.key');
+
+        try {
+            $decoded = JWT::decode($data['reset_token'], new Key($secret, 'HS256'));
+        } catch (ExpiredException $e) {
+            abort(400, 'Reset token has expired. Please request a new OTP.');
+        } catch (SignatureInvalidException $e) {
+            abort(400, 'Invalid reset token signature.');
+        } catch (\Exception $e) {
+            abort(400, 'Invalid or malformed reset token.');
+        }
+
+        if (($decoded->scope ?? null) !== 'password_reset') {
+            abort(400, 'Invalid reset token scope.');
+        }
+
+        if (($decoded->sub ?? null) !== $data['email']) {
+            abort(400, 'Reset token does not match the provided email address.');
         }
 
         $this->authRepositoryInterface->updatePassword($data['email'], $data['password']);
-        $this->passwordResetRepositoryInterface->deleteOtp($data['email']);
+
+        $user = $this->authRepositoryInterface->findByEmail($data['email']);
+        if ($user) {
+            $user->tokens()->delete();
+        }
     }
 
     public function generateOtp(): string

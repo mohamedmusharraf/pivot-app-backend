@@ -12,6 +12,7 @@ use App\Services\AuthService;
 use Illuminate\Http\Request;
 use App\Http\Requests\ForgotPasswordRequest;
 use App\Http\Requests\ResetPasswordRequest;
+use App\Http\Requests\VerifyOtpRequest;
 use App\Models\DeviceFingerprint;
 use App\Models\Subscription;
 
@@ -86,7 +87,8 @@ class AuthController extends Controller
         $this->authService->sendResetPasswordEmail($request->email);
 
         return response()->json([
-            'message' => 'Password reset email sent'
+            'status'  => 'success',
+            'message' => 'OTP has been sent to your email address.',
         ]);
     }
 
@@ -95,7 +97,19 @@ class AuthController extends Controller
         $this->authService->resetPassword($request->validated());
 
         return response()->json([
-            'message' => 'Password reset successful'
+            'status'  => 'success',
+            'message' => 'Password has been successfully updated.',
+        ]);
+    }
+
+    public function verifyOtp(VerifyOtpRequest $request)
+    {
+        $resetToken = $this->authService->verifyOtp($request->validated());
+
+        return response()->json([
+            'status'      => 'success',
+            'message'     => 'OTP verified successfully.',
+            'reset_token' => $resetToken,
         ]);
     }
 
