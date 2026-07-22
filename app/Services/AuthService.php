@@ -53,12 +53,6 @@ class AuthService
             ]);
         }
 
-        if ($user->provider !== 'email') {
-            throw ValidationException::withMessages([
-                'email' => ['Please login using ' . ucfirst($user->provider) . '.'],
-            ]);
-        }
-
         $this->authRepositoryInterface->updateLastLogin($user);
 
         // Load subscription relationship
