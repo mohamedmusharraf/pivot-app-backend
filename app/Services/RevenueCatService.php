@@ -10,7 +10,7 @@ class RevenueCatService
 {
     public function grantFreeTrial(string $appUserId): void
     {
-        $entitlement = 'tier3_android'; // Your entitlement identifier
+        $entitlement = 'tier_3_android';
 
         $response = Http::withHeaders([
             'Authorization' => 'Bearer ' . config('services.revenuecat.secret_key'),
