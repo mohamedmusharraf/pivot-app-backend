@@ -6,17 +6,33 @@ use App\Models\Users;
 use Illuminate\Support\Facades\Hash;
 use App\Repositories\Auth\AuthRepositoryInterface;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use App\Models\Subscription;
 
 class AuthRepository implements AuthRepositoryInterface
 {
     public function createUser(array $data): Users
     {
-        return Users::create([
-            'name'     => $data['name'] ?? null,
-            'email'    => $data['email'],
-            'password' => Hash::make($data['password']),
-            'provider' => 'email',
-        ]);
+        return DB::transaction(function () use ($data) {
+
+            $user = Users::create([
+                'name'           => $data['name'] ?? null,
+                'email'          => $data['email'],
+                'password'       => Hash::make($data['password']),
+                'provider'       => 'email',
+                'status'         => 'not_ready',
+                'last_login_at'  => now(),
+            ]);
+
+            // Create subscription
+            Subscription::create([
+                'user_id' => $user->id,
+                'tier_id' => 1,
+                'active' => true,
+            ]);
+
+            return $user;
+        });
     }
 
     public function findByEmail(string $email): ?Users
@@ -45,7 +61,7 @@ class AuthRepository implements AuthRepositoryInterface
         ]);
     }
 
-     public function getCurrentUser()
+    public function getCurrentUser()
     {
         return Auth::user();
     }
