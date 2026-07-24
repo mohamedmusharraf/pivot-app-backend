@@ -4,13 +4,15 @@ namespace App\Services;
 
 use App\Models\User;
 use App\Repositories\UserRepository;
+use App\Services\RevenueCatService;
 use Exception;
 use Google\Client;
 
 class GoogleAuthService
 {
     public function __construct(
-        protected UserRepository $userRepository
+        protected UserRepository $userRepository,
+        protected RevenueCatService $revenueCatService
     ) {}
 
     public function authenticate(string $idToken): User
@@ -48,6 +50,15 @@ class GoogleAuthService
             throw new Exception('Google email is not verified.');
         }
 
-        return $this->userRepository->findOrCreateByGoogle($payload);
+        $result = $this->userRepository->findOrCreateByGoogle($payload);
+
+        if ($result['is_new']) {
+
+            $this->revenueCatService->grantFreeTrial(
+                (string) $result['user']->id
+            );
+        }
+
+        return $result['user'];
     }
 }

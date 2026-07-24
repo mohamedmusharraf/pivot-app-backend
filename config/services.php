@@ -37,6 +37,7 @@ return [
 
     'revenuecat' => [
         'webhook_secret' => env('REVENUECAT_WEBHOOK_SECRET'),
+        'secret_key' => env('REVENUECAT_SECRET_KEY'),
     ],
 
     'google' => [
@@ -48,7 +49,6 @@ return [
     ],
 
     'apple' => [
-    'client_id' => env('APPLE_CLIENT_ID'),
-],
-
+        'client_id' => env('APPLE_CLIENT_ID'),
+    ],
 ];

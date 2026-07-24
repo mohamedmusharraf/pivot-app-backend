@@ -16,7 +16,7 @@ class UserRepository
      * @param array $googleUser
      * @return User
      */
-    public function findOrCreateByGoogle(array $googleUser): User
+    public function findOrCreateByGoogle(array $googleUser): array
     {
         $user = User::where('email', $googleUser['email'])->first();
 
@@ -33,10 +33,13 @@ class UserRepository
                 'last_login_at' => now(),
             ]);
 
-            return $user;
+            return [
+                'user' => $user,
+                'is_new' => false,
+            ];
         }
 
-        return DB::transaction(function () use ($googleUser) {
+        $user = DB::transaction(function () use ($googleUser) {
 
             $user = User::create([
                 'name' => $googleUser['name'] ?? explode('@', $googleUser['email'])[0],
@@ -44,34 +47,22 @@ class UserRepository
                 'password' => Hash::make(Str::random(32)),
                 'provider' => 'google',
                 'provider_id' => $googleUser['sub'],
-                'last_login_at' => now(),
                 'status' => 'not_ready',
+                'last_login_at' => now(),
             ]);
 
-            $subscription = Subscription::create([
+            Subscription::create([
                 'user_id' => $user->id,
                 'tier_id' => 1,
-                'start_date' => null,
-                'end_date' => null,
-                'type' => null,
-                'environment' => null,
                 'active' => true,
-                'store' => null,
-                'product_id' => null,
-                'revenuecat_user_id' => null,
-                'started_at' => null,
-                'expires_at' => null,
             ]);
-            // $user->profile()->create([
-            //     'country_id' => null,
-            //     'gender' => null,
-            //     'birth_year' => null,
-            //     'set_your_goal' => 0,
-            //     'weekly_goal_minutes' => 0,
-            //     'onboarding_completed' => false,
-            // ]);
 
             return $user;
         });
+
+        return [
+            'user' => $user,
+            'is_new' => true,
+        ];
     }
 }
