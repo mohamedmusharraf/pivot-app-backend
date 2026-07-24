@@ -23,12 +23,16 @@ class AuthService
     public function __construct(
         protected AuthRepositoryInterface $authRepositoryInterface,
         protected PasswordResetRepositoryInterface $passwordResetRepositoryInterface,
-        protected LogoutRepositoryInterface $logoutRepositoryInterface
+        protected LogoutRepositoryInterface $logoutRepositoryInterface,
+        protected RevenueCatService $revenueCatService,
     ) {}
 
     public function register(array $data): array
     {
         $user = $this->authRepositoryInterface->createUser($data);
+
+        $this->revenueCatService->grantFreeTrial((string) $user->id);
+
         $token = $user->createToken('mobile')->plainTextToken;
 
         return compact('user', 'token');

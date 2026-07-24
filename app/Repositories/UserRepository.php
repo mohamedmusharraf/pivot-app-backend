@@ -65,4 +65,55 @@ class UserRepository
             'is_new' => true,
         ];
     }
+
+    public function findOrCreateByApple(array $appleUser): array
+    {
+        $user = User::where('provider', 'apple')
+            ->where('provider_id', $appleUser['sub'])
+            ->first();
+
+        if (!$user && !empty($appleUser['email'])) {
+            $user = User::where('email', $appleUser['email'])->first();
+        }
+
+        if ($user) {
+
+            $user->update([
+                'provider' => 'apple',
+                'provider_id' => $appleUser['sub'],
+                'last_login_at' => now(),
+            ]);
+
+            return [
+                'user' => $user,
+                'is_new' => false,
+            ];
+        }
+
+        $user = DB::transaction(function () use ($appleUser) {
+
+            $user = User::create([
+                'name' => $appleUser['name'],
+                'email' => $appleUser['email'],
+                'password' => Hash::make(Str::random(32)),
+                'provider' => 'apple',
+                'provider_id' => $appleUser['sub'],
+                'status' => 'not_ready',
+                'last_login_at' => now(),
+            ]);
+
+            Subscription::create([
+                'user_id' => $user->id,
+                'tier_id' => 1,
+                'active' => true,
+            ]);
+
+            return $user;
+        });
+
+        return [
+            'user' => $user,
+            'is_new' => true,
+        ];
+    }
 }
