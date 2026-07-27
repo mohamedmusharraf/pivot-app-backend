@@ -557,6 +557,7 @@ All fields are `sometimes` for update. If a new `files` upload is provided, old 
 - `forgot-password` and `reset-password` are currently inside auth middleware, so bearer token is required.
 - Some endpoints return plain resources, some return arrays with resource objects, and some return `{ "message": ... }` objects.
 - `GET /activities` and `GET /hobbies` return global collections from repositories (not explicitly filtered by authenticated user in current implementation).
+- `POST /app-block-log` expects a batched `events` array and stores one row per app inside each event, including `event_type`.
 
 ---
 

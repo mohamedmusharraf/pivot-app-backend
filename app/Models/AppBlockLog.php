@@ -14,6 +14,7 @@ class AppBlockLog extends Model
 
     protected $fillable = [
         'user_id',
+        'event_type',
         'app_name',
         'package_name',
         'blocked_at',

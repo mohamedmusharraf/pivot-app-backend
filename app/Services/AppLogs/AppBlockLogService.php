@@ -29,6 +29,7 @@ class AppBlockLogService
             foreach ($event['apps'] as $app) {
                 $insertData[] = [
                     'user_id' => $userId,
+                    'event_type' => $event['event_type'],
                     'app_name' => $app['app_name'],
                     'package_name' => $app['package_name'] ?? null,
                     'blocked_at' => $blockedAt,
@@ -53,12 +54,41 @@ class AppBlockLogService
 
     public function update(AppBlockLog $appBlockLog, array $data): AppBlockLog
     {
-        $updateData = array_filter([
-            'released_at' => $data['released_at'] ?? null,
-            'attempted' => $data['attempted'] ?? $appBlockLog->attempted,
-            'success' => $data['success'] ?? $appBlockLog->success,
-            'time_saved_minutes' => $data['time_saved_minutes'] ?? $appBlockLog->time_saved_minutes,
-        ]);
+        $updateData = [];
+
+        if (array_key_exists('event_type', $data)) {
+            $updateData['event_type'] = $data['event_type'];
+        }
+
+        if (array_key_exists('app_name', $data)) {
+            $updateData['app_name'] = $data['app_name'];
+        }
+
+        if (array_key_exists('package_name', $data)) {
+            $updateData['package_name'] = $data['package_name'];
+        }
+
+        if (array_key_exists('blocked_at', $data)) {
+            $updateData['blocked_at'] = Carbon::parse($data['blocked_at']);
+        }
+
+        if (array_key_exists('released_at', $data)) {
+            $updateData['released_at'] = $data['released_at'] !== null
+                ? Carbon::parse($data['released_at'])
+                : null;
+        }
+
+        if (array_key_exists('attempted', $data)) {
+            $updateData['attempted'] = $data['attempted'];
+        }
+
+        if (array_key_exists('success', $data)) {
+            $updateData['success'] = $data['success'];
+        }
+
+        if (array_key_exists('time_saved_minutes', $data)) {
+            $updateData['time_saved_minutes'] = $data['time_saved_minutes'];
+        }
 
         return $this->repository->update($appBlockLog, $updateData);
     }

@@ -98,6 +98,41 @@
 
 ---
 
+## App Block Log Endpoints (`apiResource`)
+
+| Method | Endpoint                    | Auth | Description             |
+| ------ | --------------------------- | ---- | ----------------------- |
+| GET    | `/app-block-log`            | Yes  | List app block logs     |
+| POST   | `/app-block-log`            | Yes  | Store batched log events |
+| GET    | `/app-block-log/{id}`       | Yes  | Get one app block log   |
+| PUT    | `/app-block-log/{id}`       | Yes  | Update one app block log |
+| DELETE | `/app-block-log/{id}`       | Yes  | Delete one app block log |
+
+**Frontend request payload:**
+
+```json
+{
+    "events": [
+        {
+            "event_type": "hardcore",
+            "blocked_at": "2026-07-07T10:00:00Z",
+            "released_at": "2026-07-07T11:00:00Z",
+            "time_saved_minutes": 60,
+            "apps": [
+                {
+                    "app_name": "TikTok",
+                    "package_name": "com.tiktok.android",
+                    "attempted": true,
+                    "success": true
+                }
+            ]
+        }
+    ]
+}
+```
+
+---
+
 ## Common Request Headers
 
 ```http

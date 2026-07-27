@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreAppBlockLogRequest;
+use App\Http\Requests\UpdateAppBlockLogRequest;
 use App\Models\AppBlockLog;
 use App\Services\AppLogs\AppBlockLogService;
 use Illuminate\Http\JsonResponse;
@@ -43,7 +44,7 @@ class AppBlockLogController extends Controller
     /**
      * Update an app block log.
      */
-    public function update(StoreAppBlockLogRequest $request, AppBlockLog $appBlockLog): JsonResponse
+    public function update(UpdateAppBlockLogRequest $request, AppBlockLog $appBlockLog): JsonResponse
     {
         try {
             $updated = $this->appBlockLogService->update(
