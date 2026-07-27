@@ -3,21 +3,34 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreStreakLogsRequest;
-use App\Http\Resources\StreakLogsResource;
 use App\Services\AppLogs\StreakLogsService;
-use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 
 class StreakLogsController extends Controller
 {
     public function __construct(
         protected StreakLogsService $streakLogsService
-    ){}
+    ) {}
 
-    public function store(StoreStreakLogsRequest $request)
+    public function store(StoreStreakLogsRequest $request): JsonResponse
     {
-        $data = $request->validated();
-        $data['user_id'] = $request->user()->id;
-        $streakLog = $this->streakLogsService->store($data);
-        return New StreakLogsResource($streakLog);
+        try {
+            $streakLog = $this->streakLogsService->store(
+                $request->user()->id,
+                $request->validated()
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Streak log recorded successfully.',
+                'data'    => $streakLog,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to record streak log.',
+                'error'   => $e->getMessage(),
+            ], 500);
+        }
     }
 }

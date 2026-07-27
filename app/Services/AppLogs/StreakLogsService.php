@@ -2,16 +2,16 @@
 
 namespace App\Services\AppLogs;
 
-use App\Repositories\StreakLogsRepository;
+use App\Repositories\Contracts\StreakLogsRepositoryInterface;
 
 class StreakLogsService
 {
     public function __construct(
-        protected StreakLogsRepository $streakLogsRepository
-    ){}
+        protected StreakLogsRepositoryInterface $streakLogsRepository
+    ) {}
 
-    public function store(array $data)
+    public function store(int $userId, array $data)
     {
-        return $this->streakLogsRepository->create($data);
+        return $this->streakLogsRepository->updateOrCreateStreak($userId, $data);
     }
 }

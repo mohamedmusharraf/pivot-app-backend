@@ -2,34 +2,37 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Services\AppLogs\GoalLogsService;
 use App\Http\Requests\StoreGoalLogsRequest;
+use App\Services\AppLogs\GoalLogsService;
+use Illuminate\Http\JsonResponse;
 
 class GoalLogsController extends Controller
 {
     public function __construct(
         protected GoalLogsService $goalLogsService
-    ){}
-    
+    ) {}
 
-    public function store(StoreGoalLogsRequest $request)
+    public function store(StoreGoalLogsRequest $request): JsonResponse
     {
         try {
-            $data = $request->validated();
-            $data['user_id'] = $request->user()->id;
+            $validated = $request->validated();
 
-            $goalLog = $this->goalLogsService->store($data);
+            $this->goalLogsService->storeBatch(
+                $request->user()->id,
+                $validated['events']
+            );
 
             return response()->json([
-                'message' => 'Goal log created successfully.',
-                'data' => $goalLog
+                'success' => true,
+                'message' => 'Goal logs stored successfully.',
             ], 201);
+
         } catch (\Throwable $th) {
             return response()->json([
+                'success' => false,
                 'message' => 'Failed to create Goal log.',
                 'error' => $th->getMessage()
             ], 500);
-        };
+        }
     }
 }

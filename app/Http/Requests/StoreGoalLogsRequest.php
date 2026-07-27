@@ -6,27 +6,31 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class StoreGoalLogsRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
-        return true;
+        return (bool) $this->user();
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
         return [
-            'goal_id' => 'required|exists:goals,id',
-            'target_minutes' => 'required|integer|min:0',
-            'achieved_minutes' => 'required|integer|min:0',
-            'completed' => 'required|boolean',
-            'goal_date' => 'required|date'
+            'events' => ['required', 'array', 'min:1'],
+            'events.*.goal_id' => ['nullable', 'integer', 'exists:goals,id'],
+            'events.*.target_minutes' => ['required', 'integer', 'min:0'],
+            'events.*.achieved_minutes' => ['required', 'integer', 'min:0'],
+            'events.*.completed' => ['nullable', 'boolean'],
+            'events.*.completed_at' => ['required', 'date'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'events.required' => 'At least one goal event is required.',
+            'events.*.target_minutes.required' => 'Target minutes field is required.',
+            'events.*.achieved_minutes.required' => 'Achieved minutes field is required.',
+            'events.*.completed_at.required' => 'Completed at date is required.',
+            'events.*.completed_at.date' => 'Completed at must be a valid date.',
         ];
     }
 }

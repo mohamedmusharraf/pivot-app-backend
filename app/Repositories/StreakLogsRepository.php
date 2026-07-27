@@ -7,8 +7,22 @@ use App\Repositories\Contracts\StreakLogsRepositoryInterface;
 
 class StreakLogsRepository implements StreakLogsRepositoryInterface
 {
-    public function create(array $data)
+    public function updateOrCreateStreak(int $userId, array $data)
     {
-        return StreakLogs::create($data);
+        $existing = StreakLogs::where('user_id', $userId)->first();
+
+        $currentStreak = $data['current_streak'];
+        $longestStreak = $existing 
+            ? max($existing->longest_streak, $currentStreak) 
+            : $currentStreak;
+
+        return StreakLogs::updateOrCreate(
+            ['user_id' => $userId],
+            [
+                'current_streak'      => $currentStreak,
+                'longest_streak'      => $longestStreak,
+                'last_completed_date' => $data['last_completed_date'],
+            ]
+        );
     }
 }

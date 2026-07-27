@@ -4,5 +4,5 @@ namespace App\Repositories\Contracts;
 
 interface StreakLogsRepositoryInterface
 {
-    public function create(array $data);
+    public function updateOrCreateStreak(int $userId, array $data);
 }

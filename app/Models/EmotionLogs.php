@@ -12,4 +12,8 @@ class EmotionLogs extends Model
         'app_name',
         'logged_at'
     ];
+
+    protected $casts = [
+        'logged_at' => 'datetime',
+    ];
 }
