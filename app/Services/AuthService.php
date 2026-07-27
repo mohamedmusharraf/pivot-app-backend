@@ -31,7 +31,10 @@ class AuthService
     {
         $user = $this->authRepositoryInterface->createUser($data);
 
-        $this->revenueCatService->grantFreeTrial((string) $user->id);
+        $this->revenueCatService->grantFreeTrial(
+            (string) $user->id,
+            $data['platform'] ?? 'android'
+        );
 
         $token = $user->createToken('mobile')->plainTextToken;
 

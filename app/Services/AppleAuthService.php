@@ -38,7 +38,8 @@ class AppleAuthService
 
         if ($result['is_new']) {
             $this->revenueCatService->grantFreeTrial(
-                (string) $result['user']->id
+                (string) $result['user']->id,
+                'ios'
             );
         }
 

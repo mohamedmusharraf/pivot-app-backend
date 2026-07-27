@@ -23,6 +23,7 @@ class GoogleAuthRequest extends FormRequest
     {
         return [
             'id_token' => ['required', 'string'],
+            'platform' => ['nullable', 'string', 'in:ios,android'],
         ];
     }
 }

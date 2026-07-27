@@ -3,14 +3,11 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
-use Exception;
 
 class RevenueCatService
 {
-    public function grantFreeTrial(string $appUserId): void
+    public function grantFreeTrial(string $appUserId, string $platform = 'android'): void
     {
-        // Step 1: Get or create the RevenueCat customer
         $customer = Http::withHeaders([
             'Authorization' => 'Bearer ' . config('services.revenuecat.secret_key'),
             'Accept' => 'application/json',
@@ -20,13 +17,18 @@ class RevenueCatService
             throw new \Exception($customer->body());
         }
 
-        // Step 2: Grant the promotional entitlement
+        if (strtolower($platform) === 'ios') {
+            $entitlementId = 'tier_3_ios';
+        } else {
+            $entitlementId = 'tier_3_android';
+        }
+
         $response = Http::withHeaders([
             'Authorization' => 'Bearer ' . config('services.revenuecat.secret_key'),
             'Accept' => 'application/json',
             'Content-Type' => 'application/json',
         ])->post(
-            "https://api.revenuecat.com/v1/subscribers/{$appUserId}/entitlements/tier_3_android/promotional",
+            "https://api.revenuecat.com/v1/subscribers/{$appUserId}/entitlements/{$entitlementId}/promotional",
             [
                 'duration' => 'weekly',
             ]

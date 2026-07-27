@@ -33,6 +33,7 @@ class RegisterRequest extends FormRequest
             ],
             'password' => 'required|string|min:6|confirmed',
             'password_confirmation' => 'required|string|min:6',
+            'platform' => ['nullable', 'string', 'in:ios,android'],
         ];
     }
 
@@ -56,6 +57,7 @@ class RegisterRequest extends FormRequest
             'password_confirmation.required'   => 'Password confirmation is required.',
             'password_confirmation.string'     => 'Password confirmation must be a valid string.',
             'password_confirmation.min'        => 'Password confirmation must be at least 6 characters.',
+            'platform.in'                      => 'Platform must be either ios or android.',
         ];
     }
 }
