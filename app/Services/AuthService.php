@@ -33,7 +33,7 @@ class AuthService
 
         $this->revenueCatService->grantFreeTrial(
             (string) $user->id,
-            $data['platform'] ?? 'android'
+            $data['os'] ?? 'android'
         );
 
         $token = $user->createToken('mobile')->plainTextToken;

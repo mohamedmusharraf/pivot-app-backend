@@ -15,7 +15,7 @@ class GoogleAuthService
         protected RevenueCatService $revenueCatService
     ) {}
 
-    public function authenticate(string $idToken, string $platform = 'android'): User
+    public function authenticate(string $idToken, string $os = 'android'): User
     {
         $googleClient = new Client();
 
@@ -56,7 +56,7 @@ class GoogleAuthService
 
             $this->revenueCatService->grantFreeTrial(
                 (string) $result['user']->id,
-                $platform
+                $os
             );
         }
 

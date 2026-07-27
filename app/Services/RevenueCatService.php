@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Http;
 
 class RevenueCatService
 {
-    public function grantFreeTrial(string $appUserId, string $platform = 'android'): void
+    public function grantFreeTrial(string $appUserId, string $os = 'android'): void
     {
         $customer = Http::withHeaders([
             'Authorization' => 'Bearer ' . config('services.revenuecat.secret_key'),
@@ -17,7 +17,7 @@ class RevenueCatService
             throw new \Exception($customer->body());
         }
 
-        if (strtolower($platform) === 'ios') {
+        if (strtolower($os) === 'ios') {
             $entitlementId = 'tier_3_ios';
         } else {
             $entitlementId = 'tier_3_android';

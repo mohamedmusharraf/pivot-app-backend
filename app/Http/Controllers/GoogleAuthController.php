@@ -20,7 +20,7 @@ class GoogleAuthController extends Controller
         try {
             $user = $this->googleAuthService->authenticate(
                 $request->validated('id_token'),
-                $request->validated('platform') ?? 'android'
+                $request->validated('os') ?? 'android'
             );
 
             $token = $user->createToken('mobile')->plainTextToken;
