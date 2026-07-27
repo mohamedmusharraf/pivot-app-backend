@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AppUsageLogs extends Model
 {
+    use HasFactory;
+
     protected $table = 'app_usage_logs';
 
     protected $fillable = [
@@ -15,18 +18,17 @@ class AppUsageLogs extends Model
         'package_name',
         'started_at',
         'ended_at',
-        'usage_minutes'
+        'duration_minutes',
+        'opened_count',
     ];
 
     protected $casts = [
         'started_at' => 'datetime',
         'ended_at' => 'datetime',
-        'usage_minutes' => 'integer',
+        'duration_minutes' => 'integer',
+        'opened_count' => 'integer',
     ];
 
-    /**
-     * Get the user that owns the app usage log.
-     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

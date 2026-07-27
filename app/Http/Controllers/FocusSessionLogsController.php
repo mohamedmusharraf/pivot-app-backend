@@ -12,24 +12,24 @@ class FocusSessionLogsController extends Controller
         protected FocusSessionLogsService $focusSessionLogsService
     ) {}
 
-
     public function store(StoreFocusSessionLogsRequest $request): JsonResponse
     {
         try {
-            $data = $request->validated();
-            $data['user_id'] = $request->user()->id;
-
-            $focusSessionLog = $this->focusSessionLogsService->store($data);
+            $this->focusSessionLogsService->store(
+                $request->user()->id,
+                $request->validated()['events']
+            );
 
             return response()->json([
-                'message' => 'Focus session log created successfully.',
-                'data' => $focusSessionLog
+                'success' => true,
+                'message' => 'Focus session logs saved successfully.'
             ], 201);
         } catch (\Throwable $th) {
             return response()->json([
-                'message' => 'Failed to create Focus session log.',
+                'success' => false,
+                'message' => 'Failed to create focus session logs.',
                 'error' => $th->getMessage()
             ], 500);
-        };
+        }
     }
 }

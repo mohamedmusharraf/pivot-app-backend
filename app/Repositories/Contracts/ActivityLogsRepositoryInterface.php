@@ -4,5 +4,5 @@ namespace App\Repositories\Contracts;
 
 interface ActivityLogsRepositoryInterface
 {
-    public function create(array $data);
+    public function insertBatch(array $records): bool;
 }

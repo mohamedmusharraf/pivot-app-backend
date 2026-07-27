@@ -4,11 +4,14 @@ namespace App\Repositories;
 
 use App\Models\ActivityLogs;
 use App\Repositories\Contracts\ActivityLogsRepositoryInterface;
+use Illuminate\Support\Facades\DB;
 
 class ActivityLogsRepository implements ActivityLogsRepositoryInterface
 {
-    public function create(array $data)
+    public function insertBatch(array $records): bool
     {
-        return ActivityLogs::create($data);
+        return DB::transaction(function () use ($records) {
+            return ActivityLogs::insert($records);
+        });
     }
 }

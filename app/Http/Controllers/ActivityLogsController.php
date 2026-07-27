@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-
 use App\Http\Requests\StoreActivityLogsRequest;
 use App\Services\ActivityLogsService;
+use Illuminate\Http\JsonResponse;
 
 class ActivityLogsController extends Controller
 {
@@ -13,21 +12,27 @@ class ActivityLogsController extends Controller
         protected ActivityLogsService $activityLogsService
     ) {}
 
-    public function store(StoreActivityLogsRequest $request)
+    public function store(StoreActivityLogsRequest $request): JsonResponse
     {
         try {
-            $data = $request->validated();
-            $data['user_id'] = $request->user()->id;
-            $activityLog = $this->activityLogsService->store($data);
+            $validated = $request->validated();
+            
+            $this->activityLogsService->storeBatch(
+                $request->user()->id, 
+                $validated['events']
+            );
+
             return response()->json([
-                'message' => 'Activity log created successfully.',
-                'data' => $activityLog
+                'success' => true,
+                'message' => 'Activity logs stored successfully.',
             ], 201);
+
         } catch (\Throwable $th) {
             return response()->json([
+                'success' => false,
                 'message' => 'Failed to create activity log.',
                 'error' => $th->getMessage()
             ], 500);
-        };
+        }
     }
 }

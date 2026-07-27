@@ -19,20 +19,19 @@ class AppUsageLogsController extends Controller
     public function store(StoreAppUsageLogRequest $request): JsonResponse
     {
         try {
-            $appUsageLog = $this->appUsageLogsService->store(
+            $this->appUsageLogsService->storeBatch(
                 $request->user()->id,
                 $request->validated()
             );
 
             return response()->json([
                 'success' => true,
-                'message' => 'App usage log created successfully.',
-                'data' => $appUsageLog,
+                'message' => 'App usage logs processed and saved successfully.',
             ], 201);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to create app usage log.',
+                'message' => 'Failed to store app usage logs.',
                 'error' => $e->getMessage(),
             ], 500);
         }

@@ -7,8 +7,8 @@ use App\Repositories\Contracts\FocusSessionLogsRepositoryInterface;
 
 class FocusSessionLogsRepository implements FocusSessionLogsRepositoryInterface
 {
-    public function create(array $data): FocusSessionLogs
+    public function insertBatch(array $records): bool
     {
-        return FocusSessionLogs::create($data);
+        return FocusSessionLogs::insert($records);
     }
 }

@@ -3,31 +3,52 @@
 namespace App\Services\AppLogs;
 
 use App\Models\AppBlockLog;
-use App\Repositories\Contracts\AppBlockLogRepositoryInterface;
+use App\Repositories\AppBlockLogRepository;
 use Carbon\Carbon;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\DB;
 
 class AppBlockLogService
 {
-    public function __construct(
-        protected AppBlockLogRepositoryInterface $repository
-    ) {}
-
-    public function store(int $userId, array $data): AppBlockLog
+    protected AppBlockLogRepository $repository;
+    public function __construct(AppBlockLogRepository $repository)
     {
-        $this->validateBlockLogData($data);
+        $this->repository = $repository;
+    }
 
-        $blockLogData = [
-            'user_id' => $userId,
-            'app_name' => $data['app_name'],
-            'blocked_at' => $data['blocked_at'] ?? Carbon::now(),
-            'released_at' => $data['released_at'] ?? null,
-            'attempted' => $data['attempted'] ?? false,
-            'success' => $data['success'] ?? false,
-            'time_saved_minutes' => $data['time_saved_minutes'] ?? 0,
-        ];
+    public function storeBatch(int $userId, array $data): bool
+    {
+        $insertData = [];
+        $now = Carbon::now();
 
-        return $this->repository->create($blockLogData);
+        foreach ($data['events'] as $event) {
+            $blockedAt = Carbon::parse($event['blocked_at']);
+            $releasedAt = isset($event['released_at']) ? Carbon::parse($event['released_at']) : null;
+            $timeSavedMinutes = $event['time_saved_minutes'] ?? 0;
+
+            foreach ($event['apps'] as $app) {
+                $insertData[] = [
+                    'user_id' => $userId,
+                    'app_name' => $app['app_name'],
+                    'package_name' => $app['package_name'] ?? null,
+                    'blocked_at' => $blockedAt,
+                    'released_at' => $releasedAt,
+                    'attempted' => $app['attempted'] ?? false,
+                    'success' => $app['success'] ?? false,
+                    'time_saved_minutes' => $timeSavedMinutes,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ];
+            }
+        }
+
+        if (empty($insertData)) {
+            return false;
+        }
+
+        return DB::transaction(function () use ($insertData) {
+            return $this->repository->insertBatch($insertData);
+        });
     }
 
     public function update(AppBlockLog $appBlockLog, array $data): AppBlockLog

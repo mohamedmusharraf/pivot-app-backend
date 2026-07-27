@@ -6,6 +6,7 @@ use App\Models\AppUsageLogs;
 use App\Repositories\Contracts\AppUsageLogsRepositoryInterface;
 use Carbon\Carbon;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\DB;
 
 class AppUsageLogsService
 {
@@ -14,25 +15,33 @@ class AppUsageLogsService
     ) {}
 
 
-    public function store(int $userId, array $data): AppUsageLogs
+    public function storeBatch(int $userId, array $data): bool
     {
-        $this->validateUsageLogData($data);
+        $insertData = [];
+        $now = Carbon::now();
 
-        $usageMinutes = $data['usage_minutes'] ?? $this->calculateUsageMinutes(
-            $data['started_at'],
-            $data['ended_at']
-        );
+        foreach ($data['batched_logs'] as $batch) {
+            $startedAt = Carbon::parse($batch['timeframe']['started_at']);
+            $endedAt = Carbon::parse($batch['timeframe']['ended_at']);
 
-        $usageLogData = [
-            'user_id' => $userId,
-            'app_name' => $data['app_name'],
-            'package_name' => $data['package_name'] ?? null,
-            'started_at' => $this->parseDateTime($data['started_at']),
-            'ended_at' => $this->parseDateTime($data['ended_at']),
-            'usage_minutes' => $usageMinutes,
-        ];
+            foreach ($batch['apps'] as $app) {
+                $insertData[] = [
+                    'user_id' => $userId,
+                    'app_name' => $app['app_name'],
+                    'package_name' => $app['package_name'] ?? null,
+                    'started_at' => $startedAt,
+                    'ended_at' => $endedAt,
+                    'duration_minutes' => $app['duration_minutes'],
+                    'opened_count' => $app['opened_count'] ?? 0,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ];
+            }
+        }
 
-        return $this->repository->create($usageLogData);
+            return DB::transaction(function () use ($insertData) {
+            return AppUsageLogs::insert($insertData);
+        });
     }
 
     public function update(AppUsageLogs $appUsageLog, array $data): AppUsageLogs

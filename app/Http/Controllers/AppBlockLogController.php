@@ -9,9 +9,12 @@ use Illuminate\Http\JsonResponse;
 
 class AppBlockLogController extends Controller
 {
-    public function __construct(
-        protected AppBlockLogService $appBlockLogService
-    ) {}
+    protected AppBlockLogService $appBlockLogService;
+
+    public function __construct(AppBlockLogService $appBlockLogService)
+    {
+        $this->appBlockLogService = $appBlockLogService;
+    }
 
     /**
      * Store a new app block log.
@@ -19,15 +22,14 @@ class AppBlockLogController extends Controller
     public function store(StoreAppBlockLogRequest $request): JsonResponse
     {
         try {
-            $appBlockLog = $this->appBlockLogService->store(
+            $this->appBlockLogService->storeBatch(
                 $request->user()->id,
                 $request->validated()
             );
 
             return response()->json([
                 'success' => true,
-                'message' => 'App block log created successfully.',
-                'data' => $appBlockLog,
+                'message' => 'App block logs saved successfully.',
             ], 201);
         } catch (\Exception $e) {
             return response()->json([

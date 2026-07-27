@@ -28,9 +28,9 @@ class AppBlockLogRepository implements AppBlockLogRepositoryInterface
     /**
      * Create a new app block log.
      */
-    public function create(array $data): AppBlockLog
+    public function insertBatch(array $records): bool
     {
-        return AppBlockLog::create($data);
+        return AppBlockLog::insert($records);
     }
 
     /**
