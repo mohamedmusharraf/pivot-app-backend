@@ -17,21 +17,22 @@ class ChallengePackController extends Controller
 
     public function index(Request $request): JsonResponse
     {
+        // Get the authenticated user's ID automatically
+        $userId = $request->user()->id; 
+
         $request->validate([
-            'user_id'        => 'required|integer',
             'transaction_id' => 'nullable|string',
         ]);
 
-        $result = $this->challengePackService->index(
-            (int) $request->user_id,
-            $request->transaction_id
-        );
+        $transactionId = $request->input('transaction_id');
+
+        $result = $this->challengePackService->index($userId, $transactionId);
 
         // Single record lookup (user_id + transaction_id)
         if ($request->filled('transaction_id')) {
             if (!$result) {
                 return response()->json([
-                    'message' => 'Challenge pack not found for the given criteria.'
+                    'message' => 'Challenge pack not found or already used for the given criteria.'
                 ], 404);
             }
 
@@ -41,9 +42,9 @@ class ChallengePackController extends Controller
             ], 200);
         }
 
-        // All-records lookup (user_id only)
+        // All active/unused records lookup for current user
         return response()->json([
-            'message' => 'Challenge packs retrieved successfully.',
+            'message' => 'Unused challenge packs retrieved successfully.',
             'data'    => $result
         ], 200);
     }

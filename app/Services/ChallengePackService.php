@@ -22,12 +22,8 @@ class ChallengePackService
                 return $this->challengePackRepository->getChallengePackDetails($userId, $transactionId);
             }
 
-            $records = $this->challengePackRepository->getByUserId($userId);
-
-            // If all records are 'used' (or no records exist), return empty
-            $available = $records->filter(fn($r) => $r->status !== 'used');
-
-            return $available->isEmpty() ? collect([]) : $records;
+            // Fetch only unused records directly
+            return $this->challengePackRepository->getUnusedByUserId($userId);
         } catch (Exception $e) {
             Log::error('Error fetching challenge pack details: ' . $e->getMessage());
             throw $e;
