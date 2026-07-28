@@ -31,10 +31,11 @@ class AuthService
     {
         $user = $this->authRepositoryInterface->createUser($data);
 
-        $this->revenueCatService->grantFreeTrial(
-            (string) $user->id,
-            $data['os'] ?? 'android'
-        );
+        // TODO: Re-enable free trial granting when the promo flow is ready again.
+        // $this->revenueCatService->grantFreeTrial(
+        //     (string) $user->id,
+        //     $data['os'] ?? 'android'
+        // );
 
         $token = $user->createToken('mobile')->plainTextToken;
 
