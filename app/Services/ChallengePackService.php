@@ -22,7 +22,6 @@ class ChallengePackService
                 return $this->challengePackRepository->getChallengePackDetails($userId, $transactionId);
             }
 
-            // Fetch only unused records directly
             return $this->challengePackRepository->getUnusedByUserId($userId);
         } catch (Exception $e) {
             Log::error('Error fetching challenge pack details: ' . $e->getMessage());

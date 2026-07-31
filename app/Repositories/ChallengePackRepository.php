@@ -11,13 +11,11 @@ class ChallengePackRepository implements ChallengePackRepositoryInterface
         return ChallengePacksWebhook::where('user_id', $userId)->get();
     }
 
-    /**
-     * Get only unused challenge packs for the user.
-     */
+
     public function getUnusedByUserId(int $userId)
     {
         return ChallengePacksWebhook::where('user_id', $userId)
-            ->where('status', '!=', 'used') // Excludes used packs directly in DB query
+            ->where('status', '!=', 'used') 
             ->get();
     }
 
@@ -25,7 +23,7 @@ class ChallengePackRepository implements ChallengePackRepositoryInterface
     {
         return ChallengePacksWebhook::where('user_id', $userId)
             ->where('transaction_id', $transactionId)
-            ->where('status', '!=', 'used') // Ensures single record lookup also ignores used packs
+            ->where('status', '!=', 'used') 
             ->first();
     }
 
