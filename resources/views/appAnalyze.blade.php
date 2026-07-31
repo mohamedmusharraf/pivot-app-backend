@@ -4,21 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Application Usage & Behavior Analytics</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
-            --bg-color: #0b0f19;
-            --surface-color: rgba(20, 26, 45, 0.7);
-            --surface-border: rgba(255, 255, 255, 0.08);
-            --text-main: #f1f5f9;
+            --bg-color: #f8fafc;
+            --surface-color: rgba(255, 255, 255, 0.85);
+            --surface-border: rgba(226, 232, 240, 0.8);
+            --text-main: #0f172a;
             --text-muted: #64748b;
-            --primary: #3b82f6;
-            --primary-glow: rgba(59, 130, 246, 0.15);
-            --success: #10b981;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-            --glass-blur: blur(16px);
+            --primary: #2563eb;
+            --primary-glow: rgba(37, 99, 235, 0.08);
+            --success: #059669;
+            --danger: #dc2626;
+            --warning: #d97706;
+            --glass-blur: blur(12px);
+            --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
         }
 
         * {
@@ -31,8 +34,8 @@
             font-family: 'Inter', sans-serif;
             background-color: var(--bg-color);
             background-image: 
-                radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.12) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.08) 0px, transparent 50%);
+                radial-gradient(at 0% 0%, rgba(37, 99, 235, 0.06) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.05) 0px, transparent 50%);
             color: var(--text-main);
             min-height: 100vh;
             padding: 2rem;
@@ -57,7 +60,7 @@
         .header h1 {
             font-size: 2.25rem;
             font-weight: 800;
-            background: linear-gradient(to right, #60a5fa, #34d399);
+            background: linear-gradient(to right, #1d4ed8, #059669);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             letter-spacing: -0.03em;
@@ -94,7 +97,7 @@
             align-items: center;
             gap: 0.75rem;
             padding: 0.85rem 1.25rem;
-            background: rgba(255, 255, 255, 0.02);
+            background: #ffffff;
             border: 1px solid var(--surface-border);
             border-radius: 0.75rem;
             color: var(--text-muted);
@@ -102,19 +105,21 @@
             text-decoration: none;
             transition: all 0.2s ease;
             cursor: pointer;
+            box-shadow: var(--shadow-sm);
         }
 
         .tab-btn:hover {
             color: var(--text-main);
-            background: rgba(255, 255, 255, 0.05);
-            border-color: rgba(255, 255, 255, 0.15);
+            background: #f1f5f9;
+            border-color: #cbd5e1;
         }
 
         .tab-btn.active {
-            color: var(--text-main);
-            background: var(--primary-glow);
+            color: var(--primary);
+            background: #eff6ff;
             border-color: var(--primary);
-            box-shadow: 0 0 15px rgba(59, 130, 246, 0.1);
+            box-shadow: var(--shadow-sm);
+            font-weight: 600;
         }
 
         .tab-btn svg {
@@ -143,12 +148,14 @@
             border-radius: 1rem;
             padding: 1.25rem;
             backdrop-filter: var(--glass-blur);
+            box-shadow: var(--shadow-sm);
             transition: all 0.3s ease;
         }
 
         .kpi-card:hover {
             transform: translateY(-2px);
-            border-color: rgba(255, 255, 255, 0.15);
+            box-shadow: var(--shadow-md);
+            border-color: #cbd5e1;
         }
 
         .kpi-label {
@@ -179,6 +186,7 @@
             border-radius: 1rem;
             padding: 1.5rem;
             backdrop-filter: var(--glass-blur);
+            box-shadow: var(--shadow-sm);
         }
 
         .chart-card h3 {
@@ -203,6 +211,7 @@
             border-radius: 1rem;
             padding: 1.5rem;
             backdrop-filter: var(--glass-blur);
+            box-shadow: var(--shadow-sm);
             overflow: hidden;
         }
 
@@ -233,6 +242,7 @@
             text-transform: uppercase;
             font-size: 0.75rem;
             letter-spacing: 0.05em;
+            background-color: rgba(241, 245, 249, 0.5);
         }
 
         td {
@@ -242,7 +252,7 @@
         }
 
         tr:hover td {
-            background: rgba(255, 255, 255, 0.01);
+            background: rgba(241, 245, 249, 0.6);
         }
 
         /* Badges */
@@ -257,27 +267,27 @@
         }
 
         .badge-success {
-            background: rgba(16, 185, 129, 0.15);
-            color: var(--success);
-            border: 1px solid rgba(16, 185, 129, 0.25);
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
         }
 
         .badge-danger {
-            background: rgba(239, 68, 68, 0.15);
-            color: var(--danger);
-            border: 1px solid rgba(239, 68, 68, 0.25);
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
         }
 
         .badge-primary {
-            background: rgba(59, 130, 246, 0.15);
-            color: var(--primary);
-            border: 1px solid rgba(59, 130, 246, 0.25);
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #bfdbfe;
         }
 
         .badge-warning {
-            background: rgba(245, 158, 11, 0.15);
-            color: var(--warning);
-            border: 1px solid rgba(245, 158, 11, 0.25);
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fde68a;
         }
 
         /* Pagination styles */
@@ -290,17 +300,19 @@
 
         .pagination a, .pagination span {
             padding: 0.5rem 1rem;
-            background: rgba(255, 255, 255, 0.02);
+            background: #ffffff;
             border: 1px solid var(--surface-border);
             color: var(--text-main);
             text-decoration: none;
             border-radius: 0.5rem;
             transition: all 0.2s;
+            box-shadow: var(--shadow-sm);
         }
 
         .pagination a:hover, .pagination .active {
             background: var(--primary);
             border-color: var(--primary);
+            color: #ffffff;
         }
 
         .empty-state {
@@ -656,15 +668,15 @@
                             {
                                 label: 'Target Minutes',
                                 data: dataValues.target,
-                                backgroundColor: 'rgba(59, 130, 246, 0.4)',
-                                borderColor: '#3b82f6',
+                                backgroundColor: 'rgba(37, 99, 235, 0.65)',
+                                borderColor: '#2563eb',
                                 borderWidth: 1
                             },
                             {
                                 label: 'Achieved Minutes',
                                 data: dataValues.achieved,
-                                backgroundColor: 'rgba(16, 185, 129, 0.4)',
-                                borderColor: '#10b981',
+                                backgroundColor: 'rgba(5, 150, 105, 0.65)',
+                                borderColor: '#059669',
                                 borderWidth: 1
                             }
                         ]
@@ -674,16 +686,16 @@
                         maintainAspectRatio: false,
                         scales: {
                             y: {
-                                grid: { color: 'rgba(255, 255, 255, 0.05)' },
-                                ticks: { color: '#94a3b8' }
+                                grid: { color: 'rgba(226, 232, 240, 0.8)' },
+                                ticks: { color: '#64748b' }
                             },
                             x: {
-                                grid: { color: 'rgba(255, 255, 255, 0.05)' },
-                                ticks: { color: '#94a3b8' }
+                                grid: { color: 'rgba(226, 232, 240, 0.8)' },
+                                ticks: { color: '#64748b' }
                             }
                         },
                         plugins: {
-                            legend: { labels: { color: '#e2e8f0' } }
+                            legend: { labels: { color: '#334155' } }
                         }
                     }
                 };
@@ -695,13 +707,13 @@
                         datasets: [{
                             data: dataValues,
                             backgroundColor: [
-                                '#10b981',
-                                '#ef4444',
-                                '#3b82f6',
-                                '#f59e0b',
-                                '#6366f1',
-                                '#a855f7',
-                                '#ec4899'
+                                '#059669',
+                                '#dc2626',
+                                '#2563eb',
+                                '#d97706',
+                                '#4f46e5',
+                                '#9333ea',
+                                '#db2777'
                             ],
                             borderWidth: 0
                         }]
@@ -712,7 +724,7 @@
                         plugins: {
                             legend: {
                                 position: 'right',
-                                labels: { color: '#e2e8f0' }
+                                labels: { color: '#334155' }
                             }
                         }
                     }
@@ -725,12 +737,12 @@
                         datasets: [{
                             label: 'Focused Minutes',
                             data: dataValues,
-                            borderColor: '#10b981',
-                            backgroundColor: 'rgba(16, 185, 129, 0.08)',
+                            borderColor: '#059669',
+                            backgroundColor: 'rgba(5, 150, 105, 0.1)',
                             borderWidth: 2,
                             fill: true,
                             tension: 0.3,
-                            pointBackgroundColor: '#34d399',
+                            pointBackgroundColor: '#059669',
                             pointHoverRadius: 6
                         }]
                     },
@@ -739,12 +751,12 @@
                         maintainAspectRatio: false,
                         scales: {
                             y: {
-                                grid: { color: 'rgba(255, 255, 255, 0.05)' },
-                                ticks: { color: '#94a3b8' }
+                                grid: { color: 'rgba(226, 232, 240, 0.8)' },
+                                ticks: { color: '#64748b' }
                             },
                             x: {
-                                grid: { color: 'rgba(255, 255, 255, 0.05)' },
-                                ticks: { color: '#94a3b8' }
+                                grid: { color: 'rgba(226, 232, 240, 0.8)' },
+                                ticks: { color: '#64748b' }
                             }
                         },
                         plugins: {
@@ -760,8 +772,8 @@
                         datasets: [{
                             label: 'Metric Value',
                             data: dataValues,
-                            backgroundColor: 'rgba(59, 130, 246, 0.5)',
-                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(37, 99, 235, 0.75)',
+                            borderColor: '#2563eb',
                             borderWidth: 1
                         }]
                     },
@@ -770,12 +782,12 @@
                         maintainAspectRatio: false,
                         scales: {
                             y: {
-                                grid: { color: 'rgba(255, 255, 255, 0.05)' },
-                                ticks: { color: '#94a3b8' }
+                                grid: { color: 'rgba(226, 232, 240, 0.8)' },
+                                ticks: { color: '#64748b' }
                             },
                             x: {
-                                grid: { color: 'rgba(255, 255, 255, 0.05)' },
-                                ticks: { color: '#94a3b8' }
+                                grid: { color: 'rgba(226, 232, 240, 0.8)' },
+                                ticks: { color: '#64748b' }
                             }
                         },
                         plugins: {
