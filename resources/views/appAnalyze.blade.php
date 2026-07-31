@@ -375,7 +375,7 @@
         // Query log items & compute KPIs
         switch ($activeTab) {
             case 'app-usage':
-                $logs = \App\Models\AppUsageLogs::with('user')->orderBy('created_at', 'desc')->paginate(15);
+                $logs = \App\Models\AppUsageLogs::with('user')->orderBy('created_at', 'desc')->paginate(10);
                 $kpis = [
                     ['label' => 'Total Time Logged', 'value' => round(\App\Models\AppUsageLogs::sum('duration_minutes')) . ' mins'],
                     ['label' => 'Total Opens', 'value' => \App\Models\AppUsageLogs::sum('opened_count')],
@@ -390,7 +390,7 @@
                 break;
 
             case 'app-block':
-                $logs = \App\Models\AppBlockLog::with('user')->orderBy('created_at', 'desc')->paginate(15);
+                $logs = \App\Models\AppBlockLog::with('user')->orderBy('created_at', 'desc')->paginate(10);
                 $kpis = [
                     ['label' => 'Total Block Events', 'value' => \App\Models\AppBlockLog::count()],
                     ['label' => 'Success Rate', 'value' => (\App\Models\AppBlockLog::count() > 0 ? round((\App\Models\AppBlockLog::where('success', true)->count() / \App\Models\AppBlockLog::count()) * 100, 1) : 0) . '%'],
@@ -407,7 +407,7 @@
                 break;
 
             case 'focus-session':
-                $logs = \App\Models\FocusSessionLogs::with('user')->orderBy('created_at', 'desc')->paginate(15);
+                $logs = \App\Models\FocusSessionLogs::with('user')->orderBy('created_at', 'desc')->paginate(10);
                 $kpis = [
                     ['label' => 'Total Focus Sessions', 'value' => \App\Models\FocusSessionLogs::count()],
                     ['label' => 'Completed Sessions', 'value' => \App\Models\FocusSessionLogs::where('completed', true)->count()],
@@ -422,7 +422,7 @@
                 break;
 
             case 'activity':
-                $logs = \App\Models\ActivityLogs::with(['user', 'activity'])->orderBy('created_at', 'desc')->paginate(15);
+                $logs = \App\Models\ActivityLogs::with(['user', 'activity'])->orderBy('created_at', 'desc')->paginate(10);
                 $kpis = [
                     ['label' => 'Total Logs', 'value' => \App\Models\ActivityLogs::count()],
                     ['label' => 'Completion Rate', 'value' => (\App\Models\ActivityLogs::count() > 0 ? round((\App\Models\ActivityLogs::where('completed', true)->count() / \App\Models\ActivityLogs::count()) * 100, 1) : 0) . '%'],
@@ -439,7 +439,7 @@
                 break;
 
             case 'goal':
-                $logs = \App\Models\GoalLogs::with('user')->orderBy('created_at', 'desc')->paginate(15);
+                $logs = \App\Models\GoalLogs::with('user')->orderBy('created_at', 'desc')->paginate(10);
                 $kpis = [
                     ['label' => 'Goals Logged', 'value' => \App\Models\GoalLogs::count()],
                     ['label' => 'Achieved Rate', 'value' => (\App\Models\GoalLogs::count() > 0 ? round((\App\Models\GoalLogs::where('completed', true)->count() / \App\Models\GoalLogs::count()) * 100, 1) : 0) . '%'],
@@ -457,7 +457,7 @@
                 break;
 
             case 'emotion':
-                $logs = \App\Models\EmotionLogs::with('user')->orderBy('created_at', 'desc')->paginate(15);
+                $logs = \App\Models\EmotionLogs::with('user')->orderBy('created_at', 'desc')->paginate(10);
                 $kpis = [
                     ['label' => 'Total Logged States', 'value' => \App\Models\EmotionLogs::count()],
                     ['label' => 'Most Frequent State', 'value' => \App\Models\EmotionLogs::select('emotion')->groupBy('emotion')->orderByRaw('COUNT(*) DESC')->first()?->emotion ?? 'N/A'],
@@ -472,7 +472,7 @@
                 break;
 
             case 'streak':
-                $logs = \App\Models\StreakLogs::with('user')->orderBy('created_at', 'desc')->paginate(15);
+                $logs = \App\Models\StreakLogs::with('user')->orderBy('created_at', 'desc')->paginate(10);
                 $kpis = [
                     ['label' => 'Streaks Logged', 'value' => \App\Models\StreakLogs::count()],
                     ['label' => 'Avg Current Streak', 'value' => round(\App\Models\StreakLogs::avg('current_streak'), 1) . ' days'],
