@@ -290,29 +290,75 @@
             border: 1px solid #fde68a;
         }
 
-        /* Pagination styles */
+        /* Pagination Fixes for Laravel Default Output */
         .pagination {
             margin-top: 1.5rem;
             display: flex;
             justify-content: center;
-            gap: 0.5rem;
+            align-items: center;
         }
 
-        .pagination a, .pagination span {
-            padding: 0.5rem 1rem;
+        .pagination nav {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .pagination svg {
+            width: 1rem !important;
+            height: 1rem !important;
+            max-width: 16px;
+            max-height: 16px;
+            display: inline-block;
+        }
+
+        .pagination nav > div:first-child {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .pagination nav > div:last-child {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            border-radius: 0.5rem;
+        }
+
+        .pagination a, 
+        .pagination span[aria-current="page"] > span,
+        .pagination span[aria-disabled="true"] > span {
+            padding: 0.5rem 0.85rem;
             background: #ffffff;
             border: 1px solid var(--surface-border);
             color: var(--text-main);
             text-decoration: none;
-            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            border-radius: 0.375rem;
             transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             box-shadow: var(--shadow-sm);
         }
 
-        .pagination a:hover, .pagination .active {
+        .pagination a:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+            color: var(--primary);
+        }
+
+        .pagination span[aria-current="page"] > span {
             background: var(--primary);
             border-color: var(--primary);
             color: #ffffff;
+            font-weight: 600;
+        }
+
+        .pagination span[aria-disabled="true"] > span {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #f8fafc;
         }
 
         .empty-state {
