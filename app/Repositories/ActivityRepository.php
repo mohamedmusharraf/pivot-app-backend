@@ -6,6 +6,7 @@ use App\Models\Activity;
 use App\Repositories\Contracts\ActivityRepositoryInterface;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class ActivityRepository implements ActivityRepositoryInterface
 {
@@ -17,7 +18,7 @@ class ActivityRepository implements ActivityRepositoryInterface
         if ($user && $user->profile && $user->profile->birth_year) {
 
             $age = Carbon::now()->year - $user->profile->birth_year;
-            
+
             $query->where(function ($q) use ($age) {
                 $q->where('min_age', '<=', $age)
                     ->where(function ($q2) use ($age) {
@@ -163,20 +164,15 @@ class ActivityRepository implements ActivityRepositoryInterface
         return $activities;
     }
 
-    public function getActivitiesPerCategoryAndTier($user, bool $excludeMicroMovement = true, array $filters = [])
+    public function getActivitiesPerCategoryAndTier($user, bool $excludeMicroMovement = true, array $filters = [], int $perPage = 50): LengthAwarePaginator
     {
         $user->loadMissing(['subscription', 'hobbies']);
         $subscriptionTierId = (int) ($user->subscription->tier_id ?? 1);
 
-        $allowedTiers = [1];
-        if ($subscriptionTierId === 2) {
-            $allowedTiers = [1, 2];
-        } elseif ($subscriptionTierId >= 3) {
-            $allowedTiers = [1, 2, 3];
-        }
+        $maxTier = min(max($subscriptionTierId, 1), 3);
+        $allowedTiers = range(1, $maxTier);
 
         $hobbies = $user->hobbies;
-
         if ($excludeMicroMovement) {
             $hobbies = $hobbies->filter(function ($hobby) {
                 return strtolower(trim($hobby->name)) !== 'micro-movement';
@@ -185,39 +181,26 @@ class ActivityRepository implements ActivityRepositoryInterface
 
         $hobbyIds = $hobbies->pluck('id')->toArray();
 
-        $resultActivities = collect();
-
         if (empty($hobbyIds)) {
-            return $resultActivities;
+            return Activity::whereRaw('1 = 0')->paginate($perPage);
         }
 
-        foreach ($allowedTiers as $tier) {
-            foreach ($hobbyIds as $hobbyId) {
-                $query = Activity::with('hobby')
-                    ->where('tier', $tier)
-                    ->where('hobby_id', $hobbyId);
+        $query = Activity::with('hobby')
+            ->whereIn('tier', $allowedTiers)
+            ->whereIn('hobby_id', $hobbyIds);
 
-                if (!empty($filters['mood_match'])) {
-                    $moods = is_array($filters['mood_match'])
-                        ? $filters['mood_match']
-                        : [$filters['mood_match']];
+        if (!empty($filters['mood_match'])) {
+            $moods = (array) $filters['mood_match'];
 
-                    $query->where(function ($q) use ($moods) {
-                        foreach ($moods as $mood) {
-                            $q->orWhereJsonContains('mood_match', $mood);
-                        }
-                    });
+            $query->where(function ($q) use ($moods) {
+                foreach ($moods as $mood) {
+                    $q->orWhereJsonContains('mood_match', $mood);
                 }
-
-                $activity = $query->inRandomOrder()->first();
-
-                if ($activity) {
-                    $resultActivities->push($activity);
-                }
-            }
+            });
         }
 
-        return $resultActivities;
+        return $query->inRandomOrder($user->id)
+            ->paginate($perPage);
     }
 
     public function create(array $data): Activity
@@ -239,8 +222,8 @@ class ActivityRepository implements ActivityRepositoryInterface
     private function shuffleByHobby(Collection $activities): Collection
     {
         $grouped = $activities
-            ->groupBy(fn (Activity $activity) => $activity->hobby_id ?? 0)
-            ->map(fn (Collection $group) => $group->shuffle()->values());
+            ->groupBy(fn(Activity $activity) => $activity->hobby_id ?? 0)
+            ->map(fn(Collection $group) => $group->shuffle()->values());
 
         $hobbyKeys = $grouped->keys()->shuffle()->values();
         $shuffled = collect();
@@ -259,7 +242,7 @@ class ActivityRepository implements ActivityRepositoryInterface
             }
 
             $hobbyKeys = $hobbyKeys
-                ->filter(fn ($hobbyKey) => $grouped->get($hobbyKey)?->isNotEmpty())
+                ->filter(fn($hobbyKey) => $grouped->get($hobbyKey)?->isNotEmpty())
                 ->shuffle()
                 ->values();
         }
@@ -277,7 +260,7 @@ class ActivityRepository implements ActivityRepositoryInterface
             $query->where(function ($q) use ($search) {
                 $operator = config('database.default') === 'pgsql' ? 'ilike' : 'like';
                 $q->where('activity_title', $operator, "%{$search}%")
-                  ->orWhere('description', $operator, "%{$search}%");
+                    ->orWhere('description', $operator, "%{$search}%");
             });
         }
 
