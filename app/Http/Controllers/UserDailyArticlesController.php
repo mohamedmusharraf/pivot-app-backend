@@ -11,49 +11,52 @@ use Illuminate\Http\Request;
 class UserDailyArticlesController extends Controller
 {
     public function getDailyArticle(Request $request)
-{
-    $user = $request->user();
+    {
+        $user = $request->user();
 
-    $timezone = $request->header('Timezone') ?? config('app.timezone');
-    $today = Carbon::today($timezone)->toDateString();
+        $timezone = $request->header('Timezone') ?? config('app.timezone');
+        $today = Carbon::today($timezone)->toDateString();
 
-    $existingAssignment = UserDailyArticle::where('user_id', $user->id)
-        ->where('assigned_date', $today)
-        ->first();
+        $existingAssignment = UserDailyArticle::where('user_id', $user->id)
+            ->where('assigned_date', $today)
+            ->first();
 
-    if ($existingAssignment) {
-        $article = Research::find($existingAssignment->article_id);
-        return response()->json($article);
+        if ($existingAssignment) {
+            $article = Research::find($existingAssignment->article_id);
+            return response()->json($article);
+        }
+
+        $alreadySeenIds = UserDailyArticle::where('user_id', $user->id)
+            ->pluck('article_id');
+
+        $newArticle = Research::whereNotIn('id', $alreadySeenIds)
+            ->whereNotNull('files')
+            ->inRandomOrder()
+            ->first();
+
+        if (!$newArticle) {
+            $newArticle = Research::whereNotNull('files')
+                ->inRandomOrder()
+                ->first();
+        }
+
+        if (!$newArticle) {
+            return response()->json(['message' => 'No articles available'], 404);
+        }
+
+        UserDailyArticle::create([
+            'user_id' => $user->id,
+            'article_id' => $newArticle->id,
+            'assigned_date' => $today,
+        ]);
+
+        return response()->json($newArticle);
     }
-
-    $alreadySeenIds = UserDailyArticle::where('user_id', $user->id)
-        ->pluck('article_id');
-
-    $newArticle = Research::whereNotIn('id', $alreadySeenIds)
-        ->inRandomOrder()
-        ->first();
-
-    if (!$newArticle) {
-        $newArticle = Research::inRandomOrder()->first();
-    }
-
-    if (!$newArticle) {
-        return response()->json(['message' => 'No articles available'], 404);
-    }
-
-    UserDailyArticle::create([
-        'user_id' => $user->id,
-        'article_id' => $newArticle->id,
-        'assigned_date' => $today,
-    ]);
-
-    return response()->json($newArticle);
-}
+    
     public function getArticleLibrary(Request $request)
     {
         $user = $request->user();
 
-        // Fetch all articles this user has unlocked over time, sorted by newest first
         $unlockedArticles = Research::join('user_articles', 'research_articles.id', '=', 'user_articles.article_id')
             ->where('user_articles.user_id', $user->id)
             ->orderBy('user_articles.created_at', 'desc')
