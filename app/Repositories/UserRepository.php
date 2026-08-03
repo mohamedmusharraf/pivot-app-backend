@@ -77,7 +77,6 @@ class UserRepository
         }
 
         if ($user) {
-
             $user->update([
                 'provider' => 'apple',
                 'provider_id' => $appleUser['sub'],
@@ -90,11 +89,14 @@ class UserRepository
             ];
         }
 
-        $user = DB::transaction(function () use ($appleUser) {
+        if (empty($appleUser['email'])) {
+            throw new \Exception('Unable to create account. Apple did not provide an email address.');
+        }
 
+        $user = DB::transaction(function () use ($appleUser) {
             $user = User::create([
                 'name' => $appleUser['name'],
-                'email' => $appleUser['email'],
+                'email' => $appleUser['email'], 
                 'password' => Hash::make(Str::random(32)),
                 'provider' => 'apple',
                 'provider_id' => $appleUser['sub'],

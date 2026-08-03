@@ -594,7 +594,7 @@
                                             <th>Status</th>
                                         @elseif($activeTab === 'goal')
                                             <th>User ID</th>
-                                            <th>Goal ID</th>
+                                            <!-- <th>Goal ID</th> -->
                                             <th>Target</th>
                                             <th>Achieved</th>
                                             <th>Date</th>
@@ -658,7 +658,7 @@
                                                 </td>
                                             @elseif($activeTab === 'goal')
                                                 <td>{{ $log->user?->name ?? 'User ID: '.$log->user_id }}</td>
-                                                <td>Goal ID: {{ $log->goal_id }}</td>
+                                                <!-- <td>Goal ID: {{ $log->goal_id }}</td> -->
                                                 <td>{{ $log->target_minutes }} mins</td>
                                                 <td>{{ $log->achieved_minutes }} mins</td>
                                                 <td>{{ $log->goal_date }}</td>
