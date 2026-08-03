@@ -105,7 +105,7 @@ class MicroMovementsAndBreathworkSeeder extends Seeder
                     'energy_level'            => $energyLevel,     
                     'outcome_tag'             => $data['outcome_tag'] ?? null,
                     'mood_match'              => $moodMatch,
-                    'status'                  => 'active',
+                    // 'status'                  => 'active',
                 ]);
 
                 $totalInserted++;
