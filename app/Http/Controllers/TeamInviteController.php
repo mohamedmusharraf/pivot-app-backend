@@ -6,6 +6,7 @@ use App\Events\NewTeamConnectionAdded;
 use App\Http\Controllers\Controller;
 use App\Models\Invitation;
 use App\Models\TeamConnection;
+use App\Models\User;
 use App\Models\Users;
 use App\Services\InviteService;
 use Illuminate\Http\JsonResponse;
@@ -340,7 +341,7 @@ class TeamInviteController extends Controller
         return $this->resolveByToken($token);
     }
 
-    private function acceptInvitation(Invitation $invitation, Users $user): TeamConnectionDTO
+    private function acceptInvitation(Invitation $invitation, User|Users $user): TeamConnectionDTO
     {
         DB::transaction(function () use ($invitation, $user) {
 
