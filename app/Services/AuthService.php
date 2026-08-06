@@ -96,6 +96,7 @@ class AuthService
             ->where('user_id', $updatedUser->id)
             ->pluck('connected_user_id')
             ->push($updatedUser->id)
+            ->filter()
             ->unique()
             ->values()
             ->all();
