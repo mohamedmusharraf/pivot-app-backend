@@ -14,7 +14,6 @@ class MovementAndExerciseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Relative file path in project root or database folder
         $filePath = base_path('CSVfile/Movement_and_Exercise-1500.csv');
 
         if (!file_exists($filePath)) {
@@ -28,7 +27,6 @@ class MovementAndExerciseSeeder extends Seeder
 
         $file = fopen($filePath, 'r');
 
-        // Read and sanitize header row
         $rawHeader = fgetcsv($file);
         if (!$rawHeader) {
             $this->command->error("CSV file is empty.");
@@ -47,7 +45,6 @@ class MovementAndExerciseSeeder extends Seeder
 
         try {
             while (($row = fgetcsv($file)) !== false) {
-                // Skip completely empty lines
                 if (empty(array_filter($row))) {
                     continue;
                 }
@@ -60,16 +57,13 @@ class MovementAndExerciseSeeder extends Seeder
                 $title = trim($data['activity_title'] ?? '');
                 $instructionStep = trim($data['instruction'] ?? '');
 
-                // CASE 1: Main activity row (has a valid activity_title)
                 if (!empty($title) && $title !== '?') {
 
-                    // Save previously buffered activity before starting a new one
                     if ($currentActivity) {
                         $this->saveActivity($currentActivity);
                         $totalInserted++;
                     }
 
-                    // 1. Format neurodivergent_friendly -> 'Yes', 'No', or 'Partial'
                     $rawNeuro = strtolower(trim($data['neurodivergent_friendly'] ?? ''));
                     if (in_array($rawNeuro, ['1', 'true', 'yes', 'y'], true)) {
                         $neuroFriendly = 'Yes';
@@ -79,27 +73,22 @@ class MovementAndExerciseSeeder extends Seeder
                         $neuroFriendly = 'No';
                     }
 
-                    // 2. Format tier -> '1', '2', or '3'
                     $rawTier = trim($data['tier'] ?? '1');
                     $tierInt = (int) floatval($rawTier);
                     $tier = in_array((string)$tierInt, ['1', '2', '3'], true) ? (string)$tierInt : '1';
 
-                    // 3. Format energy_level -> 'Low', 'Medium', or 'High'
                     $rawEnergy = ucfirst(strtolower(trim($data['energy_level'] ?? 'High')));
                     $energyLevel = in_array($rawEnergy, ['Low', 'Medium', 'High'], true) ? $rawEnergy : 'High';
 
-                    // 4. Age constraints
                     $minAge = isset($data['min_age']) && is_numeric(trim($data['min_age'])) ? (int) trim($data['min_age']) : null;
                     $maxAge = isset($data['max_age']) && is_numeric(trim($data['max_age'])) ? (int) trim($data['max_age']) : null;
 
-                    // 5. Mood Match array formatting
                     $moodMatch = !empty($data['mood_match'])
                         ? array_map('trim', explode(',', $data['mood_match']))
                         : [];
 
-                    // Buffer activity entry with hobby_id defaulting to 3
                     $currentActivity = [
-                        'hobby_id'                => 3, // Default hobby_id set to 3
+                        'hobby_id'                => 3,
                         'activity_title'          => $title,
                         'description'             => $data['description'] ?? null,
                         'time'                    => $data['time'] ?? 'daytime',
@@ -120,18 +109,16 @@ class MovementAndExerciseSeeder extends Seeder
                         'energy_level'            => $energyLevel,
                         'outcome_tag'             => $data['outcome_tag'] ?? null,
                         'mood_match'              => $moodMatch,
-                        'status'                  => 'active',
+                        // 'status'                  => 'active',
                     ];
 
                 } else {
-                    // CASE 2: Continuation row for instruction steps
                     if ($currentActivity && !empty($instructionStep)) {
                         $currentActivity['instructions'][] = $instructionStep;
                     }
                 }
             }
 
-            // Save the last buffered activity in the CSV
             if ($currentActivity) {
                 $this->saveActivity($currentActivity);
                 $totalInserted++;
