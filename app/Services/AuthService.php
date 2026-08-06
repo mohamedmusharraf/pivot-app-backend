@@ -2,7 +2,9 @@
 
 namespace App\Services;
 
+use App\Events\GroupChallengeStatusUpdated;
 use App\Models\Users;
+use App\Models\TeamConnection;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Str;
@@ -88,7 +90,27 @@ class AuthService
             abort(401, 'Authentication is required.');
         }
 
-        return $this->authRepositoryInterface->updateStatusByUserId((int) $user->id, $status);
+        $updatedUser = $this->authRepositoryInterface->updateStatusByUserId((int) $user->id, $status);
+
+        $recipientIds = TeamConnection::query()
+            ->where('user_id', $updatedUser->id)
+            ->pluck('connected_user_id')
+            ->push($updatedUser->id)
+            ->unique()
+            ->values()
+            ->all();
+
+        event(new GroupChallengeStatusUpdated(
+            userId: (int) $updatedUser->id,
+            recipientIds: $recipientIds,
+            payload: [
+                'status' => $updatedUser->status,
+                'name' => $updatedUser->name,
+                'email' => $updatedUser->email,
+            ],
+        ));
+
+        return $updatedUser;
     }
 
     public function logout(): void

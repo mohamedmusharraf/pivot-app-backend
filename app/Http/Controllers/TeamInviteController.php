@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\DTO\TeamConnectionDTO;
 use App\Events\NewTeamConnectionAdded;
+use App\Events\TeamConnectionRemoved;
 use App\Http\Controllers\Controller;
 use App\Models\Invitation;
 use App\Models\TeamConnection;
@@ -12,7 +14,6 @@ use App\Services\InviteService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\DTO\TeamConnectionDTO;
 
 class TeamInviteController extends Controller
 {
@@ -296,7 +297,9 @@ class TeamInviteController extends Controller
             ], 403);
         }
 
-        DB::transaction(function () use ($teamConnection, $user) {
+        $removedUserId = $teamConnection->connected_user_id;
+
+        DB::transaction(function () use ($teamConnection, $user, $removedUserId) {
             TeamConnection::query()
                 ->where(function ($query) use ($user, $teamConnection) {
                     $query->where('user_id', $user->id)
@@ -308,6 +311,18 @@ class TeamInviteController extends Controller
                 })
                 ->delete();
         });
+
+        event(new TeamConnectionRemoved(
+            inviterId: $user->id,
+            connectedUserId: $removedUserId,
+            payload: [
+                'connection_id' => $connection,
+                'inviter_id' => $user->id,
+                'connected_user_id' => $removedUserId,
+                'status' => 'removed',
+                'removed_at' => now()->toIso8601String(),
+            ],
+        ));
 
         return response()->json([
             'success' => true,

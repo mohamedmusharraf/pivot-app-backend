@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Auth;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Support\GroupChallengeStatus;
 
 class UpdateUserStatusRequest extends FormRequest
 {
@@ -14,7 +15,11 @@ class UpdateUserStatusRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'status' => 'required|in:not_ready,ready,in_challenge',
+            'status' => 'required|in:' . implode(',', [
+                GroupChallengeStatus::GROUP_CHALLENGE_STATUS_NOT_READY,
+                GroupChallengeStatus::GROUP_CHALLENGE_STATUS_READY,
+                'in_challenge',
+            ]),
         ];
     }
 

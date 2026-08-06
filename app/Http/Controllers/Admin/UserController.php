@@ -1,0 +1,83 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\UserRequest;
+use App\Models\Users;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+
+class UserController extends Controller
+{
+    public function index(Request $request)
+    {
+        $query = Users::with(['country', 'subscription']);
+
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->input('status'));
+        }
+
+        if ($request->filled('provider')) {
+            $query->where('provider', $request->input('provider'));
+        }
+
+        $users = $query->orderBy('id', 'desc')->paginate(15)->withQueryString();
+
+        $stats = [
+            'total'    => Users::count(),
+            'active'   => Users::where('status', 'active')->count(),
+            'inactive' => Users::where('status', 'inactive')->count(),
+            'google'   => Users::where('provider', 'google')->count(),
+            'apple'    => Users::where('provider', 'apple')->count(),
+            'email'    => Users::where('provider', 'email')->count(),
+        ];
+
+        return view('admin.users.index', compact('users', 'stats'));
+    }
+
+    public function store(UserRequest $request)
+    {
+        $data = $request->validated();
+        $data['password'] = Hash::make($data['password']);
+
+        Users::create($data);
+
+        return redirect()->route('admin.users.index')->with('success', 'User created successfully.');
+    }
+
+    public function show($id)
+    {
+        $user = Users::with(['userProfile', 'hobbies', 'activities', 'subscriptions', 'subscriptionLogs'])->findOrFail($id);
+        return view('admin.users.show', compact('user'));
+    }
+
+    public function update(UserRequest $request, Users $user)
+    {
+        $data = $request->validated();
+
+        if (empty($data['password'])) {
+            unset($data['password']);
+        } else {
+            $data['password'] = Hash::make($data['password']);
+        }
+
+        $user->update($data);
+
+        return redirect()->route('admin.users.index')->with('success', 'User updated successfully.');
+    }
+
+    public function destroy(Users $user)
+    {
+        $user->delete();
+        return redirect()->route('admin.users.index')->with('success', 'User deleted successfully.');
+    }
+}

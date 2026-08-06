@@ -7,6 +7,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use App\Models\Subscription;
+use App\Support\GroupChallengeStatus;
 
 class UserRepository
 {
@@ -47,7 +48,7 @@ class UserRepository
                 'password' => Hash::make(Str::random(32)),
                 'provider' => 'google',
                 'provider_id' => $googleUser['sub'],
-                'status' => 'not_ready',
+                'status' => GroupChallengeStatus::GROUP_CHALLENGE_STATUS_NOT_READY,
                 'last_login_at' => now(),
             ]);
 
@@ -100,7 +101,7 @@ class UserRepository
                 'password' => Hash::make(Str::random(32)),
                 'provider' => 'apple',
                 'provider_id' => $appleUser['sub'],
-                'status' => 'not_ready',
+                'status' => GroupChallengeStatus::GROUP_CHALLENGE_STATUS_NOT_READY,
                 'last_login_at' => now(),
             ]);
 

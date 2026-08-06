@@ -8,6 +8,7 @@ use App\Repositories\Auth\AuthRepositoryInterface;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Models\Subscription;
+use App\Support\GroupChallengeStatus;
 
 class AuthRepository implements AuthRepositoryInterface
 {
@@ -20,7 +21,7 @@ class AuthRepository implements AuthRepositoryInterface
                 'email'          => $data['email'],
                 'password'       => Hash::make($data['password']),
                 'provider'       => 'email',
-                'status'         => 'not_ready',
+                'status'         => GroupChallengeStatus::GROUP_CHALLENGE_STATUS_NOT_READY,
                 'last_login_at'  => now(),
             ]);
 
