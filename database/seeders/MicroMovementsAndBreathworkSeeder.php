@@ -37,6 +37,16 @@ class MicroMovementsAndBreathworkSeeder extends Seeder
         $totalInserted = 0;
         $currentActivity = null;
 
+        // Writing activity title prefixes
+        $writingTitles = [
+            'Wisdom Literature Reflection',
+            'Biographical Profile Analysis',
+            'Psychology Insight Parsing',
+            'Stoic Maxims Comprehension',
+            'Productivity Essay Deep-Dive',
+            'Philosophical Text Study',
+        ];
+
         DB::beginTransaction();
 
         try {
@@ -54,11 +64,22 @@ class MicroMovementsAndBreathworkSeeder extends Seeder
                 $instructionStep = trim($data['instruction'] ?? '');
 
                 if (!empty($title) && $title !== '?') {
-                    
+
                     if ($currentActivity) {
                         $this->saveActivity($currentActivity);
                         $totalInserted++;
                     }
+
+                    // Dynamically set hobby_id: 13 for Writing, 3 for Micro-Movement / Breathwork
+                    $isWritingActivity = false;
+                    foreach ($writingTitles as $writingTitle) {
+                        if (str_starts_with($title, $writingTitle)) {
+                            $isWritingActivity = true;
+                            break;
+                        }
+                    }
+
+                    $hobbyId = $isWritingActivity ? 13 : 3;
 
                     $rawNeuro = strtolower(trim($data['neurodivergent_friendly'] ?? ''));
                     if (in_array($rawNeuro, ['1', 'true', 'yes', 'y'], true)) {
@@ -82,7 +103,7 @@ class MicroMovementsAndBreathworkSeeder extends Seeder
                     $moodMatch = !empty($data['mood_match']) ? array_map('trim', explode(',', $data['mood_match'])) : [];
 
                     $currentActivity = [
-                        'hobby_id'                => 3,
+                        'hobby_id'                => $hobbyId, // 13 for Writing, 3 for Micro-Movement
                         'activity_title'          => $title,
                         'description'             => $data['description'] ?? null,
                         'time'                    => $data['time'] ?? null,
@@ -121,7 +142,7 @@ class MicroMovementsAndBreathworkSeeder extends Seeder
             DB::commit();
             fclose($file);
 
-            $this->command->info("Successfully inserted {$totalInserted} complete activities with ALL instruction steps!");
+            $this->command->info("Successfully seeded activities (Writing = hobby_id 13, Micro-Movement = hobby_id 3)!");
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -131,9 +152,6 @@ class MicroMovementsAndBreathworkSeeder extends Seeder
         }
     }
 
-    /**
-     * Helper method to combine instruction array into a multi-line string and create the record.
-     */
     private function saveActivity(array $activityData): void
     {
         $activityData['instruction'] = implode("\n", $activityData['instructions']);

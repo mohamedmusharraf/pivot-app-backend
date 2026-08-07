@@ -88,7 +88,7 @@ class MovementAndExerciseSeeder extends Seeder
                         : [];
 
                     $currentActivity = [
-                        'hobby_id'                => 3,
+                        'hobby_id'                => 14,
                         'activity_title'          => $title,
                         'description'             => $data['description'] ?? null,
                         'time'                    => $data['time'] ?? 'daytime',
@@ -109,7 +109,6 @@ class MovementAndExerciseSeeder extends Seeder
                         'energy_level'            => $energyLevel,
                         'outcome_tag'             => $data['outcome_tag'] ?? null,
                         'mood_match'              => $moodMatch,
-                        // 'status'                  => 'active',
                     ];
 
                 } else {
@@ -127,7 +126,7 @@ class MovementAndExerciseSeeder extends Seeder
             DB::commit();
             fclose($file);
 
-            $this->command->info("Successfully inserted {$totalInserted} exercise activities with hobby_id = 3!");
+            $this->command->info("Successfully inserted {$totalInserted} exercise activities with hobby_id = 14!");
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -137,9 +136,6 @@ class MovementAndExerciseSeeder extends Seeder
         }
     }
 
-    /**
-     * Helper method to join step array into multi-line instruction string and insert
-     */
     private function saveActivity(array $activityData): void
     {
         $activityData['instruction'] = implode("\n", $activityData['instructions']);
