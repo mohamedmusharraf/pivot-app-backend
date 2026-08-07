@@ -79,7 +79,7 @@ class MicroMovementsAndBreathworkSeeder extends Seeder
                         }
                     }
 
-                    $hobbyId = $isWritingActivity ? 13 : 3;
+                    $hobbyId = $isWritingActivity ? 9 : 3;
 
                     $rawNeuro = strtolower(trim($data['neurodivergent_friendly'] ?? ''));
                     if (in_array($rawNeuro, ['1', 'true', 'yes', 'y'], true)) {
@@ -142,7 +142,7 @@ class MicroMovementsAndBreathworkSeeder extends Seeder
             DB::commit();
             fclose($file);
 
-            $this->command->info("Successfully seeded activities (Writing = hobby_id 13, Micro-Movement = hobby_id 3)!");
+            $this->command->info("Successfully seeded activities (Writing = hobby_id 9, Micro-Movement = hobby_id 3)!");
 
         } catch (\Exception $e) {
             DB::rollBack();
