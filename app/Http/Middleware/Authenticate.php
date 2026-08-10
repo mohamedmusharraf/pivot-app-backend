@@ -53,6 +53,6 @@ class Authenticate
             return null;
         }
 
-        return '/login';
+        return route('admin.login');
     }
 }

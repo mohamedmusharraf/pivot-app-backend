@@ -43,7 +43,14 @@ class Users extends Model
 
     public function activities()
     {
-        return $this->hasMany(Activity::class, 'user_id');
+        return $this->hasManyThrough(
+            Activity::class,
+            UserHobby::class,
+            'user_id',
+            'hobby_id',
+            'id',
+            'hobby_id'
+        );
     }
 
     public function country()
@@ -53,7 +60,7 @@ class Users extends Model
 
     public function userProfile()
     {
-        return $this->hasOne(UserProfile::class);
+        return $this->hasOne(UserProfile::class, 'user_id', 'id');
     }
 
     public function subscriptions()

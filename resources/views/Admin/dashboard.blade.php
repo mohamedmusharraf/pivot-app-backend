@@ -8,11 +8,12 @@
 </ul>
 
 <div class="grid grid-cols-4" style="margin-bottom: 2rem;">
-    
+
+    <!-- Total Users -->
     <div class="card stat-card">
         <div>
             <span style="color: var(--text-muted); font-size: 0.875rem; font-weight: 500;">Total Users</span>
-            <div class="stat-value">24,512</div>
+            <div class="stat-value">{{ number_format($totalUsers) }}</div>
             <span style="color: var(--success); font-size: 0.75rem; font-weight: 600;"><i class="fa-solid fa-arrow-up"></i> +12.5%</span>
         </div>
         <div class="stat-icon primary">
@@ -58,12 +59,9 @@
 <div class="card">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
         <div>
-            <h3 style="font-size: 1.125rem; font-weight: 700; color: var(--text-heading);">Recent Registered Users</h3>
-            <p style="color: var(--text-muted); font-size: 0.8125rem;">Overview of users registered in the last 24 hours.</p>
+            <h3 style="font-size: 1.125rem; font-weight: 700; color: var(--text-heading);">Users Logged In (Last 7 Days)</h3>
+            <p style="color: var(--text-muted); font-size: 0.8125rem;">Overview of users who logged into the application during the past 7 days.</p>
         </div>
-        <button onclick="openModal('sample-modal')" class="btn btn-primary">
-            <i class="fa-solid fa-plus"></i> Add New User
-        </button>
     </div>
 
     <div class="table-wrapper">
@@ -73,74 +71,50 @@
                     <th>User Profile</th>
                     <th>Provider</th>
                     <th>Status</th>
-                    <th>Joined Date</th>
-                    <th style="text-align: right;">Action</th>
+                    <th>Last Login</th>
                 </tr>
             </thead>
             <tbody>
+                @forelse($recentUsers as $user)
                 <tr>
                     <td>
-                        <div style="font-weight: 600; color: var(--text-heading);">Sarah Jenkins</div>
-                        <div style="font-size: 0.75rem; color: var(--text-muted);">sarah.j@example.com</div>
+                        <div style="font-weight: 600; color: var(--text-heading);">{{ $user->name }}</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">{{ $user->email }}</div>
                     </td>
-                    <td><i class="fa-brands fa-google" style="margin-right: 4px;"></i> Google</td>
-                    <td><span class="badge badge-success">Active</span></td>
-                    <td>Aug 05, 2026</td>
-                    <td style="text-align: right;">
-                        <button class="btn btn-secondary btn-sm"><i class="fa-solid fa-pen"></i></button>
-                        <button class="btn btn-danger btn-sm"><i class="fa-solid fa-trash"></i></button>
-                    </td>
-                </tr>
-                <tr>
                     <td>
-                        <div style="font-weight: 600; color: var(--text-heading);">Michael Chen</div>
-                        <div style="font-size: 0.75rem; color: var(--text-muted);">m.chen@example.com</div>
+                        @if(strtolower($user->provider) === 'google')
+                        <i class="fa-brands fa-google" style="margin-right: 4px;"></i> Google
+                        @elseif(strtolower($user->provider) === 'apple')
+                        <i class="fa-brands fa-apple" style="margin-right: 4px;"></i> Apple
+                        @else
+                        <i class="fa-solid fa-envelope" style="margin-right: 4px;"></i> Email
+                        @endif
                     </td>
-                    <td><i class="fa-brands fa-apple" style="margin-right: 4px;"></i> Apple</td>
-                    <td><span class="badge badge-warning">Pending</span></td>
-                    <td>Aug 05, 2026</td>
-                    <td style="text-align: right;">
-                        <button class="btn btn-secondary btn-sm"><i class="fa-solid fa-pen"></i></button>
-                        <button class="btn btn-danger btn-sm"><i class="fa-solid fa-trash"></i></button>
+                    <td>
+                        <span class="badge badge-{{ strtolower($user->status) === 'active' ? 'success' : 'warning' }}">
+                            {{ ucfirst($user->status ?? 'Active') }}
+                        </span>
+                    </td>
+                    <td>
+                        {{ $user->last_login_at ? \Carbon\Carbon::parse($user->last_login_at)->diffForHumans() : 'N/A' }}
                     </td>
                 </tr>
+                @empty
+                <tr>
+                    <td colspan="4" style="text-align: center; color: var(--text-muted);">No users logged in during the last 7 days.</td>
+                </tr>
+                @endforelse
             </tbody>
         </table>
     </div>
 
+    <!-- Dynamic Pagination -->
     <div class="pagination">
-        <span style="color: var(--text-muted); font-size: 0.8125rem;">Showing 1 to 2 of 50 entries</span>
-        <div style="display: flex; gap: 0.375rem;">
-            <button class="btn btn-secondary btn-sm" disabled>Previous</button>
-            <button class="btn btn-primary btn-sm">1</button>
-            <button class="btn btn-secondary btn-sm">2</button>
-            <button class="btn btn-secondary btn-sm">Next</button>
-        </div>
-    </div>
-</div>
+        <span style="color: var(--text-muted); font-size: 0.8125rem;">
+            Showing {{ $recentUsers->firstItem() ?? 0 }} to {{ $recentUsers->lastItem() ?? 0 }} of {{ $recentUsers->total() }} entries
+        </span>
 
-<div class="modal-backdrop" id="sample-modal">
-    <div class="modal-dialog">
-        <div class="modal-header">
-            <h3 style="font-size: 1.125rem; font-weight: 700;">Add New User</h3>
-            <button onclick="closeModal('sample-modal')" style="background: none; border: none; cursor: pointer; color: var(--text-muted);">
-                <i class="fa-solid fa-xmark fa-lg"></i>
-            </button>
-        </div>
-        <div class="modal-body">
-            <div class="form-group">
-                <label class="form-label">Full Name</label>
-                <input type="text" class="form-control" placeholder="Enter user full name">
-            </div>
-            <div class="form-group">
-                <label class="form-label">Email Address</label>
-                <input type="email" class="form-control" placeholder="name@domain.com">
-            </div>
-        </div>
-        <div class="modal-footer">
-            <button onclick="closeModal('sample-modal')" class="btn btn-secondary">Cancel</button>
-            <button class="btn btn-primary">Save User</button>
-        </div>
+        {{ $recentUsers->links('partials.pagination') }}
     </div>
 </div>
 @endsection

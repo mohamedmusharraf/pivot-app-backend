@@ -12,13 +12,13 @@ class UserController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Users::with(['country', 'subscription']);
+        $query = Users::query();
 
         if ($request->filled('search')) {
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
+                    ->orWhere('email', 'like', "%{$search}%");
             });
         }
 
@@ -33,12 +33,12 @@ class UserController extends Controller
         $users = $query->orderBy('id', 'desc')->paginate(15)->withQueryString();
 
         $stats = [
-            'total'    => Users::count(),
-            'active'   => Users::where('status', 'active')->count(),
-            'inactive' => Users::where('status', 'inactive')->count(),
-            'google'   => Users::where('provider', 'google')->count(),
-            'apple'    => Users::where('provider', 'apple')->count(),
-            'email'    => Users::where('provider', 'email')->count(),
+            'total'     => Users::count(),
+            'ready'     => Users::where('status', 'ready')->count(),
+            'not_ready' => Users::where('status', 'not_ready')->count(),
+            'google'    => Users::where('provider', 'google')->count(),
+            'apple'     => Users::where('provider', 'apple')->count(),
+            'email'     => Users::where('provider', 'email')->count(),
         ];
 
         return view('admin.users.index', compact('users', 'stats'));
@@ -57,11 +57,13 @@ class UserController extends Controller
     public function show($id)
     {
         $user = Users::with(['userProfile', 'hobbies', 'activities', 'subscriptions', 'subscriptionLogs'])->findOrFail($id);
+
         return view('admin.users.show', compact('user'));
     }
 
-    public function update(UserRequest $request, Users $user)
+    public function update(UserRequest $request, $id)
     {
+        $user = Users::findOrFail($id);
         $data = $request->validated();
 
         if (empty($data['password'])) {
@@ -75,9 +77,11 @@ class UserController extends Controller
         return redirect()->route('admin.users.index')->with('success', 'User updated successfully.');
     }
 
-    public function destroy(Users $user)
+    public function destroy($id)
     {
+        $user = Users::findOrFail($id);
         $user->delete();
+
         return redirect()->route('admin.users.index')->with('success', 'User deleted successfully.');
     }
 }
