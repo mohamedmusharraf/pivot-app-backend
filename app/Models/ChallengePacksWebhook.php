@@ -20,4 +20,15 @@ class ChallengePacksWebhook extends Model
         'remaining',
         'status',
     ];
+
+    protected $casts = [
+        'price'     => 'decimal:2',
+        'total'     => 'integer',
+        'remaining' => 'integer',
+    ];
+
+    public function user()
+    {
+        return $this->belongsTo(Users::class, 'user_id');
+    }
 }

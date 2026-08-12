@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Activity;
+use App\Models\Hobby; // Import Hobby Model
 use App\Http\Requests\Admin\ActivityRequest;
 use Illuminate\Http\Request;
 
@@ -11,11 +12,13 @@ class ActivityController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Activity::query();
+        $query = Activity::with('hobby');
 
         if ($request->filled('search')) {
-            $query->where('activity_title', 'like', '%' . $request->search . '%')
+            $query->where(function($q) use ($request) {
+                $q->where('activity_title', 'like', '%' . $request->search . '%')
                   ->orWhere('description', 'like', '%' . $request->search . '%');
+            });
         }
 
         if ($request->filled('tier')) {
@@ -23,8 +26,15 @@ class ActivityController extends Controller
         }
 
         $activities = $query->orderBy('created_at', 'desc')->paginate(10);
+        $hobbies = Hobby::orderBy('name', 'asc')->get(); // Fetch categories/hobbies
 
-        return view('admin.activities.index', compact('activities'));
+        return view('admin.activities.index', compact('activities', 'hobbies'));
+    }
+
+    public function show($id)
+    {
+        $activity = Activity::with('hobby')->findOrFail($id);
+        return view('admin.activities.show', compact('activity'));
     }
 
     public function store(ActivityRequest $request)
@@ -36,12 +46,6 @@ class ActivityController extends Controller
         Activity::create($data);
 
         return redirect()->route('admin.activities.index')->with('success', 'Activity created successfully.');
-    }
-
-    public function show($id)
-    {
-        $activity = Activity::findOrFail($id);
-        return view('admin.activities.show', compact('activity'));
     }
 
     public function update(ActivityRequest $request, $id)

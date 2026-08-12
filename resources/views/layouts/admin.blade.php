@@ -40,11 +40,11 @@
         <i class="fa-solid fa-person-running"></i>
         <span>Activities</span>
     </a>
-    <a href="#" class="nav-item {{ request()->routeIs('admin.categories.*') ? 'active' : '' }}">
+    <a href="{{ route('admin.categories.index') }}" class="nav-item {{ request()->routeIs('admin.categories.*') ? 'active' : '' }}">
         <i class="fa-solid fa-layer-group"></i>
         <span>Categories</span>
     </a>
-    <a href="#" class="nav-item {{ request()->routeIs('admin.challenge-packs.*') ? 'active' : '' }}">
+    <a href="{{ route('admin.challenge-packs.index') }}" class="nav-item {{ request()->routeIs('admin.challenge-packs.*') ? 'active' : '' }}">
         <i class="fa-solid fa-trophy"></i>
         <span>Challenge Packs</span>
     </a>

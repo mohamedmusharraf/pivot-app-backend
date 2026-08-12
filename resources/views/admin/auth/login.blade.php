@@ -7,49 +7,58 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="{{ asset('assets/css/admin.css') }}">
     <style>
-        body {
-            background-color: #F8FAFC;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            margin: 0;
-            font-family: system-ui, -apple-system, sans-serif;
-        }
-        .login-box {
-            width: 100%;
-            max-width: 380px;
-            background: #FFFFFF;
-            border-radius: 18px;
-            border: 1px solid #E2E8F0;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
-            padding: 2rem;
-        }
-        .login-header {
-            text-align: center;
-            margin-bottom: 1.5rem;
-        }
-        .login-header h2 {
-            font-size: 1.25rem;
-            color: #0F172A;
-            margin-top: 0.5rem;
-        }
-        .alert-error {
-            background-color: #FEF2F2;
-            color: #EF4444;
-            padding: 0.75rem;
-            border-radius: 8px;
-            font-size: 0.85rem;
-            margin-bottom: 1rem;
-            border: 1px solid #FEE2E2;
-        }
-    </style>
+    body {
+        background-color: #F8FAFC;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        margin: 0;
+        font-family: system-ui, -apple-system, sans-serif;
+    }
+    .login-box {
+        width: 100%;
+        max-width: 380px;
+        background: #FFFFFF;
+        border-radius: 18px;
+        border: 1px solid #E2E8F0;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+        padding: 2rem;
+    }
+    .login-header {
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+    /* Fixed Logo Dimensions */
+    .login-header img {
+        height: 48px;
+        width: auto;
+        max-width: 100%;
+        object-fit: contain;
+        display: block;
+        margin: 0 auto;
+    }
+    .login-header h2 {
+        font-size: 1.25rem;
+        color: #0F172A;
+        margin-top: 0.75rem;
+    }
+    .alert-error {
+        background-color: #FEF2F2;
+        color: #EF4444;
+        padding: 0.75rem;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        margin-bottom: 1rem;
+        border: 1px solid #FEE2E2;
+    }
+</style>
 </head>
 <body>
 
     <div class="login-box">
         <div class="login-header">
-            <i class="fa-solid fa-arrows-spin fa-2x" style="color: #4F46E5;"></i>
+            <img src="{{ asset('assets/img/logo.png') }}" alt="Logo">
             <h2>Pivot Admin Login</h2>
         </div>
 

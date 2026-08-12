@@ -8,9 +8,9 @@
 </ul>
 
 @if(session('success'))
-    <div style="background: var(--success-bg); color: var(--success); padding: 0.875rem 1.25rem; border-radius: var(--radius-md); margin-bottom: 1.25rem; border: 1px solid var(--success);">
-        {{ session('success') }}
-    </div>
+<div style="background: var(--success-bg); color: var(--success); padding: 0.875rem 1.25rem; border-radius: var(--radius-md); margin-bottom: 1.25rem; border: 1px solid var(--success);">
+    {{ session('success') }}
+</div>
 @endif
 
 <div class="card">
@@ -73,7 +73,9 @@
                     </td>
                 </tr>
                 @empty
-                <tr><td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-muted);">No activities found.</td></tr>
+                <tr>
+                    <td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-muted);">No activities found.</td>
+                </tr>
                 @endforelse
             </tbody>
         </table>
@@ -95,6 +97,16 @@
             @csrf
             <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
                 <div class="form-grid-2">
+                    <div class="form-group col-span-2">
+                        <label class="form-label">Category</label>
+                        <select name="hobby_id" class="form-control">
+                            <option value="">Select a category</option>
+                            @foreach($hobbies as $hobby)
+                                <option value="{{ $hobby->id }}">{{ $hobby->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
                     <div class="form-group col-span-2">
                         <label class="form-label">Activity Title *</label>
                         <input type="text" name="activity_title" class="form-control" required>
@@ -200,6 +212,16 @@
                     <div class="form-group col-span-2">
                         <label class="form-label">Activity Title *</label>
                         <input type="text" name="activity_title" id="edit-title" class="form-control" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Category</label>
+                        <select name="hobby_id" id="edit-hobby" class="form-control">
+                            <option value="">Select a category</option>
+                            @foreach($hobbies as $hobby)
+                                <option value="{{ $hobby->id }}">{{ $hobby->name }}</option>
+                            @endforeach
+                        </select>
                     </div>
 
                     <div class="form-group">
@@ -309,35 +331,35 @@
 </div>
 
 <script>
-function editActivity(activity) {
-    const updateUrl = "{{ route('admin.activities.update', ':id') }}".replace(':id', activity.id);
-    document.getElementById('edit-activity-form').action = updateUrl;
+    function editActivity(activity) {
+        const updateUrl = "{{ route('admin.activities.update', ':id') }}".replace(':id', activity.id);
+        document.getElementById('edit-activity-form').action = updateUrl;
 
-    document.getElementById('edit-title').value = activity.activity_title ?? '';
-    document.getElementById('edit-type').value = activity.activity_type ?? '';
-    document.getElementById('edit-subcategory').value = activity.subcategory ?? '';
-    document.getElementById('edit-duration').value = activity.duration_minutes ?? '';
-    document.getElementById('edit-tier').value = activity.tier ?? '';
-    document.getElementById('edit-cost').value = activity.cost ?? '';
-    document.getElementById('edit-location').value = activity.location ?? '';
-    document.getElementById('edit-energy').value = activity.energy_level ?? '';
-    document.getElementById('edit-social').value = activity.social_type ?? '';
-    document.getElementById('edit-min-age').value = activity.min_age ?? '';
-    document.getElementById('edit-max-age').value = activity.max_age ?? '';
-    document.getElementById('edit-sensory').value = activity.sensory_tags ?? '';
-    document.getElementById('edit-outcome').value = activity.outcome_tag ?? '';
-    document.getElementById('edit-description').value = activity.description ?? '';
-    document.getElementById('edit-instruction').value = activity.instruction ?? '';
-    document.getElementById('edit-nd-notes').value = activity.neurodivergent_notes ?? '';
+        document.getElementById('edit-title').value = activity.activity_title ?? '';
+        document.getElementById('edit-type').value = activity.activity_type ?? '';
+        document.getElementById('edit-subcategory').value = activity.subcategory ?? '';
+        document.getElementById('edit-duration').value = activity.duration_minutes ?? '';
+        document.getElementById('edit-tier').value = activity.tier ?? '';
+        document.getElementById('edit-cost').value = activity.cost ?? '';
+        document.getElementById('edit-location').value = activity.location ?? '';
+        document.getElementById('edit-energy').value = activity.energy_level ?? '';
+        document.getElementById('edit-social').value = activity.social_type ?? '';
+        document.getElementById('edit-min-age').value = activity.min_age ?? '';
+        document.getElementById('edit-max-age').value = activity.max_age ?? '';
+        document.getElementById('edit-sensory').value = activity.sensory_tags ?? '';
+        document.getElementById('edit-outcome').value = activity.outcome_tag ?? '';
+        document.getElementById('edit-description').value = activity.description ?? '';
+        document.getElementById('edit-instruction').value = activity.instruction ?? '';
+        document.getElementById('edit-nd-notes').value = activity.neurodivergent_notes ?? '';
 
-    document.getElementById('edit-nd').checked = (activity.neurodivergent_friendly === 'Yes' || activity.neurodivergent_friendly == 1);
+        document.getElementById('edit-nd').checked = (activity.neurodivergent_friendly === 'Yes' || activity.neurodivergent_friendly == 1);
 
-    openModal('edit-activity-modal');
-}
+        openModal('edit-activity-modal');
+    }
 
-function confirmDelete(actionUrl) {
-    document.getElementById('delete-form').action = actionUrl;
-    openModal('delete-modal');
-}
+    function confirmDelete(actionUrl) {
+        document.getElementById('delete-form').action = actionUrl;
+        openModal('delete-modal');
+    }
 </script>
 @endsection

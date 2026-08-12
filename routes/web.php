@@ -6,6 +6,8 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\UserProfileController;
 use App\Http\Controllers\Admin\ActivityController;
+use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\ChallengePackController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -55,10 +57,10 @@ Route::prefix('dashboard')->name('admin.')->group(function () {
         Route::resource('activities', ActivityController::class);
 
         // Categories
-        // Route::resource('categories', CategoryController::class);
+        Route::resource('categories', CategoryController::class);
 
         // // Challenge Packs
-        // Route::resource('challenge-packs', ChallengePackController::class);
+        Route::resource('challenge-packs', ChallengePackController::class);
 
         // // Groups
         // Route::resource('groups', GroupController::class);

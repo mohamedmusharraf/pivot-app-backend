@@ -24,7 +24,7 @@
         <h3 style="font-size: 1rem; font-weight: 700; color: var(--text-heading); margin-bottom: 1rem; border-bottom: 1px solid var(--border-light); padding-bottom: 0.5rem;">
             Overview & Description
         </h3>
-        
+
         <div style="margin-bottom: 1.25rem;">
             <div style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.25rem;">Description</div>
             <div style="color: var(--text-body); line-height: 1.6;">{{ $activity->description ?? 'No description provided.' }}</div>
@@ -50,6 +50,10 @@
         </h3>
 
         <div style="display: flex; flex-direction: column; gap: 0.875rem;">
+            <div>
+                <span style="font-size: 0.75rem; color: var(--text-muted); display: block;">Category</span>
+                <strong style="color: var(--text-heading);">{{ $activity->hobby?->name ?? 'N/A' }}</strong>
+            </div>
             <div>
                 <span style="font-size: 0.75rem; color: var(--text-muted); display: block;">Activity Type</span>
                 <strong style="color: var(--text-heading);">{{ $activity->activity_type ?? 'N/A' }}</strong>
