@@ -57,12 +57,12 @@
 
     <!-- Hobbies Card -->
     <div class="card" style="width: 340px;">
-        <h3 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 1.25rem;">User Hobbies</h3>
+        <h3 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 1.25rem;">User Activities</h3>
         <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
             @forelse($profile->hobbies as $hobby)
             <span class="badge badge-info">{{ $hobby->name }}</span>
             @empty
-            <p style="color: var(--text-muted); font-size: 0.875rem;">No hobbies linked to this user.</p>
+            <p style="color: var(--text-muted); font-size: 0.875rem;">No Activities linked to this user.</p>
             @endforelse
         </div>
     </div>

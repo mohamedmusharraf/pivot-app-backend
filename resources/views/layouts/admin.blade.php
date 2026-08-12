@@ -12,61 +12,63 @@
         
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
-                <i class="fa-solid fa-arrows-spin fa-2x" style="color: var(--primary);"></i>
-                <span class="sidebar-brand-title">Pivot Admin</span>
-            </div>
+    <img src="{{ asset('assets/img/logo.png') }}" 
+         alt="Pivot Logo" 
+         style="width: 36px; height: 36px; border-radius: 8px; object-fit: cover;">
+    <span class="sidebar-brand-title">Pivot Admin</span>
+</div>
 
             <nav class="sidebar-nav">
-                <div class="nav-section-title">Core</div>
-                <a href="#" class="nav-item active">
-                    <i class="fa-solid fa-chart-pie"></i>
-                    <span>Dashboard</span>
-                </a>
+    <div class="nav-section-title">Core</div>
+    <a href="{{ route('admin.dashboard') }}" class="nav-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+        <i class="fa-solid fa-chart-pie"></i>
+        <span>Dashboard</span>
+    </a>
 
-                <div class="nav-section-title">User Management</div>
-                <a href="{{ route('admin.users.index') }}" class="nav-item">
-                    <i class="fa-solid fa-users"></i>
-                    <span>Users</span>
-                </a>
-                <a href="{{ route('admin.user-profiles.index') }}" class="nav-item">
-                    <i class="fa-solid fa-id-card"></i>
-                    <span>User Profiles</span>
-                </a>
+    <div class="nav-section-title">User Management</div>
+    <a href="{{ route('admin.users.index') }}" class="nav-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
+        <i class="fa-solid fa-users"></i>
+        <span>Users</span>
+    </a>
+    <a href="{{ route('admin.user-profiles.index') }}" class="nav-item {{ request()->routeIs('admin.user-profiles.*') ? 'active' : '' }}">
+        <i class="fa-solid fa-id-card"></i>
+        <span>User Profiles</span>
+    </a>
 
-                <div class="nav-section-title">Content & Program</div>
-                <a href="{{ route('admin.activities.index') }}" class="nav-item">
-                    <i class="fa-solid fa-person-running"></i>
-                    <span>Activities</span>
-                </a>
-                <a href="#" class="nav-item">
-                    <i class="fa-solid fa-layer-group"></i>
-                    <span>Categories</span>
-                </a>
-                <a href="#" class="nav-item">
-                    <i class="fa-solid fa-trophy"></i>
-                    <span>Challenge Packs</span>
-                </a>
-                <a href="#" class="nav-item">
-                    <i class="fa-solid fa-book-open"></i>
-                    <span>Research Articles</span>
-                </a>
+    <div class="nav-section-title">Content & Program</div>
+    <a href="{{ route('admin.activities.index') }}" class="nav-item {{ request()->routeIs('admin.activities.*') ? 'active' : '' }}">
+        <i class="fa-solid fa-person-running"></i>
+        <span>Activities</span>
+    </a>
+    <a href="#" class="nav-item {{ request()->routeIs('admin.categories.*') ? 'active' : '' }}">
+        <i class="fa-solid fa-layer-group"></i>
+        <span>Categories</span>
+    </a>
+    <a href="#" class="nav-item {{ request()->routeIs('admin.challenge-packs.*') ? 'active' : '' }}">
+        <i class="fa-solid fa-trophy"></i>
+        <span>Challenge Packs</span>
+    </a>
+    <a href="#" class="nav-item {{ request()->routeIs('admin.research-articles.*') ? 'active' : '' }}">
+        <i class="fa-solid fa-book-open"></i>
+        <span>Research Articles</span>
+    </a>
 
-                <div class="nav-section-title">Monetization</div>
-                <a href="#" class="nav-item">
-                    <i class="fa-solid fa-credit-card"></i>
-                    <span>Subscriptions</span>
-                </a>
-                <a href="#" class="nav-item">
-                    <i class="fa-solid fa-receipt"></i>
-                    <span>Payment History</span>
-                </a>
+    <div class="nav-section-title">Monetization</div>
+    <a href="#" class="nav-item {{ request()->routeIs('admin.subscriptions.*') ? 'active' : '' }}">
+        <i class="fa-solid fa-credit-card"></i>
+        <span>Subscriptions</span>
+    </a>
+    <a href="#" class="nav-item {{ request()->routeIs('admin.payment-history.*') ? 'active' : '' }}">
+        <i class="fa-solid fa-receipt"></i>
+        <span>Payment History</span>
+    </a>
 
-                <div class="nav-section-title">System</div>
-                <a href="#" class="nav-item">
-                    <i class="fa-solid fa-gear"></i>
-                    <span>Settings</span>
-                </a>
-            </nav>
+    <div class="nav-section-title">System</div>
+    <a href="#" class="nav-item {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
+        <i class="fa-solid fa-gear"></i>
+        <span>Settings</span>
+    </a>
+</nav>
         </aside>
 
         <div class="main-content">
@@ -76,10 +78,6 @@
                     <button class="btn btn-secondary btn-icon" id="sidebar-toggle">
                         <i class="fa-solid fa-bars"></i>
                     </button>
-                    <div style="position: relative; width: 280px;">
-                        <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-placeholder);"></i>
-                        <input type="text" class="form-control" placeholder="Search anything..." style="padding-left: 36px;">
-                    </div>
                 </div>
 
                 <div class="topbar-right">

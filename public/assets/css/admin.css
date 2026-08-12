@@ -4,45 +4,64 @@
    ========================================================================== */
 
 :root {
-    /* Brand Colors */
-    --primary: #4f46e5;
-    --primary-hover: #4338ca;
-    --primary-light: #eef2ff;
-    --primary-border: #c7d2fe;
+    /* Brand Colors (Extracted from New Logo) */
+    --primary: #3B5838;            /* Forest Green */
+    --primary-hover: #2B4129;      /* Darker Forest Green */
+    --primary-light: #EDF2EC;      /* Soft Light Sage Tint */
+    --primary-border: #BCCDBA;     /* Soft Sage Border */
+
+    /* Olive Color Additions (#808000) */
+    --olive: #808000;              /* Olive Green Accent */
+    --olive-hover: #666600;        /* Darker Olive Hover */
+    --olive-light: #F4F4E6;        /* Light Soft Olive Tint */
+    --olive-border: #D1D199;       /* Soft Olive Border */
 
     /* Neutral Palette */
-    --bg-main: #f8fafc;
-    --bg-surface: #ffffff;
-    --border-color: #e2e8f0;
-    --border-light: #f1f5f9;
+    --bg-main: #F6F7F5;            /* Off-white background */
+    --bg-surface: #FFFFFF;         /* White cards & panels */
+    --border-color: #E3E7E2;       /* Light sage-tinted border */
+    --border-light: #EEF1ED;
 
     /* Text Colors */
-    --text-heading: #0f172a;
-    --text-body: #334155;
-    --text-muted: #64748b;
-    --text-placeholder: #94a3b8;
+    --text-heading: #1B261A;       /* Deep dark green-slate */
+    --text-body: #344233;          /* Dark muted green-grey */
+    --text-muted: #6B7B6A;         /* Medium olive muted text */
+    --text-placeholder: #A0AEA0;   /* Muted green placeholder */
 
     /* Status Colors */
-    --success: #10b981;
-    --success-bg: #ecfdf5;
-    --danger: #ef4444;
-    --danger-bg: #fef2f2;
-    --warning: #f59e0b;
-    --warning-bg: #fffbeb;
-    --info: #3b82f6;
-    --info-bg: #eff6ff;
+    --success: #2E7D32;
+    --success-bg: #E8F5E9;
+    --danger: #D32F2F;
+    --danger-bg: #FFEBEE;
+    --warning: #ED6C02;
+    --warning-bg: #FFF4E5;
+    --info: #0288D1;
+    --info-bg: #E0F7FA;
 
     /* Elevation & Shapes */
     --radius-lg: 18px;
     --radius-md: 10px;
     --radius-sm: 6px;
-    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
-    --shadow-md:
-        0 4px 12px -2px rgba(0, 0, 0, 0.05), 0 2px 6px -1px rgba(0, 0, 0, 0.03);
-    --shadow-lg:
-        0 20px 25px -5px rgba(0, 0, 0, 0.08),
-        0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    --shadow-sm: 0 1px 3px rgba(27, 38, 26, 0.05);
+    --shadow-md: 0 4px 12px -2px rgba(27, 38, 26, 0.06), 0 2px 6px -1px rgba(27, 38, 26, 0.04);
+    --shadow-lg: 0 20px 25px -5px rgba(27, 38, 26, 0.10), 0 10px 10px -5px rgba(27, 38, 26, 0.04);
     --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Optional Olive UI Utility Helpers */
+.btn-olive {
+    background-color: var(--olive);
+    color: #ffffff;
+}
+
+.btn-olive:hover {
+    background-color: var(--olive-hover);
+}
+
+.badge-olive {
+    background-color: var(--olive-light);
+    color: var(--olive);
+    border: 1px solid var(--olive-border);
 }
 
 /* Base Reset */
@@ -604,4 +623,97 @@ body {
 .sidebar.collapsed + .main-content,
 .sidebar.collapsed ~ .main-content {
     margin-left: 80px;
+}
+
+/* Custom Form Grid Layouts */
+.form-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.col-span-2 {
+    grid-column: span 2;
+}
+
+/* Enhanced Modal Dialog Constraints */
+.modal-dialog {
+    background: var(--bg-surface);
+    width: 100%;
+    max-width: 580px;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh; /* Prevents modal from overflowing screen vertically */
+    overflow: hidden;
+}
+
+.modal-header {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--bg-surface);
+}
+
+.modal-body {
+    padding: 1.5rem;
+    overflow-y: auto; /* Adds smooth internal scrolling if content is tall */
+    flex: 1;
+}
+
+.modal-footer {
+    padding: 1rem 1.5rem;
+    background: var(--bg-main);
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+}
+
+/* Custom Styled Checkbox Switch */
+.checkbox-card {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: var(--bg-main);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    user-select: none;
+    transition: var(--transition);
+}
+
+.checkbox-card:hover {
+    border-color: var(--primary);
+}
+
+.checkbox-card input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary);
+    cursor: pointer;
+}
+
+/* Inline Action Grouping */
+.action-btn-group {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.375rem;
+    white-space: nowrap;
+}
+
+/* Ensure small icon action buttons stay compact and equal square size */
+.action-btn-group .btn-sm {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
 }

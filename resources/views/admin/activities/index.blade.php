@@ -7,6 +7,12 @@
     <li style="color: var(--text-heading); font-weight: 600;">Activities Management</li>
 </ul>
 
+@if(session('success'))
+    <div style="background: var(--success-bg); color: var(--success); padding: 0.875rem 1.25rem; border-radius: var(--radius-md); margin-bottom: 1.25rem; border: 1px solid var(--success);">
+        {{ session('success') }}
+    </div>
+@endif
+
 <div class="card">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
         <h3 style="font-size: 1.125rem; font-weight: 700;">Activities List</h3>
@@ -15,12 +21,14 @@
         </button>
     </div>
 
-    <form method="GET" action="{{ route('admin.activities.index') }}" style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+    <!-- Filter Form -->
+    <form method="GET" action="{{ route('admin.activities.index') }}" style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
         <input type="text" name="search" value="{{ request('search') }}" placeholder="Search title, description..." class="form-control" style="max-width: 280px;">
         <input type="text" name="tier" value="{{ request('tier') }}" placeholder="Tier (e.g. Free, Premium)" class="form-control" style="max-width: 180px;">
         <button type="submit" class="btn btn-secondary"><i class="fa-solid fa-filter"></i> Filter</button>
     </form>
 
+    <!-- Data Table -->
     <div class="table-wrapper">
         <table class="data-table">
             <thead>
@@ -38,7 +46,7 @@
                 @forelse($activities as $activity)
                 <tr>
                     <td>
-                        <div style="font-weight: 600;">{{ $activity->activity_title }}</div>
+                        <div style="font-weight: 600; color: var(--text-heading);">{{ $activity->activity_title }}</div>
                         <div style="font-size: 0.75rem; color: var(--text-muted);">{{ $activity->subcategory ?? 'General' }}</div>
                     </td>
                     <td>{{ $activity->activity_type ?? 'N/A' }}</td>
@@ -46,56 +54,127 @@
                     <td><span class="badge badge-info">{{ $activity->tier ?? 'Standard' }}</span></td>
                     <td>{{ $activity->energy_level ?? 'N/A' }}</td>
                     <td>
-                        <span class="badge {{ $activity->neurodivergent_friendly ? 'badge-success' : 'badge-warning' }}">
-                            {{ $activity->neurodivergent_friendly ? 'Yes' : 'No' }}
+                        <span class="badge {{ ($activity->neurodivergent_friendly === 'Yes' || $activity->neurodivergent_friendly == 1) ? 'badge-success' : 'badge-warning' }}">
+                            {{ ($activity->neurodivergent_friendly === 'Yes' || $activity->neurodivergent_friendly == 1) ? 'Yes' : 'No' }}
                         </span>
                     </td>
                     <td style="text-align: right;">
-                        <a href="{{ route('admin.activities.show', $activity->id) }}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-eye"></i></a>
-                        <button onclick="editActivity({{ json_encode($activity) }})" class="btn btn-secondary btn-sm"><i class="fa-solid fa-pen"></i></button>
-                        <button onclick="confirmDelete('{{ route('admin.activities.destroy', $activity->id) }}')" class="btn btn-danger btn-sm"><i class="fa-solid fa-trash"></i></button>
+                        <div class="action-btn-group">
+                            <a href="{{ route('admin.activities.show', $activity->id) }}" class="btn btn-secondary btn-sm" title="View Details">
+                                <i class="fa-solid fa-eye"></i>
+                            </a>
+                            <button type="button" onclick="editActivity({{ json_encode($activity) }})" class="btn btn-secondary btn-sm" title="Edit">
+                                <i class="fa-solid fa-pen"></i>
+                            </button>
+                            <button type="button" onclick="confirmDelete('{{ route('admin.activities.destroy', $activity->id) }}')" class="btn btn-danger btn-sm" title="Delete">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
                     </td>
                 </tr>
                 @empty
-                <tr><td colspan="7" style="text-align: center; padding: 2rem;">No activities found.</td></tr>
+                <tr><td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-muted);">No activities found.</td></tr>
                 @endforelse
             </tbody>
         </table>
     </div>
 
     <div style="margin-top: 1.25rem;">
-        {{ $activities->links() }}
+        {{ $activities->links('partials.pagination') }}
     </div>
 </div>
 
+<!-- CREATE ACTIVITY MODAL -->
 <div class="modal-backdrop" id="create-activity-modal">
-    <div class="modal-dialog">
+    <div class="modal-dialog" style="max-width: 680px;">
         <div class="modal-header">
-            <h3>Add Activity</h3>
-            <button onclick="closeModal('create-activity-modal')" style="background: none; border: none; cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
+            <h3>Add New Activity</h3>
+            <button type="button" onclick="closeModal('create-activity-modal')" style="background: none; border: none; cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <form action="{{ route('admin.activities.store') }}" method="POST">
             @csrf
-            <div class="modal-body">
-                <div class="form-group">
-                    <label class="form-label">Activity Title</label>
-                    <input type="text" name="activity_title" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Activity Type</label>
-                    <input type="text" name="activity_type" class="form-control">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Duration (Minutes)</label>
-                    <input type="number" name="duration_minutes" class="form-control">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Energy Level</label>
-                    <input type="text" name="energy_level" class="form-control">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Description</label>
-                    <textarea name="description" class="form-control" rows="3"></textarea>
+            <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+                <div class="form-grid-2">
+                    <div class="form-group col-span-2">
+                        <label class="form-label">Activity Title *</label>
+                        <input type="text" name="activity_title" class="form-control" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Activity Type</label>
+                        <input type="text" name="activity_type" class="form-control" placeholder="e.g. Time-Bound">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Subcategory</label>
+                        <input type="text" name="subcategory" class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Duration (Minutes)</label>
+                        <input type="text" name="duration_minutes" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Tier</label>
+                        <input type="text" name="tier" class="form-control" placeholder="e.g. 1, Free, Premium">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Cost</label>
+                        <input type="text" name="cost" class="form-control" placeholder="e.g. Free, $10">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Location</label>
+                        <input type="text" name="location" class="form-control" placeholder="Indoor/Outdoor">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Energy Level</label>
+                        <input type="text" name="energy_level" class="form-control" placeholder="Low, Medium, High">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Social Type</label>
+                        <input type="text" name="social_type" class="form-control" placeholder="Solo, Group, Partner">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Min Age</label>
+                        <input type="number" name="min_age" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Max Age</label>
+                        <input type="number" name="max_age" class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Sensory Tags</label>
+                        <input type="text" name="sensory_tags" class="form-control" placeholder="Tactile, Visual">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Outcome Tag</label>
+                        <input type="text" name="outcome_tag" class="form-control">
+                    </div>
+
+                    <div class="form-group col-span-2">
+                        <label class="form-label">Description</label>
+                        <textarea name="description" class="form-control" rows="2"></textarea>
+                    </div>
+
+                    <div class="form-group col-span-2">
+                        <label class="form-label">Instructions</label>
+                        <textarea name="instruction" class="form-control" rows="2"></textarea>
+                    </div>
+
+                    <div class="form-group col-span-2">
+                        <label class="form-label">Neurodivergent Notes</label>
+                        <textarea name="neurodivergent_notes" class="form-control" rows="2"></textarea>
+                    </div>
+
+                    <div class="form-group col-span-2">
+                        <label class="checkbox-card">
+                            <input type="checkbox" name="neurodivergent_friendly" value="1">
+                            <span style="font-weight: 600;">Neurodivergent Friendly</span>
+                        </label>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">
@@ -106,31 +185,98 @@
     </div>
 </div>
 
+<!-- EDIT ACTIVITY MODAL -->
 <div class="modal-backdrop" id="edit-activity-modal">
-    <div class="modal-dialog">
+    <div class="modal-dialog" style="max-width: 680px;">
         <div class="modal-header">
             <h3>Edit Activity</h3>
-            <button onclick="closeModal('edit-activity-modal')" style="background: none; border: none; cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
+            <button type="button" onclick="closeModal('edit-activity-modal')" style="background: none; border: none; cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <form id="edit-activity-form" method="POST">
             @csrf
             @method('PUT')
-            <div class="modal-body">
-                <div class="form-group">
-                    <label class="form-label">Activity Title</label>
-                    <input type="text" name="activity_title" id="edit-title" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Activity Type</label>
-                    <input type="text" name="activity_type" id="edit-type" class="form-control">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Duration (Minutes)</label>
-                    <input type="number" name="duration_minutes" id="edit-duration" class="form-control">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Energy Level</label>
-                    <input type="text" name="energy_level" id="edit-energy" class="form-control">
+            <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+                <div class="form-grid-2">
+                    <div class="form-group col-span-2">
+                        <label class="form-label">Activity Title *</label>
+                        <input type="text" name="activity_title" id="edit-title" class="form-control" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Activity Type</label>
+                        <input type="text" name="activity_type" id="edit-type" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Subcategory</label>
+                        <input type="text" name="subcategory" id="edit-subcategory" class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Duration (Minutes)</label>
+                        <input type="text" name="duration_minutes" id="edit-duration" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Tier</label>
+                        <input type="text" name="tier" id="edit-tier" class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Cost</label>
+                        <input type="text" name="cost" id="edit-cost" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Location</label>
+                        <input type="text" name="location" id="edit-location" class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Energy Level</label>
+                        <input type="text" name="energy_level" id="edit-energy" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Social Type</label>
+                        <input type="text" name="social_type" id="edit-social" class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Min Age</label>
+                        <input type="number" name="min_age" id="edit-min-age" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Max Age</label>
+                        <input type="number" name="max_age" id="edit-max-age" class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Sensory Tags</label>
+                        <input type="text" name="sensory_tags" id="edit-sensory" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Outcome Tag</label>
+                        <input type="text" name="outcome_tag" id="edit-outcome" class="form-control">
+                    </div>
+
+                    <div class="form-group col-span-2">
+                        <label class="form-label">Description</label>
+                        <textarea name="description" id="edit-description" class="form-control" rows="2"></textarea>
+                    </div>
+
+                    <div class="form-group col-span-2">
+                        <label class="form-label">Instructions</label>
+                        <textarea name="instruction" id="edit-instruction" class="form-control" rows="2"></textarea>
+                    </div>
+
+                    <div class="form-group col-span-2">
+                        <label class="form-label">Neurodivergent Notes</label>
+                        <textarea name="neurodivergent_notes" id="edit-nd-notes" class="form-control" rows="2"></textarea>
+                    </div>
+
+                    <div class="form-group col-span-2">
+                        <label class="checkbox-card">
+                            <input type="checkbox" name="neurodivergent_friendly" id="edit-nd" value="1">
+                            <span style="font-weight: 600;">Neurodivergent Friendly</span>
+                        </label>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">
@@ -141,11 +287,12 @@
     </div>
 </div>
 
+<!-- DELETE MODAL -->
 <div class="modal-backdrop" id="delete-modal">
     <div class="modal-dialog">
         <div class="modal-header">
             <h3>Confirm Delete</h3>
-            <button onclick="closeModal('delete-modal')" style="background: none; border: none; cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
+            <button type="button" onclick="closeModal('delete-modal')" style="background: none; border: none; cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <form id="delete-form" method="POST">
             @csrf
@@ -163,11 +310,28 @@
 
 <script>
 function editActivity(activity) {
-    document.getElementById('edit-activity-form').action = `/admin/activities/${activity.id}`;
-    document.getElementById('edit-title').value = activity.activity_title;
+    const updateUrl = "{{ route('admin.activities.update', ':id') }}".replace(':id', activity.id);
+    document.getElementById('edit-activity-form').action = updateUrl;
+
+    document.getElementById('edit-title').value = activity.activity_title ?? '';
     document.getElementById('edit-type').value = activity.activity_type ?? '';
+    document.getElementById('edit-subcategory').value = activity.subcategory ?? '';
     document.getElementById('edit-duration').value = activity.duration_minutes ?? '';
+    document.getElementById('edit-tier').value = activity.tier ?? '';
+    document.getElementById('edit-cost').value = activity.cost ?? '';
+    document.getElementById('edit-location').value = activity.location ?? '';
     document.getElementById('edit-energy').value = activity.energy_level ?? '';
+    document.getElementById('edit-social').value = activity.social_type ?? '';
+    document.getElementById('edit-min-age').value = activity.min_age ?? '';
+    document.getElementById('edit-max-age').value = activity.max_age ?? '';
+    document.getElementById('edit-sensory').value = activity.sensory_tags ?? '';
+    document.getElementById('edit-outcome').value = activity.outcome_tag ?? '';
+    document.getElementById('edit-description').value = activity.description ?? '';
+    document.getElementById('edit-instruction').value = activity.instruction ?? '';
+    document.getElementById('edit-nd-notes').value = activity.neurodivergent_notes ?? '';
+
+    document.getElementById('edit-nd').checked = (activity.neurodivergent_friendly === 'Yes' || activity.neurodivergent_friendly == 1);
+
     openModal('edit-activity-modal');
 }
 
