@@ -14,7 +14,7 @@ class AuthController extends Controller
      */
     public function showLoginForm()
     {
-        if (Auth::check()) {
+        if (Auth::guard('admin')->check()) {
             return redirect()->route('admin.dashboard');
         }
 
@@ -33,18 +33,17 @@ class AuthController extends Controller
 
         $remember = $request->boolean('remember');
 
-        if (Auth::attempt($credentials, $remember)) {
-            $user = Auth::user();
+        if (Auth::guard('admin')->attempt($credentials, $remember)) {
+            $admin = Auth::guard('admin')->user();
 
-            // Update last login timestamp
-            $user->update([
+            $admin->update([
                 'last_login_at' => now(),
             ]);
 
             $request->session()->regenerate();
 
             return redirect()->intended(route('admin.dashboard'))
-                             ->with('success', 'Welcome back, ' . $user->name . '!');
+                             ->with('success', 'Welcome back, ' . $admin->name . '!');
         }
 
         return back()->withErrors([
@@ -53,11 +52,11 @@ class AuthController extends Controller
     }
 
     /**
-     * Log the user out of the application.
+     * Log the admin out of the application.
      */
     public function logout(Request $request)
     {
-        Auth::logout();
+        Auth::guard('admin')->logout();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();

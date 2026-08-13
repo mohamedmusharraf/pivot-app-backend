@@ -21,23 +21,20 @@ Route::get('/app-analyze', function () {
     return view('appAnalyze');
 });
 
-
-
 Route::get('/invite', function () {
     return view('invite-fallback');
 });
 
-
 Route::prefix('dashboard')->name('admin.')->group(function () {
 
     // 1. Guest Auth Routes (Accessible without logging in)
-    Route::middleware('guest')->group(function () {
+    Route::middleware('guest:admin')->group(function () {
         Route::get('login', [AuthController::class, 'showLoginForm'])->name('login');
         Route::post('login', [AuthController::class, 'login'])->name('login.post');
     });
 
     // 2. Protected Routes (Requires authentication)
-    Route::middleware('auth')->group(function () {
+    Route::middleware('auth:admin')->group(function () {
 
         // Logout
         Route::post('logout', [AuthController::class, 'logout'])->name('logout');
