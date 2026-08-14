@@ -94,6 +94,7 @@ Route::prefix('dashboard')->name('admin.')->group(function () {
 
         Route::middleware('auth:admin')->group(function () {
         Route::get('app-analyze', [AppAnalyzeController::class, 'index'])->name('app-analyze.index');
+        Route::get('users/{user}/analytics', [AppAnalyzeController::class, 'userAnalytics'])->name('users.analytics');
     });
 
         Route::get('profile', [ProfileController::class, 'index'])->name('profile.index');
