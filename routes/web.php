@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\UserProfileController;
 use App\Http\Controllers\Admin\ActivityController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\ChallengePackController;
+use App\Http\Controllers\Admin\ProfileController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -90,8 +91,8 @@ Route::prefix('dashboard')->name('admin.')->group(function () {
         // // Roles & Permissions
         // Route::resource('roles', RolePermissionController::class);
 
-        // // Settings
-        // Route::get('settings', [SettingController::class, 'index'])->name('settings.index');
-        // Route::put('settings', [SettingController::class, 'update'])->name('settings.update');
+        Route::get('profile', [ProfileController::class, 'index'])->name('profile.index');
+        Route::put('profile', [ProfileController::class, 'updateProfile'])->name('profile.update');
+        Route::put('profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
     });
 });

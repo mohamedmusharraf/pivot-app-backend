@@ -24,11 +24,6 @@
     <!-- Filter Form -->
     <form method="GET" action="{{ route('admin.categories.index') }}" style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
         <input type="text" name="search" value="{{ request('search') }}" placeholder="Search category name..." class="form-control" style="max-width: 280px;">
-        <select name="status" class="form-control" style="max-width: 160px;">
-            <option value="">All Statuses</option>
-            <option value="active" {{ request('status') === 'active' ? 'selected' : '' }}>Active</option>
-            <option value="inactive" {{ request('status') === 'inactive' ? 'selected' : '' }}>Inactive</option>
-        </select>
         <button type="submit" class="btn btn-secondary"><i class="fa-solid fa-filter"></i> Filter</button>
     </form>
 
@@ -39,9 +34,7 @@
                 <tr>
                     <th>Category</th>
                     <th>Icon</th>
-                    <!-- <th>Theme Color</th> -->
                     <th>Activities</th>
-                    <th>Status</th>
                     <th style="text-align: right;">Actions</th>
                 </tr>
             </thead>
@@ -57,14 +50,8 @@
                             <i class="{{ $category->icon ?? 'fa-solid fa-layer-group' }}"></i>
                         </div>
                     </td>
-                    
                     <td>
                         <span class="badge badge-info">{{ $category->activities_count }} Activities</span>
-                    </td>
-                    <td>
-                        <span class="badge {{ $category->status === 'active' ? 'badge-success' : 'badge-danger' }}">
-                            {{ ucfirst($category->status) }}
-                        </span>
                     </td>
                     <td style="text-align: right;">
                         <div class="action-btn-group">
@@ -82,7 +69,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-muted);">No categories found.</td>
+                    <td colspan="4" style="text-align: center; padding: 2rem; color: var(--text-muted);">No categories found.</td>
                 </tr>
                 @endforelse
             </tbody>
@@ -108,8 +95,6 @@
                     <label class="form-label">Category Name *</label>
                     <input type="text" name="name" class="form-control" placeholder="e.g. Micro-Movement" required>
                 </div>
-
-                
             </div>
             <div class="modal-footer">
                 <button type="button" onclick="closeModal('create-category-modal')" class="btn btn-secondary">Cancel</button>
@@ -133,30 +118,6 @@
                 <div class="form-group">
                     <label class="form-label">Category Name *</label>
                     <input type="text" name="name" id="edit-name" class="form-control" required>
-                </div>
-
-                <div class="form-grid-2">
-                    <div class="form-group">
-                        <label class="form-label">FontAwesome Icon Class</label>
-                        <input type="text" name="icon" id="edit-icon" class="form-control">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Theme Color</label>
-                        <input type="color" name="color" id="edit-color" class="form-control" style="height: 38px; padding: 2px;">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Status</label>
-                    <select name="status" id="edit-status" class="form-control" required>
-                        <option value="active">Active</option>
-                        <option value="inactive">Inactive</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Description</label>
-                    <textarea name="description" id="edit-description" class="form-control" rows="3"></textarea>
                 </div>
             </div>
             <div class="modal-footer">
@@ -194,10 +155,6 @@
         document.getElementById('edit-category-form').action = updateUrl;
 
         document.getElementById('edit-name').value = category.name ?? '';
-        document.getElementById('edit-icon').value = category.icon ?? 'fa-solid fa-layer-group';
-        document.getElementById('edit-color').value = category.color ?? '#3B5838';
-        document.getElementById('edit-status').value = category.status ?? 'active';
-        document.getElementById('edit-description').value = category.description ?? '';
 
         openModal('edit-category-modal');
     }

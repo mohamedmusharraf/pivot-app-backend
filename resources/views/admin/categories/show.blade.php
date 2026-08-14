@@ -27,11 +27,6 @@
     </a>
 </div>
 
-<div class="card" style="margin-bottom: 1.5rem;">
-    <h3 style="font-size: 1rem; font-weight: 700; color: var(--text-heading); margin-bottom: 0.75rem;">Description</h3>
-    <p style="color: var(--text-body); line-height: 1.6;">{{ $category->description ?? 'No description provided for this category.' }}</p>
-</div>
-
 <!-- Category Activities Table -->
 <div class="card">
     <h3 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 1rem;">Associated Activities ({{ $category->activities_count }})</h3>
