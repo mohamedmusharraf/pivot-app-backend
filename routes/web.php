@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\ActivityController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\ChallengePackController;
 use App\Http\Controllers\Admin\ProfileController;
+use App\Http\Controllers\Admin\AppAnalyzeController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -18,9 +19,9 @@ Route::get('/view-logs', function () {
     return view('viewLogs');
 });
 
-Route::get('/app-analyze', function () {
-    return view('appAnalyze');
-});
+// Route::get('/app-analyze', function () {
+//     return view('appAnalyze');
+// });
 
 Route::get('/invite', function () {
     return view('invite-fallback');
@@ -90,6 +91,10 @@ Route::prefix('dashboard')->name('admin.')->group(function () {
 
         // // Roles & Permissions
         // Route::resource('roles', RolePermissionController::class);
+
+        Route::middleware('auth:admin')->group(function () {
+        Route::get('app-analyze', [AppAnalyzeController::class, 'index'])->name('app-analyze.index');
+    });
 
         Route::get('profile', [ProfileController::class, 'index'])->name('profile.index');
         Route::put('profile', [ProfileController::class, 'updateProfile'])->name('profile.update');

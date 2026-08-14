@@ -66,6 +66,11 @@
                     <span>Research Articles</span>
                 </a>
 
+                <a href="{{ route('admin.app-analyze.index') }}" class="nav-item {{ request()->routeIs('admin.app-analyze.*') ? 'active' : '' }}">
+                    <i class="fa-solid fa-magnifying-glass-chart"></i>
+                    <span>App Analytics</span>
+                </a>    
+
                 <!-- Monetization Section -->
                 <div class="nav-section-title">Monetization</div>
                 <a href="#" class="nav-item {{ request()->routeIs('admin.subscriptions.*') ? 'active' : '' }}">
