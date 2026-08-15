@@ -37,11 +37,10 @@ class AppleAuthService
         $result = $this->userRepository->findOrCreateByApple($appleUser);
 
         if ($result['is_new']) {
-            // TODO: Re-enable free trial granting when the promo flow is ready again.
-            // $this->revenueCatService->grantFreeTrial(
-            //     (string) $result['user']->id,
-            //     'ios'
-            // );
+            $this->revenueCatService->grantFreeTrial(
+                (string) $result['user']->id,
+                'ios'
+            );
         }
 
         return $result['user'];
