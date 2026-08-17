@@ -164,7 +164,7 @@ class ActivityRepository implements ActivityRepositoryInterface
         return $activities;
     }
 
-    public function getActivitiesPerCategoryAndTier($user, bool $excludeMicroMovement = true, array $filters = [], int $perPage = 150): LengthAwarePaginator
+    public function getActivitiesPerCategoryAndTier($user, bool $excludeMicroMovement = true, array $filters = [], int $perPage = 50): LengthAwarePaginator 
     {
         $user->loadMissing(['subscription', 'hobbies']);
         $subscriptionTierId = (int) ($user->subscription->tier_id ?? 1);
@@ -181,6 +181,16 @@ class ActivityRepository implements ActivityRepositoryInterface
 
         $hobbyIds = $hobbies->pluck('id')->toArray();
 
+        if (!empty($filters['hobby_id'])) {
+            $selectedHobbyId = (int) $filters['hobby_id'];
+            
+            if (in_array($selectedHobbyId, $hobbyIds, true)) {
+                $hobbyIds = [$selectedHobbyId];
+            } else {
+                return Activity::whereRaw('1 = 0')->paginate($perPage);
+            }
+        }
+
         if (empty($hobbyIds)) {
             return Activity::whereRaw('1 = 0')->paginate($perPage);
         }
@@ -188,6 +198,12 @@ class ActivityRepository implements ActivityRepositoryInterface
         $query = Activity::with('hobby')
             ->whereIn('tier', $allowedTiers)
             ->whereIn('hobby_id', $hobbyIds);
+
+        if (isset($filters['duration_minutes']) && is_numeric($filters['duration_minutes'])) {
+            $maxDuration = (float) $filters['duration_minutes'];
+            
+            $query->whereRaw('CAST(duration_minutes AS NUMERIC) <= ?', [$maxDuration]);
+        }
 
         if (!empty($filters['mood_match'])) {
             $moods = (array) $filters['mood_match'];
@@ -199,8 +215,7 @@ class ActivityRepository implements ActivityRepositoryInterface
             });
         }
 
-        return $query->inRandomOrder($user->id)
-            ->paginate($perPage);
+            return $query->inRandomOrder($user->id)->paginate($perPage);
     }
 
     public function create(array $data): Activity
