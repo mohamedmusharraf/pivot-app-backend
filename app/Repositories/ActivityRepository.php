@@ -181,11 +181,15 @@ class ActivityRepository implements ActivityRepositoryInterface
 
         $hobbyIds = $hobbies->pluck('id')->toArray();
 
-        if (!empty($filters['hobby_id'])) {
-            $selectedHobbyId = (int) $filters['hobby_id'];
+        if (!empty($filters['category'])) {
+            $categoryName = strtolower(trim($filters['category']));
             
-            if (in_array($selectedHobbyId, $hobbyIds, true)) {
-                $hobbyIds = [$selectedHobbyId];
+            $selectedHobby = $hobbies->first(function ($hobby) use ($categoryName) {
+                return strtolower(trim($hobby->name)) === $categoryName;
+            });
+
+            if ($selectedHobby) {
+                $hobbyIds = [$selectedHobby->id];
             } else {
                 return Activity::whereRaw('1 = 0')->paginate($perPage);
             }
@@ -195,19 +199,17 @@ class ActivityRepository implements ActivityRepositoryInterface
             return Activity::whereRaw('1 = 0')->paginate($perPage);
         }
 
-        $query = Activity::with('hobby')
+        $query = Activity::with(['hobby:id,name'])
             ->whereIn('tier', $allowedTiers)
             ->whereIn('hobby_id', $hobbyIds);
 
         if (isset($filters['duration_minutes']) && is_numeric($filters['duration_minutes'])) {
             $maxDuration = (float) $filters['duration_minutes'];
-            
             $query->whereRaw('CAST(duration_minutes AS NUMERIC) <= ?', [$maxDuration]);
         }
 
         if (!empty($filters['mood_match'])) {
             $moods = (array) $filters['mood_match'];
-
             $query->where(function ($q) use ($moods) {
                 foreach ($moods as $mood) {
                     $q->orWhereJsonContains('mood_match', $mood);
@@ -215,7 +217,14 @@ class ActivityRepository implements ActivityRepositoryInterface
             });
         }
 
-            return $query->inRandomOrder($user->id)->paginate($perPage);
+        $paginated = $query->inRandomOrder($user->id)->paginate($perPage);
+
+        $paginated->through(function ($activity) {
+            $activity->category = $activity->hobby->name ?? null;
+            return $activity;
+        });
+
+        return $paginated;
     }
 
     public function create(array $data): Activity
