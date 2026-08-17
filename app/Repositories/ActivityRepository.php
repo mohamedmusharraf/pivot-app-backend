@@ -164,7 +164,7 @@ class ActivityRepository implements ActivityRepositoryInterface
         return $activities;
     }
 
-    public function getActivitiesPerCategoryAndTier($user, bool $excludeMicroMovement = true, array $filters = [], int $perPage = 100): LengthAwarePaginator
+    public function getActivitiesPerCategoryAndTier($user, bool $excludeMicroMovement = true, array $filters = [], int $perPage = 150): LengthAwarePaginator
     {
         $user->loadMissing(['subscription', 'hobbies']);
         $subscriptionTierId = (int) ($user->subscription->tier_id ?? 1);
