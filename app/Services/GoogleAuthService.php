@@ -52,12 +52,12 @@ class GoogleAuthService
 
         $result = $this->userRepository->findOrCreateByGoogle($payload);
 
-        if ($result['is_new']) {
-            $this->revenueCatService->grantFreeTrial(
-                (string) $result['user']->id,
-                $os
-            );
-        }
+        // if ($result['is_new']) {
+        //     $this->revenueCatService->grantFreeTrial(
+        //         (string) $result['user']->id,
+        //         $os
+        //     );
+        // }
 
         return $result['user'];
     }

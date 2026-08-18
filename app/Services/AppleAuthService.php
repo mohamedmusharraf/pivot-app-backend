@@ -36,12 +36,12 @@ class AppleAuthService
 
         $result = $this->userRepository->findOrCreateByApple($appleUser);
 
-        if ($result['is_new']) {
-            $this->revenueCatService->grantFreeTrial(
-                (string) $result['user']->id,
-                'ios'
-            );
-        }
+        // if ($result['is_new']) {
+        //     $this->revenueCatService->grantFreeTrial(
+        //         (string) $result['user']->id,
+        //         'ios'
+        //     );
+        // }
 
         return $result['user'];
     }
