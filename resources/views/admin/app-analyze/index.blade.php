@@ -304,8 +304,13 @@
                     @endforeach
                 </tbody>
             </table>
-            <div style="margin-top: 1.25rem;">
-                {{ $logs->appends(request()->query())->links() }}
+
+            <!-- Dynamic Styled Pagination -->
+            <div class="pagination">
+                <span style="color: var(--text-muted); font-size: 0.8125rem;">
+                    Showing {{ $logs->firstItem() ?? 0 }} to {{ $logs->lastItem() ?? 0 }} of {{ $logs->total() }} entries
+                </span>
+                {{ $logs->appends(request()->query())->links('partials.pagination') }}
             </div>
         @else
             <div style="text-align: center; padding: 3rem; color: var(--text-muted);">
