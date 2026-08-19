@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\ChallengePackController;
 use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Admin\AppAnalyzeController;
+use App\Http\Controllers\Admin\ResearchArticleController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -66,7 +67,7 @@ Route::prefix('dashboard')->name('admin.')->group(function () {
 
         // // Research Articles
         // Route::get('research-articles/{article}/download', [ResearchArticleController::class, 'downloadPdf'])->name('research-articles.download');
-        // Route::resource('research-articles', ResearchArticleController::class);
+        Route::resource('research-articles', ResearchArticleController::class);
 
         // // Subscription Management
         // Route::resource('subscriptions', SubscriptionController::class);

@@ -61,7 +61,7 @@
                     <i class="fa-solid fa-trophy"></i>
                     <span>Challenge Packs</span>
                 </a>
-                <a href="#" class="nav-item {{ request()->routeIs('admin.research-articles.*') ? 'active' : '' }}">
+                <a href="{{ route('admin.research-articles.index') }}" class="nav-item {{ request()->routeIs('admin.research-articles.*') ? 'active' : '' }}">
                     <i class="fa-solid fa-book-open"></i>
                     <span>Research Articles</span>
                 </a>
