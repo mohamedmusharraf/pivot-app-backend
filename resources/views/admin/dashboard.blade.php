@@ -10,7 +10,7 @@
 {{-- ══════════════════════════════════════════════════════════════════════
      ROW 1 — Primary KPI Cards
 ══════════════════════════════════════════════════════════════════════ --}}
-<div class="grid grid-cols-4" style="margin-bottom: 1.5rem;">
+<div class="grid grid-cols-4 dash-mb">
 
     {{-- Total Users --}}
     <div class="card stat-card">
@@ -72,9 +72,9 @@
 </div>
 
 {{-- ══════════════════════════════════════════════════════════════════════
-     ROW 2 — Secondary KPI Cards (3 cols + sidebar)
+     ROW 2 — Secondary KPI Cards
 ══════════════════════════════════════════════════════════════════════ --}}
-<div class="grid grid-cols-4" style="margin-bottom: 1.5rem;">
+<div class="grid grid-cols-4 dash-mb">
 
     {{-- Focus Sessions --}}
     <div class="card stat-card">
@@ -137,7 +137,7 @@
 {{-- ══════════════════════════════════════════════════════════════════════
      ROW 3 — More Detail Metrics
 ══════════════════════════════════════════════════════════════════════ --}}
-<div class="grid grid-cols-4" style="margin-bottom: 1.5rem;">
+<div class="grid grid-cols-4 dash-mb">
 
     {{-- Onboarding Completed --}}
     <div class="card stat-card">
@@ -199,8 +199,9 @@
 
 {{-- ══════════════════════════════════════════════════════════════════════
      ROW 4 — Summary Panels: Content Overview + Top Hobbies
+     CLASS-BASED grid so media queries can override it
 ══════════════════════════════════════════════════════════════════════ --}}
-<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+<div class="grid dash-grid-2col dash-mb">
 
     {{-- Content Overview --}}
     <div class="card">
@@ -210,11 +211,11 @@
 
         @php
             $contentItems = [
-                ['label' => 'Total Activities',       'value' => $totalActivities,     'icon' => 'fa-person-running',    'color' => 'var(--primary)'],
-                ['label' => 'Hobbies / Categories',   'value' => $totalHobbies,        'icon' => 'fa-heart',             'color' => '#a78bfa'],
-                ['label' => 'Research Articles',      'value' => $totalResearchArticles,'icon' => 'fa-book-open',        'color' => '#f59e0b'],
-                ['label' => 'App Usage Logs',         'value' => $totalAppUsageLogs,   'icon' => 'fa-mobile-screen',    'color' => '#10b981'],
-                ['label' => 'Activity Logs (Total)',  'value' => $totalActivityLogs,   'icon' => 'fa-chart-bar',        'color' => '#3b82f6'],
+                ['label' => 'Total Activities',       'value' => $totalActivities,      'icon' => 'fa-person-running', 'color' => 'var(--primary)'],
+                ['label' => 'Hobbies / Categories',   'value' => $totalHobbies,         'icon' => 'fa-heart',          'color' => '#a78bfa'],
+                ['label' => 'Research Articles',      'value' => $totalResearchArticles, 'icon' => 'fa-book-open',     'color' => '#f59e0b'],
+                ['label' => 'App Usage Logs',         'value' => $totalAppUsageLogs,    'icon' => 'fa-mobile-screen',  'color' => '#10b981'],
+                ['label' => 'Activity Logs (Total)',  'value' => $totalActivityLogs,    'icon' => 'fa-chart-bar',      'color' => '#3b82f6'],
             ];
         @endphp
 
@@ -222,7 +223,7 @@
             @foreach($contentItems as $item)
             <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; background: var(--bg-secondary); border-radius: 0.5rem;">
                 <div style="display: flex; align-items: center; gap: 0.75rem;">
-                    <div style="width: 2.25rem; height: 2.25rem; border-radius: 0.4rem; background: {{ $item['color'] }}20; display: flex; align-items: center; justify-content: center; color: {{ $item['color'] }}; font-size: 0.875rem;">
+                    <div style="width: 2.25rem; height: 2.25rem; border-radius: 0.4rem; background: {{ $item['color'] }}20; display: flex; align-items: center; justify-content: center; color: {{ $item['color'] }}; font-size: 0.875rem; flex-shrink: 0;">
                         <i class="fa-solid {{ $item['icon'] }}"></i>
                     </div>
                     <span style="font-size: 0.875rem; color: var(--text-muted);">{{ $item['label'] }}</span>
@@ -259,21 +260,20 @@
 {{-- ══════════════════════════════════════════════════════════════════════
      ROW 5 — Engagement Breakdown (Progress Rings)
 ══════════════════════════════════════════════════════════════════════ --}}
-<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 1.5rem;">
+<div class="grid dash-grid-3col dash-mb">
 
-    {{-- Goal Completion Rate --}}
     @php
-        $goalRate = $totalGoalLogs > 0 ? round(($completedGoals / $totalGoalLogs) * 100) : 0;
-        $activityRate = $totalActivityLogs > 0 ? round(($completedActivityLogs / $totalActivityLogs) * 100) : 0;
-        $focusRate = $totalFocusSessions > 0 ? round(($completedFocusSessions / $totalFocusSessions) * 100) : 0;
-        $inviteRate = $totalInvitations > 0 ? round(($acceptedInvitations / $totalInvitations) * 100) : 0;
-        $onboardRate = $totalProfiles > 0 ? round(($onboardingCompleted / $totalProfiles) * 100) : 0;
+        $goalRate      = $totalGoalLogs > 0      ? round(($completedGoals / $totalGoalLogs) * 100) : 0;
+        $activityRate  = $totalActivityLogs > 0  ? round(($completedActivityLogs / $totalActivityLogs) * 100) : 0;
+        $focusRate     = $totalFocusSessions > 0 ? round(($completedFocusSessions / $totalFocusSessions) * 100) : 0;
+        $inviteRate    = $totalInvitations > 0   ? round(($acceptedInvitations / $totalInvitations) * 100) : 0;
+        $onboardRate   = $totalProfiles > 0      ? round(($onboardingCompleted / $totalProfiles) * 100) : 0;
         $challengeRate = $totalChallengeLogs > 0 ? round(($completedChallenges / $totalChallengeLogs) * 100) : 0;
     @endphp
 
-    <div class="card" style="text-align: center;">
-        <h3 style="font-size: 1rem; font-weight: 700; color: var(--text-heading); margin-bottom: 1rem;">
-            <i class="fa-solid fa-bullseye" style="color: var(--primary); margin-right: 0.4rem;"></i>Goal Completion
+    <div class="card dash-ring-card">
+        <h3 class="dash-ring-title">
+            <i class="fa-solid fa-bullseye" style="color: var(--primary);"></i> Goal Completion
         </h3>
         <div class="dash-ring-wrap">
             <svg viewBox="0 0 100 100" class="dash-ring" xmlns="http://www.w3.org/2000/svg">
@@ -284,12 +284,12 @@
             </svg>
             <div class="dash-ring-label">{{ $goalRate }}%</div>
         </div>
-        <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 0.75rem;">{{ number_format($completedGoals) }} / {{ number_format($totalGoalLogs) }} goals</p>
+        <p class="dash-ring-sub">{{ number_format($completedGoals) }} / {{ number_format($totalGoalLogs) }} goals</p>
     </div>
 
-    <div class="card" style="text-align: center;">
-        <h3 style="font-size: 1rem; font-weight: 700; color: var(--text-heading); margin-bottom: 1rem;">
-            <i class="fa-solid fa-circle-check" style="color: #10b981; margin-right: 0.4rem;"></i>Activity Completion
+    <div class="card dash-ring-card">
+        <h3 class="dash-ring-title">
+            <i class="fa-solid fa-circle-check" style="color: #10b981;"></i> Activity Completion
         </h3>
         <div class="dash-ring-wrap">
             <svg viewBox="0 0 100 100" class="dash-ring" xmlns="http://www.w3.org/2000/svg">
@@ -300,12 +300,12 @@
             </svg>
             <div class="dash-ring-label">{{ $activityRate }}%</div>
         </div>
-        <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 0.75rem;">{{ number_format($completedActivityLogs) }} / {{ number_format($totalActivityLogs) }} activities</p>
+        <p class="dash-ring-sub">{{ number_format($completedActivityLogs) }} / {{ number_format($totalActivityLogs) }} activities</p>
     </div>
 
-    <div class="card" style="text-align: center;">
-        <h3 style="font-size: 1rem; font-weight: 700; color: var(--text-heading); margin-bottom: 1rem;">
-            <i class="fa-solid fa-brain" style="color: #a78bfa; margin-right: 0.4rem;"></i>Focus Session Rate
+    <div class="card dash-ring-card">
+        <h3 class="dash-ring-title">
+            <i class="fa-solid fa-brain" style="color: #a78bfa;"></i> Focus Session Rate
         </h3>
         <div class="dash-ring-wrap">
             <svg viewBox="0 0 100 100" class="dash-ring" xmlns="http://www.w3.org/2000/svg">
@@ -316,7 +316,7 @@
             </svg>
             <div class="dash-ring-label">{{ $focusRate }}%</div>
         </div>
-        <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 0.75rem;">{{ number_format($completedFocusSessions) }} / {{ number_format($totalFocusSessions) }} sessions</p>
+        <p class="dash-ring-sub">{{ number_format($completedFocusSessions) }} / {{ number_format($totalFocusSessions) }} sessions</p>
     </div>
 
 </div>
@@ -324,38 +324,38 @@
 {{-- ══════════════════════════════════════════════════════════════════════
      ROW 6 — Extra Metrics Strip
 ══════════════════════════════════════════════════════════════════════ --}}
-<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 1.5rem;">
+<div class="grid dash-grid-3col dash-mb">
 
-    <div class="card" style="display: flex; align-items: center; gap: 1rem;">
-        <div style="width: 3rem; height: 3rem; border-radius: 0.6rem; background: #f59e0b20; display: flex; align-items: center; justify-content: center; color: #f59e0b; font-size: 1.25rem; flex-shrink: 0;">
+    <div class="card dash-metric-strip">
+        <div class="dash-metric-icon" style="background: #f59e0b20; color: #f59e0b;">
             <i class="fa-solid fa-envelope-open-text"></i>
         </div>
         <div>
-            <div style="font-size: 1.5rem; font-weight: 800; color: var(--text-heading);">{{ $inviteRate }}%</div>
-            <div style="font-size: 0.8rem; color: var(--text-muted);">Invitation Accept Rate</div>
-            <div style="font-size: 0.75rem; color: var(--text-muted);">{{ number_format($acceptedInvitations) }} / {{ number_format($totalInvitations) }} invites</div>
+            <div class="dash-metric-value">{{ $inviteRate }}%</div>
+            <div class="dash-metric-label">Invitation Accept Rate</div>
+            <div class="dash-metric-sub">{{ number_format($acceptedInvitations) }} / {{ number_format($totalInvitations) }} invites</div>
         </div>
     </div>
 
-    <div class="card" style="display: flex; align-items: center; gap: 1rem;">
-        <div style="width: 3rem; height: 3rem; border-radius: 0.6rem; background: #3b82f620; display: flex; align-items: center; justify-content: center; color: #3b82f6; font-size: 1.25rem; flex-shrink: 0;">
+    <div class="card dash-metric-strip">
+        <div class="dash-metric-icon" style="background: #3b82f620; color: #3b82f6;">
             <i class="fa-solid fa-list-check"></i>
         </div>
         <div>
-            <div style="font-size: 1.5rem; font-weight: 800; color: var(--text-heading);">{{ $onboardRate }}%</div>
-            <div style="font-size: 0.8rem; color: var(--text-muted);">Onboarding Completion</div>
-            <div style="font-size: 0.75rem; color: var(--text-muted);">{{ number_format($onboardingCompleted) }} / {{ number_format($totalProfiles) }} profiles</div>
+            <div class="dash-metric-value">{{ $onboardRate }}%</div>
+            <div class="dash-metric-label">Onboarding Completion</div>
+            <div class="dash-metric-sub">{{ number_format($onboardingCompleted) }} / {{ number_format($totalProfiles) }} profiles</div>
         </div>
     </div>
 
-    <div class="card" style="display: flex; align-items: center; gap: 1rem;">
-        <div style="width: 3rem; height: 3rem; border-radius: 0.6rem; background: #ef444420; display: flex; align-items: center; justify-content: center; color: #ef4444; font-size: 1.25rem; flex-shrink: 0;">
+    <div class="card dash-metric-strip">
+        <div class="dash-metric-icon" style="background: #ef444420; color: #ef4444;">
             <i class="fa-solid fa-trophy"></i>
         </div>
         <div>
-            <div style="font-size: 1.5rem; font-weight: 800; color: var(--text-heading);">{{ $challengeRate }}%</div>
-            <div style="font-size: 0.8rem; color: var(--text-muted);">Challenge Completion Rate</div>
-            <div style="font-size: 0.75rem; color: var(--text-muted);">{{ number_format($completedChallenges) }} / {{ number_format($totalChallengeLogs) }} challenges</div>
+            <div class="dash-metric-value">{{ $challengeRate }}%</div>
+            <div class="dash-metric-label">Challenge Completion Rate</div>
+            <div class="dash-metric-sub">{{ number_format($completedChallenges) }} / {{ number_format($totalChallengeLogs) }} challenges</div>
         </div>
     </div>
 
@@ -365,14 +365,14 @@
      ROW 7 — Recent Users Table
 ══════════════════════════════════════════════════════════════════════ --}}
 <div class="card">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+    <div class="dash-table-header">
         <div>
             <h3 style="font-size: 1.125rem; font-weight: 700; color: var(--text-heading);">
                 <i class="fa-solid fa-clock-rotate-left" style="margin-right: 0.5rem; color: var(--primary);"></i>Users Logged In (Last 7 Days)
             </h3>
-            <p style="color: var(--text-muted); font-size: 0.8125rem;">Overview of users who logged into the application during the past 7 days.</p>
+            <p style="color: var(--text-muted); font-size: 0.8125rem; margin-top: 0.2rem;">Overview of users who logged into the application during the past 7 days.</p>
         </div>
-        <a href="{{ route('admin.users.index') }}" class="btn btn-secondary" style="font-size: 0.8125rem;">
+        <a href="{{ route('admin.users.index') }}" class="btn btn-secondary" style="font-size: 0.8125rem; white-space: nowrap; flex-shrink: 0;">
             View All Users <i class="fa-solid fa-arrow-right" style="margin-left: 0.3rem;"></i>
         </a>
     </div>
@@ -430,9 +430,36 @@
 </div>
 
 {{-- ══════════════════════════════════════════════════════════════════════
-     Dashboard Ring CSS (inline, scoped)
+     Dashboard-scoped CSS  (all class-based so media queries work)
 ══════════════════════════════════════════════════════════════════════ --}}
 <style>
+/* ── spacing helper ────────────────────────────────────────────────── */
+.dash-mb { margin-bottom: 1.5rem; }
+
+/* ── Row-4 two-column panel grid ──────────────────────────────────── */
+.dash-grid-2col {
+    grid-template-columns: 1fr 1fr;
+}
+
+/* ── Row-5 & Row-6 three-column grid ─────────────────────────────── */
+.dash-grid-3col {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+/* ── Ring cards ───────────────────────────────────────────────────── */
+.dash-ring-card {
+    text-align: center;
+}
+.dash-ring-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-heading);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+}
 .dash-ring-wrap {
     position: relative;
     width: 7rem;
@@ -453,6 +480,130 @@
     font-size: 1.35rem;
     font-weight: 800;
     color: var(--text-heading);
+}
+.dash-ring-sub {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    margin-top: 0.75rem;
+}
+
+/* ── Metric-strip cards (Row 6) ───────────────────────────────────── */
+.dash-metric-strip {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+.dash-metric-icon {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 0.6rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+.dash-metric-value {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--text-heading);
+}
+.dash-metric-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+.dash-metric-sub {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+/* ── Table card header (flex row) ─────────────────────────────────── */
+.dash-table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   RESPONSIVE OVERRIDES
+══════════════════════════════════════════════════════════════════ */
+
+/* Tablet  ≤ 1024px */
+@media (max-width: 1024px) {
+    .dash-grid-2col {
+        grid-template-columns: 1fr;
+    }
+    .dash-grid-3col {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Mobile  ≤ 768px */
+@media (max-width: 768px) {
+    .dash-mb {
+        margin-bottom: 1rem;
+    }
+
+    /* All dashboard grids collapse to single column */
+    .dash-grid-2col,
+    .dash-grid-3col {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Table header wraps button below title */
+    .dash-table-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .dash-table-header .btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* Smaller ring on phones */
+    .dash-ring-wrap {
+        width: 6rem;
+        height: 6rem;
+    }
+
+    .dash-ring-label {
+        font-size: 1.15rem;
+    }
+
+    /* Metric strip stacks icon above text on very small cards */
+    .dash-metric-value {
+        font-size: 1.25rem;
+    }
+}
+
+/* Small phones  ≤ 480px */
+@media (max-width: 480px) {
+    .dash-ring-wrap {
+        width: 5.5rem;
+        height: 5.5rem;
+    }
+
+    .dash-ring-label {
+        font-size: 1rem;
+    }
+
+    .dash-ring-title {
+        font-size: 0.9rem;
+    }
+
+    .dash-metric-strip {
+        gap: 0.75rem;
+    }
+
+    .dash-metric-icon {
+        width: 2.5rem;
+        height: 2.5rem;
+        font-size: 1rem;
+    }
 }
 </style>
 @endsection

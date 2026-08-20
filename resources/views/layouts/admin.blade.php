@@ -17,6 +17,9 @@
     </script>
 </head>
 <body>
+    <!-- Mobile sidebar backdrop overlay -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
     <div class="app-wrapper">
         
         <!-- Sidebar Navigation -->
@@ -142,36 +145,77 @@
 
     <!-- UI Interaction Scripts -->
     <script>
-        // Sidebar collapse logic
-        document.getElementById('sidebar-toggle').addEventListener('click', () => {
-            document.getElementById('sidebar').classList.toggle('collapsed');
-        });
+        // ── Sidebar Toggle Logic (mobile drawer vs desktop collapse) ──────────
+        const sidebar        = document.getElementById('sidebar');
+        const sidebarToggle  = document.getElementById('sidebar-toggle');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
 
-        // Dark/Light Mode Switcher Logic
-        const themeToggleBtn = document.getElementById('theme-toggle');
-        const themeIcon = document.getElementById('theme-icon');
-
-        function syncThemeIcon(theme) {
-            if (theme === 'dark') {
-                themeIcon.className = 'fa-solid fa-sun';
-            } else {
-                themeIcon.className = 'fa-solid fa-moon';
-            }
+        function isMobile() {
+            return window.innerWidth <= 768;
         }
 
-        // Initialize state icon
+        function openMobileSidebar() {
+            sidebar.classList.add('open');
+            sidebarOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden'; // prevent scroll behind drawer
+        }
+
+        function closeMobileSidebar() {
+            sidebar.classList.remove('open');
+            sidebarOverlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        sidebarToggle.addEventListener('click', () => {
+            if (isMobile()) {
+                // Mobile: toggle drawer open/close
+                if (sidebar.classList.contains('open')) {
+                    closeMobileSidebar();
+                } else {
+                    openMobileSidebar();
+                }
+            } else {
+                // Desktop: collapse/expand sidebar width
+                sidebar.classList.toggle('collapsed');
+            }
+        });
+
+        // Close sidebar when overlay backdrop is tapped
+        sidebarOverlay.addEventListener('click', closeMobileSidebar);
+
+        // Close sidebar on nav-item click (mobile UX)
+        sidebar.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', () => {
+                if (isMobile()) closeMobileSidebar();
+            });
+        });
+
+        // Reset mobile state on resize to desktop
+        window.addEventListener('resize', () => {
+            if (!isMobile()) {
+                closeMobileSidebar();
+            }
+        });
+
+        // ── Dark/Light Mode Switcher ──────────────────────────────────────────
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const themeIcon      = document.getElementById('theme-icon');
+
+        function syncThemeIcon(theme) {
+            themeIcon.className = theme === 'dark' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+        }
+
         syncThemeIcon(localStorage.getItem('pivot_theme') || 'light');
 
         themeToggleBtn.addEventListener('click', () => {
             const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
-            const nextTheme = currentTheme === 'light' ? 'dark' : 'light';
-
+            const nextTheme    = currentTheme === 'light' ? 'dark' : 'light';
             document.documentElement.setAttribute('data-theme', nextTheme);
             localStorage.setItem('pivot_theme', nextTheme);
             syncThemeIcon(nextTheme);
         });
 
-        // Modals helper
+        // ── Modal Helpers ─────────────────────────────────────────────────────
         function openModal(id) {
             const modal = document.getElementById(id);
             if (modal) modal.classList.add('active');
