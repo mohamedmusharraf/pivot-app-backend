@@ -257,14 +257,12 @@
 
 <script>
     function viewArticle(article) {
-        // Render Summary (Strip HTML tags for uniform display or keep clean text)
         let summaryText = article.summary ? article.summary.replace(/<\/?[^>]+(>|$)/g, "") : 'No summary provided.';
         let funFactsText = article.fun_facts ? article.fun_facts.replace(/<\/?[^>]+(>|$)/g, "") : 'No fun facts provided.';
 
         document.getElementById('view-summary').innerText = summaryText;
         document.getElementById('view-fun-facts').innerText = funFactsText;
 
-        // Video Link Button
         if (article.video_link) {
             document.getElementById('view-video-link').innerHTML = `
                 <a href="${article.video_link}" target="_blank" class="btn btn-secondary btn-sm" style="width: 100%; justify-content: center; gap: 0.5rem; color: var(--info); border-color: var(--border-color);">
@@ -274,7 +272,6 @@
             document.getElementById('view-video-link').innerHTML = `<span style="color: var(--text-muted); font-size: 0.8125rem;">None</span>`;
         }
 
-        // File Attachment Button
         if (article.files) {
             document.getElementById('view-file-link').innerHTML = `
                 <a href="/storage/${article.files}" target="_blank" class="btn btn-olive btn-sm" style="width: 100%; justify-content: center; gap: 0.5rem;">
