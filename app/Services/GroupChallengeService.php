@@ -13,6 +13,7 @@ use App\Models\GroupChallengeParticipant;
 use App\Models\GroupChallengeSession;
 use App\Models\TeamConnection;
 use App\Models\User;
+use App\Models\Users;
 use App\Support\GroupChallengeStatus;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -26,7 +27,7 @@ class GroupChallengeService
     /**
      * @param array<int, int|string> $teammateIds
      */
-    public function start(User $host, array $teammateIds, ?int $challengeId): GroupChallengeSession
+    public function start(User|Users $host, array $teammateIds, ?int $challengeId): GroupChallengeSession
     {
         $teammateIds = collect($teammateIds)
             ->map(fn ($id) => (int) $id)
@@ -91,7 +92,7 @@ class GroupChallengeService
         });
     }
 
-    public function accept(User $user, GroupChallengeSession $session): GroupChallengeParticipant
+    public function accept(User|Users $user, GroupChallengeSession $session): GroupChallengeParticipant
     {
         $this->assertSessionPending($session);
 
@@ -124,7 +125,7 @@ class GroupChallengeService
         return $participant;
     }
 
-    public function decline(User $user, GroupChallengeSession $session): GroupChallengeParticipant
+    public function decline(User|Users $user, GroupChallengeSession $session): GroupChallengeParticipant
     {
         $this->assertSessionPending($session);
 
@@ -161,7 +162,7 @@ class GroupChallengeService
         return $participant;
     }
 
-    public function begin(User $host, GroupChallengeSession $session): GroupChallengeSession
+    public function begin(User|Users $host, GroupChallengeSession $session): GroupChallengeSession
     {
         if ($session->host_id !== $host->id) {
             throw new GroupChallengeException('Only the host can start this challenge.', 403);
@@ -199,7 +200,7 @@ class GroupChallengeService
         return $session;
     }
 
-    public function cancelByHost(User $host, GroupChallengeSession $session): GroupChallengeSession
+    public function cancelByHost(User|Users $host, GroupChallengeSession $session): GroupChallengeSession
     {
         if ($session->host_id !== $host->id) {
             throw new GroupChallengeException('Only the host can cancel this challenge.', 403);
@@ -210,7 +211,7 @@ class GroupChallengeService
         return $this->cancel($session, 'Cancelled by host.');
     }
 
-    public function updateProgress(User $user, GroupChallengeSession $session, int $progress): GroupChallengeParticipant
+    public function updateProgress(User|Users $user, GroupChallengeSession $session, int $progress): GroupChallengeParticipant
     {
         if ($session->status !== GroupChallengeSession::STATUS_IN_PROGRESS) {
             throw new GroupChallengeException('This challenge is not in progress.');
@@ -232,7 +233,7 @@ class GroupChallengeService
         return $participant;
     }
 
-    public function complete(User $user, GroupChallengeSession $session): GroupChallengeParticipant
+    public function complete(User|Users $user, GroupChallengeSession $session): GroupChallengeParticipant
     {
         if ($session->status !== GroupChallengeSession::STATUS_IN_PROGRESS) {
             throw new GroupChallengeException('This challenge is not in progress.');
@@ -341,7 +342,7 @@ class GroupChallengeService
         }
     }
 
-    protected function findParticipantOrFail(GroupChallengeSession $session, User $user): GroupChallengeParticipant
+    protected function findParticipantOrFail(GroupChallengeSession $session, User|Users $user): GroupChallengeParticipant
     {
         $participant = $session->participants()->where('user_id', $user->id)->first();
 
@@ -352,7 +353,7 @@ class GroupChallengeService
         return $participant;
     }
 
-    protected function findAcceptedParticipantOrFail(GroupChallengeSession $session, User $user): GroupChallengeParticipant
+    protected function findAcceptedParticipantOrFail(GroupChallengeSession $session, User|Users $user): GroupChallengeParticipant
     {
         $participant = $this->findParticipantOrFail($session, $user);
 
