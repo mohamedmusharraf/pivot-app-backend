@@ -1,0 +1,270 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Events\ChallengeInviteReceived;
+use App\Events\GroupChallengeCompleted;
+use App\Events\GroupChallengeLobbyUpdated;
+use App\Events\GroupChallengeStarted;
+use App\Models\GroupChallengeParticipant;
+use App\Models\GroupChallengeSession;
+use App\Models\TeamConnection;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Event;
+use Laravel\Sanctum\Sanctum;
+use Tests\TestCase;
+
+class GroupChallengeControllerTest extends TestCase
+{
+    use RefreshDatabase;
+
+    private function connectTeammates(User $host, User $teammate): void
+    {
+        TeamConnection::create(['user_id' => $host->id, 'connected_user_id' => $teammate->id]);
+        TeamConnection::create(['user_id' => $teammate->id, 'connected_user_id' => $host->id]);
+    }
+
+    /**
+     * The stock UserFactory sets `email_verified_at`, a column the users
+     * migration in this repo never added, so build users directly instead.
+     */
+    private function makeUser(string $status): User
+    {
+        return User::create([
+            'name' => fake()->name(),
+            'email' => fake()->unique()->safeEmail(),
+            'password' => bcrypt('password'),
+            'status' => $status,
+        ]);
+    }
+
+    public function test_start_rejects_busy_teammate(): void
+    {
+        Event::fake();
+
+        $host = $this->makeUser('ready');
+        $teammate = $this->makeUser('in_challenge');
+        $this->connectTeammates($host, $teammate);
+
+        Sanctum::actingAs($host);
+
+        $response = $this->postJson('/api/v1/group-challenges/start', [
+            'teammate_ids' => [$teammate->id],
+        ]);
+
+        $response->assertStatus(422);
+        $this->assertDatabaseCount('group_challenge_sessions', 0);
+        Event::assertNotDispatched(ChallengeInviteReceived::class);
+    }
+
+    public function test_start_creates_pending_session_and_invites_teammate(): void
+    {
+        Event::fake();
+
+        $host = $this->makeUser('ready');
+        $teammate = $this->makeUser('ready');
+        $this->connectTeammates($host, $teammate);
+
+        Sanctum::actingAs($host);
+
+        $response = $this->postJson('/api/v1/group-challenges/start', [
+            'teammate_ids' => [$teammate->id],
+        ]);
+
+        $response->assertStatus(201);
+        $sessionId = $response->json('session.id');
+
+        $this->assertDatabaseHas('group_challenge_sessions', [
+            'id' => $sessionId,
+            'host_id' => $host->id,
+            'status' => GroupChallengeSession::STATUS_PENDING,
+        ]);
+
+        $this->assertDatabaseHas('group_challenge_participants', [
+            'session_id' => $sessionId,
+            'user_id' => $teammate->id,
+            'invite_status' => GroupChallengeParticipant::INVITE_STATUS_INVITED,
+        ]);
+
+        $this->assertSame('in_challenge', $host->fresh()->status);
+        Event::assertDispatched(ChallengeInviteReceived::class, fn ($event) => $event->recipientId === $teammate->id);
+    }
+
+    public function test_invitee_can_accept_and_joins_lobby(): void
+    {
+        Event::fake();
+
+        $host = $this->makeUser('ready');
+        $teammate = $this->makeUser('ready');
+        $this->connectTeammates($host, $teammate);
+
+        $session = GroupChallengeSession::create([
+            'host_id' => $host->id,
+            'status' => GroupChallengeSession::STATUS_PENDING,
+        ]);
+        GroupChallengeParticipant::create([
+            'session_id' => $session->id,
+            'user_id' => $host->id,
+            'invite_status' => GroupChallengeParticipant::INVITE_STATUS_ACCEPTED,
+            'responded_at' => now(),
+        ]);
+        GroupChallengeParticipant::create([
+            'session_id' => $session->id,
+            'user_id' => $teammate->id,
+            'invite_status' => GroupChallengeParticipant::INVITE_STATUS_INVITED,
+        ]);
+
+        Sanctum::actingAs($teammate);
+
+        $response = $this->postJson("/api/v1/group-challenges/{$session->id}/accept");
+
+        $response->assertStatus(200);
+        $this->assertDatabaseHas('group_challenge_participants', [
+            'session_id' => $session->id,
+            'user_id' => $teammate->id,
+            'invite_status' => GroupChallengeParticipant::INVITE_STATUS_ACCEPTED,
+        ]);
+        $this->assertSame('in_challenge', $teammate->fresh()->status);
+        Event::assertDispatched(GroupChallengeLobbyUpdated::class);
+    }
+
+    public function test_non_host_cannot_begin_session(): void
+    {
+        $host = $this->makeUser('in_challenge');
+        $teammate = $this->makeUser('in_challenge');
+        $this->connectTeammates($host, $teammate);
+
+        $session = GroupChallengeSession::create([
+            'host_id' => $host->id,
+            'status' => GroupChallengeSession::STATUS_PENDING,
+        ]);
+        GroupChallengeParticipant::create([
+            'session_id' => $session->id,
+            'user_id' => $host->id,
+            'invite_status' => GroupChallengeParticipant::INVITE_STATUS_ACCEPTED,
+            'responded_at' => now(),
+        ]);
+        GroupChallengeParticipant::create([
+            'session_id' => $session->id,
+            'user_id' => $teammate->id,
+            'invite_status' => GroupChallengeParticipant::INVITE_STATUS_ACCEPTED,
+            'responded_at' => now(),
+        ]);
+
+        Sanctum::actingAs($teammate);
+
+        $this->postJson("/api/v1/group-challenges/{$session->id}/begin")
+            ->assertStatus(403);
+    }
+
+    public function test_begin_fails_while_invite_still_pending(): void
+    {
+        $host = $this->makeUser('in_challenge');
+        $teammate = $this->makeUser('ready');
+        $this->connectTeammates($host, $teammate);
+
+        $session = GroupChallengeSession::create([
+            'host_id' => $host->id,
+            'status' => GroupChallengeSession::STATUS_PENDING,
+        ]);
+        GroupChallengeParticipant::create([
+            'session_id' => $session->id,
+            'user_id' => $host->id,
+            'invite_status' => GroupChallengeParticipant::INVITE_STATUS_ACCEPTED,
+            'responded_at' => now(),
+        ]);
+        GroupChallengeParticipant::create([
+            'session_id' => $session->id,
+            'user_id' => $teammate->id,
+            'invite_status' => GroupChallengeParticipant::INVITE_STATUS_INVITED,
+        ]);
+
+        Sanctum::actingAs($host);
+
+        $this->postJson("/api/v1/group-challenges/{$session->id}/begin")
+            ->assertStatus(422);
+
+        $this->assertSame(GroupChallengeSession::STATUS_PENDING, $session->fresh()->status);
+    }
+
+    public function test_host_can_begin_once_teammate_accepted(): void
+    {
+        Event::fake();
+
+        $host = $this->makeUser('in_challenge');
+        $teammate = $this->makeUser('in_challenge');
+        $this->connectTeammates($host, $teammate);
+
+        $session = GroupChallengeSession::create([
+            'host_id' => $host->id,
+            'status' => GroupChallengeSession::STATUS_PENDING,
+        ]);
+        GroupChallengeParticipant::create([
+            'session_id' => $session->id,
+            'user_id' => $host->id,
+            'invite_status' => GroupChallengeParticipant::INVITE_STATUS_ACCEPTED,
+            'responded_at' => now(),
+        ]);
+        GroupChallengeParticipant::create([
+            'session_id' => $session->id,
+            'user_id' => $teammate->id,
+            'invite_status' => GroupChallengeParticipant::INVITE_STATUS_ACCEPTED,
+            'responded_at' => now(),
+        ]);
+
+        Sanctum::actingAs($host);
+
+        $response = $this->postJson("/api/v1/group-challenges/{$session->id}/begin");
+
+        $response->assertStatus(200);
+        $session->refresh();
+        $this->assertSame(GroupChallengeSession::STATUS_IN_PROGRESS, $session->status);
+        $this->assertNotNull($session->started_at);
+        Event::assertDispatched(GroupChallengeStarted::class, fn ($event) => $event->sessionId === $session->id);
+    }
+
+    public function test_progress_and_complete_finish_the_session_for_all_participants(): void
+    {
+        Event::fake();
+
+        $host = $this->makeUser('in_challenge');
+        $teammate = $this->makeUser('in_challenge');
+        $this->connectTeammates($host, $teammate);
+
+        $session = GroupChallengeSession::create([
+            'host_id' => $host->id,
+            'status' => GroupChallengeSession::STATUS_IN_PROGRESS,
+            'started_at' => now(),
+        ]);
+        GroupChallengeParticipant::create([
+            'session_id' => $session->id,
+            'user_id' => $host->id,
+            'invite_status' => GroupChallengeParticipant::INVITE_STATUS_ACCEPTED,
+            'responded_at' => now(),
+        ]);
+        GroupChallengeParticipant::create([
+            'session_id' => $session->id,
+            'user_id' => $teammate->id,
+            'invite_status' => GroupChallengeParticipant::INVITE_STATUS_ACCEPTED,
+            'responded_at' => now(),
+        ]);
+
+        Sanctum::actingAs($host);
+        $this->postJson("/api/v1/group-challenges/{$session->id}/progress", ['progress' => 50])
+            ->assertStatus(200);
+        $this->postJson("/api/v1/group-challenges/{$session->id}/complete")
+            ->assertStatus(200);
+
+        $this->assertSame('ready', $host->fresh()->status);
+        $this->assertSame(GroupChallengeSession::STATUS_IN_PROGRESS, $session->fresh()->status);
+
+        Sanctum::actingAs($teammate);
+        $this->postJson("/api/v1/group-challenges/{$session->id}/complete")
+            ->assertStatus(200);
+
+        $this->assertSame(GroupChallengeSession::STATUS_COMPLETED, $session->fresh()->status);
+        $this->assertSame('ready', $teammate->fresh()->status);
+        Event::assertDispatched(GroupChallengeCompleted::class, fn ($event) => $event->payload['session_completed'] === true);
+    }
+}

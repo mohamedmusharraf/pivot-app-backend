@@ -26,6 +26,7 @@ use App\Http\Controllers\EmotionLogsController;
 use App\Http\Controllers\StreakLogsController;
 use App\Http\Controllers\AppleAuthController;
 use App\Http\Controllers\ChallengePackController;
+use App\Http\Controllers\GroupChallengeController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -61,6 +62,15 @@ Route::prefix('v1')->group(function () {
         // Challenge pack routes
         Route::get('challenge-pack', [ChallengePackController::class, 'index']);
         Route::patch('challenge-pack', [ChallengePackController::class, 'decrementRemaining']);
+
+        // Group challenge routes
+        Route::post('group-challenges/start', [GroupChallengeController::class, 'start']);
+        Route::post('group-challenges/{session}/accept', [GroupChallengeController::class, 'accept']);
+        Route::post('group-challenges/{session}/decline', [GroupChallengeController::class, 'decline']);
+        Route::post('group-challenges/{session}/begin', [GroupChallengeController::class, 'begin']);
+        Route::post('group-challenges/{session}/cancel', [GroupChallengeController::class, 'cancel']);
+        Route::post('group-challenges/{session}/progress', [GroupChallengeController::class, 'progress']);
+        Route::post('group-challenges/{session}/complete', [GroupChallengeController::class, 'complete']);
     });
 });
 

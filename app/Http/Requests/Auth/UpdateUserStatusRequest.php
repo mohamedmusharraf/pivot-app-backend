@@ -18,7 +18,7 @@ class UpdateUserStatusRequest extends FormRequest
             'status' => 'required|in:' . implode(',', [
                 GroupChallengeStatus::GROUP_CHALLENGE_STATUS_NOT_READY,
                 GroupChallengeStatus::GROUP_CHALLENGE_STATUS_READY,
-                'in_challenge',
+                GroupChallengeStatus::GROUP_CHALLENGE_STATUS_IN_CHALLENGE,
             ]),
         ];
     }

@@ -1,0 +1,365 @@
+<?php
+
+namespace App\Services;
+
+use App\Events\ChallengeInviteReceived;
+use App\Events\GroupChallengeCancelled;
+use App\Events\GroupChallengeCompleted;
+use App\Events\GroupChallengeLobbyUpdated;
+use App\Events\GroupChallengeProgressUpdated;
+use App\Events\GroupChallengeStarted;
+use App\Exceptions\GroupChallengeException;
+use App\Models\GroupChallengeParticipant;
+use App\Models\GroupChallengeSession;
+use App\Models\TeamConnection;
+use App\Models\User;
+use App\Support\GroupChallengeStatus;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
+
+class GroupChallengeService
+{
+    public function __construct(
+        protected AuthService $authService,
+    ) {}
+
+    /**
+     * @param array<int, int|string> $teammateIds
+     */
+    public function start(User $host, array $teammateIds, ?int $challengeId): GroupChallengeSession
+    {
+        $teammateIds = collect($teammateIds)
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->reject(fn ($id) => $id === $host->id)
+            ->values();
+
+        $connectedIds = TeamConnection::query()
+            ->where('user_id', $host->id)
+            ->whereIn('connected_user_id', $teammateIds)
+            ->pluck('connected_user_id');
+
+        if ($teammateIds->diff($connectedIds)->isNotEmpty()) {
+            throw new GroupChallengeException('One or more selected users are not on your team.');
+        }
+
+        return DB::transaction(function () use ($host, $teammateIds, $challengeId) {
+            $participantIds = $teammateIds->concat([$host->id])->unique()->values();
+
+            $users = User::whereIn('id', $participantIds)->lockForUpdate()->get()->keyBy('id');
+
+            $this->assertAllReady($users);
+
+            $session = GroupChallengeSession::create([
+                'challenge_id' => $challengeId,
+                'host_id' => $host->id,
+                'status' => GroupChallengeSession::STATUS_PENDING,
+            ]);
+
+            GroupChallengeParticipant::create([
+                'session_id' => $session->id,
+                'user_id' => $host->id,
+                'invite_status' => GroupChallengeParticipant::INVITE_STATUS_ACCEPTED,
+                'responded_at' => now(),
+            ]);
+
+            foreach ($teammateIds as $teammateId) {
+                GroupChallengeParticipant::create([
+                    'session_id' => $session->id,
+                    'user_id' => $teammateId,
+                    'invite_status' => GroupChallengeParticipant::INVITE_STATUS_INVITED,
+                ]);
+            }
+
+            $this->authService->updateStatusForUser($host->id, GroupChallengeStatus::GROUP_CHALLENGE_STATUS_IN_CHALLENGE);
+
+            foreach ($teammateIds as $teammateId) {
+                event(new ChallengeInviteReceived(
+                    recipientId: $teammateId,
+                    payload: [
+                        'session_id' => $session->id,
+                        'challenge_id' => $challengeId,
+                        'host' => [
+                            'id' => $host->id,
+                            'name' => $host->name,
+                        ],
+                    ],
+                ));
+            }
+
+            return $session->load('participants');
+        });
+    }
+
+    public function accept(User $user, GroupChallengeSession $session): GroupChallengeParticipant
+    {
+        $this->assertSessionPending($session);
+
+        $participant = $this->findParticipantOrFail($session, $user);
+
+        if ($participant->invite_status !== GroupChallengeParticipant::INVITE_STATUS_INVITED) {
+            throw new GroupChallengeException('You have already responded to this invite.');
+        }
+
+        if ($user->fresh()->status !== GroupChallengeStatus::GROUP_CHALLENGE_STATUS_READY) {
+            $participant->update([
+                'invite_status' => GroupChallengeParticipant::INVITE_STATUS_DECLINED,
+                'responded_at' => now(),
+            ]);
+
+            $this->broadcastLobby($session);
+
+            throw new GroupChallengeException('You are currently busy and cannot join this challenge.');
+        }
+
+        $participant->update([
+            'invite_status' => GroupChallengeParticipant::INVITE_STATUS_ACCEPTED,
+            'responded_at' => now(),
+        ]);
+
+        $this->authService->updateStatusForUser($user->id, GroupChallengeStatus::GROUP_CHALLENGE_STATUS_IN_CHALLENGE);
+
+        $this->broadcastLobby($session);
+
+        return $participant;
+    }
+
+    public function decline(User $user, GroupChallengeSession $session): GroupChallengeParticipant
+    {
+        $this->assertSessionPending($session);
+
+        $participant = $this->findParticipantOrFail($session, $user);
+
+        if ($participant->invite_status === GroupChallengeParticipant::INVITE_STATUS_DECLINED) {
+            return $participant;
+        }
+
+        $wasAccepted = $participant->invite_status === GroupChallengeParticipant::INVITE_STATUS_ACCEPTED;
+
+        $participant->update([
+            'invite_status' => GroupChallengeParticipant::INVITE_STATUS_DECLINED,
+            'responded_at' => now(),
+        ]);
+
+        if ($wasAccepted) {
+            $this->authService->updateStatusForUser($user->id, GroupChallengeStatus::GROUP_CHALLENGE_STATUS_READY);
+        }
+
+        $remaining = $session->participants()
+            ->where('user_id', '!=', $session->host_id)
+            ->where('invite_status', '!=', GroupChallengeParticipant::INVITE_STATUS_DECLINED)
+            ->count();
+
+        if ($remaining === 0) {
+            $this->cancel($session, 'Everyone declined the invite.');
+
+            return $participant;
+        }
+
+        $this->broadcastLobby($session);
+
+        return $participant;
+    }
+
+    public function begin(User $host, GroupChallengeSession $session): GroupChallengeSession
+    {
+        if ($session->host_id !== $host->id) {
+            throw new GroupChallengeException('Only the host can start this challenge.', 403);
+        }
+
+        $this->assertSessionPending($session);
+
+        $invitees = $session->participants()->where('user_id', '!=', $host->id)->get();
+
+        if ($invitees->contains(fn (GroupChallengeParticipant $p) => $p->invite_status === GroupChallengeParticipant::INVITE_STATUS_INVITED)) {
+            throw new GroupChallengeException('Waiting for everyone to respond to the invite.');
+        }
+
+        if ($invitees->where('invite_status', GroupChallengeParticipant::INVITE_STATUS_ACCEPTED)->isEmpty()) {
+            throw new GroupChallengeException('No teammates have joined this challenge yet.');
+        }
+
+        $session->update([
+            'status' => GroupChallengeSession::STATUS_IN_PROGRESS,
+            'started_at' => now(),
+        ]);
+
+        event(new GroupChallengeStarted(
+            sessionId: $session->id,
+            payload: [
+                'session_id' => $session->id,
+                'challenge_id' => $session->challenge_id,
+                'started_at' => $session->started_at->toIso8601String(),
+                'participant_ids' => $session->participants()
+                    ->where('invite_status', GroupChallengeParticipant::INVITE_STATUS_ACCEPTED)
+                    ->pluck('user_id'),
+            ],
+        ));
+
+        return $session;
+    }
+
+    public function cancelByHost(User $host, GroupChallengeSession $session): GroupChallengeSession
+    {
+        if ($session->host_id !== $host->id) {
+            throw new GroupChallengeException('Only the host can cancel this challenge.', 403);
+        }
+
+        $this->assertSessionPending($session);
+
+        return $this->cancel($session, 'Cancelled by host.');
+    }
+
+    public function updateProgress(User $user, GroupChallengeSession $session, int $progress): GroupChallengeParticipant
+    {
+        if ($session->status !== GroupChallengeSession::STATUS_IN_PROGRESS) {
+            throw new GroupChallengeException('This challenge is not in progress.');
+        }
+
+        $participant = $this->findAcceptedParticipantOrFail($session, $user);
+
+        $participant->update(['progress' => $progress]);
+
+        event(new GroupChallengeProgressUpdated(
+            sessionId: $session->id,
+            payload: [
+                'session_id' => $session->id,
+                'user_id' => $user->id,
+                'progress' => $progress,
+            ],
+        ));
+
+        return $participant;
+    }
+
+    public function complete(User $user, GroupChallengeSession $session): GroupChallengeParticipant
+    {
+        if ($session->status !== GroupChallengeSession::STATUS_IN_PROGRESS) {
+            throw new GroupChallengeException('This challenge is not in progress.');
+        }
+
+        $participant = $this->findAcceptedParticipantOrFail($session, $user);
+
+        $participant->update(['completed_at' => now()]);
+
+        $this->authService->updateStatusForUser($user->id, GroupChallengeStatus::GROUP_CHALLENGE_STATUS_READY);
+
+        $activeParticipants = $session->participants()
+            ->where('invite_status', GroupChallengeParticipant::INVITE_STATUS_ACCEPTED)
+            ->get();
+
+        $sessionCompleted = $activeParticipants->every(fn (GroupChallengeParticipant $p) => $p->completed_at !== null);
+
+        if ($sessionCompleted) {
+            $session->update([
+                'status' => GroupChallengeSession::STATUS_COMPLETED,
+                'ended_at' => now(),
+            ]);
+        }
+
+        event(new GroupChallengeCompleted(
+            sessionId: $session->id,
+            payload: [
+                'session_id' => $session->id,
+                'user_id' => $user->id,
+                'session_completed' => $sessionCompleted,
+                'participants' => $activeParticipants->map(fn (GroupChallengeParticipant $p) => [
+                    'user_id' => $p->user_id,
+                    'progress' => $p->progress,
+                    'completed_at' => $p->completed_at?->toIso8601String(),
+                ]),
+            ],
+        ));
+
+        return $participant;
+    }
+
+    protected function cancel(GroupChallengeSession $session, string $reason): GroupChallengeSession
+    {
+        $activeParticipantIds = $session->participants()
+            ->where('invite_status', GroupChallengeParticipant::INVITE_STATUS_ACCEPTED)
+            ->pluck('user_id');
+
+        $session->update([
+            'status' => GroupChallengeSession::STATUS_CANCELLED,
+            'ended_at' => now(),
+        ]);
+
+        foreach ($activeParticipantIds as $userId) {
+            $this->authService->updateStatusForUser($userId, GroupChallengeStatus::GROUP_CHALLENGE_STATUS_READY);
+        }
+
+        event(new GroupChallengeCancelled(
+            sessionId: $session->id,
+            payload: [
+                'session_id' => $session->id,
+                'reason' => $reason,
+            ],
+        ));
+
+        return $session;
+    }
+
+    protected function broadcastLobby(GroupChallengeSession $session): void
+    {
+        $participants = $session->participants()->get(['user_id', 'invite_status', 'responded_at']);
+
+        event(new GroupChallengeLobbyUpdated(
+            sessionId: $session->id,
+            payload: [
+                'session_id' => $session->id,
+                'participants' => $participants->map(fn (GroupChallengeParticipant $p) => [
+                    'user_id' => $p->user_id,
+                    'invite_status' => $p->invite_status,
+                ]),
+            ],
+        ));
+    }
+
+    /**
+     * @param Collection<int, User> $users
+     */
+    protected function assertAllReady(Collection $users): void
+    {
+        $busyNames = $users
+            ->filter(fn (User $user) => $user->status !== GroupChallengeStatus::GROUP_CHALLENGE_STATUS_READY)
+            ->pluck('name');
+
+        if ($busyNames->isEmpty()) {
+            return;
+        }
+
+        $verb = $busyNames->count() > 1 ? 'are' : 'is';
+
+        throw new GroupChallengeException($busyNames->implode(', ') . " currently {$verb} busy.");
+    }
+
+    protected function assertSessionPending(GroupChallengeSession $session): void
+    {
+        if ($session->status !== GroupChallengeSession::STATUS_PENDING) {
+            throw new GroupChallengeException('This challenge has already started or ended.');
+        }
+    }
+
+    protected function findParticipantOrFail(GroupChallengeSession $session, User $user): GroupChallengeParticipant
+    {
+        $participant = $session->participants()->where('user_id', $user->id)->first();
+
+        if (! $participant) {
+            throw new GroupChallengeException('You are not part of this challenge.', 404);
+        }
+
+        return $participant;
+    }
+
+    protected function findAcceptedParticipantOrFail(GroupChallengeSession $session, User $user): GroupChallengeParticipant
+    {
+        $participant = $this->findParticipantOrFail($session, $user);
+
+        if ($participant->invite_status !== GroupChallengeParticipant::INVITE_STATUS_ACCEPTED) {
+            throw new GroupChallengeException('You are not part of this challenge.', 403);
+        }
+
+        return $participant;
+    }
+}

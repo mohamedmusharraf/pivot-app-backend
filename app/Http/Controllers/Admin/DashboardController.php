@@ -103,7 +103,7 @@ class DashboardController extends Controller
         // ── Top Hobbies ────────────────────────────────────────────────────
         $topHobbies = Hobby::withCount('activities')
                            ->orderBy('activities_count', 'desc')
-                           ->limit(5)
+                           ->limit(7)
                            ->get();
 
         return view('admin.dashboard', compact(

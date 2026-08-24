@@ -90,7 +90,17 @@ class AuthService
             abort(401, 'Authentication is required.');
         }
 
-        $updatedUser = $this->authRepositoryInterface->updateStatusByUserId((int) $user->id, $status);
+        return $this->updateStatusForUser((int) $user->id, $status);
+    }
+
+    /**
+     * Update any user's status and broadcast it, regardless of who is
+     * currently authenticated. Used by group challenge flows to flip a
+     * participant's status (e.g. to `in_challenge`) on their behalf.
+     */
+    public function updateStatusForUser(int $userId, string $status): Users
+    {
+        $updatedUser = $this->authRepositoryInterface->updateStatusByUserId($userId, $status);
 
         $recipientIds = TeamConnection::query()
             ->where('user_id', $updatedUser->id)
