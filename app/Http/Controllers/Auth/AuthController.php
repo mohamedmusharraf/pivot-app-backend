@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\UpdateUserStatusRequest;
+use App\Http\Requests\Auth\UpdateFcmTokenRequest;
 use App\Http\Resources\UserCountryResource;
 use App\Http\Resources\UserResource;
 use App\Services\AuthService;
@@ -79,6 +80,16 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'User status updated successfully',
             'user' => new UserResource($user),
+        ]);
+    }
+
+    public function updateFcmToken(UpdateFcmTokenRequest $request)
+    {
+        $this->authService->updateCurrentUserFcmToken($request->validated()['fcm_token']);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'FCM token registered successfully',
         ]);
     }
 

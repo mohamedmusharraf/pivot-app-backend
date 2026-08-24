@@ -35,7 +35,7 @@ class ChallengeInviteReceived implements ShouldBroadcastNow
 
     public function broadcastAs(): string
     {
-        return 'group.challenge.invite.received';
+        return 'challenge.invite';
     }
 
     public function broadcastWith(): array

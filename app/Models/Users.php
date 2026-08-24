@@ -17,6 +17,7 @@ class Users extends Model
         'email',
         'password',
         'status',
+        'fcm_token',
         'provider',
         'provider_id',
         'last_login_at',

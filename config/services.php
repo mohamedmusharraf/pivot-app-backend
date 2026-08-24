@@ -51,4 +51,9 @@ return [
     'apple' => [
         'client_id' => env('APPLE_CLIENT_ID'),
     ],
+
+    'firebase' => [
+        'project_id' => env('FIREBASE_PROJECT_ID'),
+        'credentials' => env('FIREBASE_CREDENTIALS_PATH', storage_path('app/firebase-credentials.json')),
+    ],
 ];

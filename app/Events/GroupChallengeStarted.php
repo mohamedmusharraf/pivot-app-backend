@@ -35,7 +35,7 @@ class GroupChallengeStarted implements ShouldBroadcastNow
 
     public function broadcastAs(): string
     {
-        return 'group.challenge.started';
+        return 'challenge.started';
     }
 
     public function broadcastWith(): array

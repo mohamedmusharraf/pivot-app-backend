@@ -9,20 +9,18 @@ use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 
-class GroupChallengeCancelled implements ShouldBroadcastNow
+class GroupChallengeParticipantLeft implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    /**
-     * @param array<string, mixed> $payload
-     */
     public function __construct(
         public int $sessionId,
-        public array $payload,
+        public int $userId,
+        public string $userName,
     ) {
-        Log::info('GroupChallengeCancelled Event Triggered', [
+        Log::info('GroupChallengeParticipantLeft Event Triggered', [
             'session_id' => $this->sessionId,
-            'payload' => $this->payload,
+            'user_id' => $this->userId,
         ]);
     }
 
@@ -35,11 +33,15 @@ class GroupChallengeCancelled implements ShouldBroadcastNow
 
     public function broadcastAs(): string
     {
-        return 'challenge.cancelled';
+        return 'participant.left';
     }
 
     public function broadcastWith(): array
     {
-        return $this->payload;
+        return [
+            'session_id' => $this->sessionId,
+            'user_id' => $this->userId,
+            'user_name' => $this->userName,
+        ];
     }
 }

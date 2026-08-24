@@ -55,6 +55,15 @@ class AuthRepository implements AuthRepositoryInterface
         return $user->fresh(['subscription']);
     }
 
+    public function updateFcmTokenByUserId(int $userId, string $fcmToken): Users
+    {
+        $user = Users::findOrFail($userId);
+        $user->fcm_token = $fcmToken;
+        $user->save();
+
+        return $user;
+    }
+
     public function updatePassword(string $email, string $password): void
     {
         Users::where('email', $email)->update([

@@ -57,6 +57,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/user/current-user', [AuthController::class, 'currentUser']);
         Route::get('/user/emergency', [AuthController::class, 'currentUserCountry']);
         Route::patch('/user/status', [AuthController::class, 'updateStatus']);
+        Route::post('/user/fcm-token', [AuthController::class, 'updateFcmToken']);
         Route::delete('/user/delete', [AuthController::class, 'deleteAccount']);
 
         // Challenge pack routes
@@ -69,6 +70,9 @@ Route::prefix('v1')->group(function () {
         Route::post('group-challenges/{session}/decline', [GroupChallengeController::class, 'decline']);
         Route::post('group-challenges/{session}/begin', [GroupChallengeController::class, 'begin']);
         Route::post('group-challenges/{session}/cancel', [GroupChallengeController::class, 'cancel']);
+        Route::post('group-challenges/{session}/pause', [GroupChallengeController::class, 'pause']);
+        Route::post('group-challenges/{session}/resume', [GroupChallengeController::class, 'resume']);
+        Route::post('group-challenges/{session}/leave', [GroupChallengeController::class, 'leave']);
         Route::post('group-challenges/{session}/progress', [GroupChallengeController::class, 'progress']);
         Route::post('group-challenges/{session}/complete', [GroupChallengeController::class, 'complete']);
     });

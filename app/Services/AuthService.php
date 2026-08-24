@@ -93,6 +93,17 @@ class AuthService
         return $this->updateStatusForUser((int) $user->id, $status);
     }
 
+    public function updateCurrentUserFcmToken(string $fcmToken): Users
+    {
+        $user = $this->authRepositoryInterface->getCurrentUser();
+
+        if (! $user) {
+            abort(401, 'Authentication is required.');
+        }
+
+        return $this->authRepositoryInterface->updateFcmTokenByUserId((int) $user->id, $fcmToken);
+    }
+
     /**
      * Update any user's status and broadcast it, regardless of who is
      * currently authenticated. Used by group challenge flows to flip a

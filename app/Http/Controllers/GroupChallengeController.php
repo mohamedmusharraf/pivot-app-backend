@@ -73,6 +73,36 @@ class GroupChallengeController extends Controller
         ]);
     }
 
+    public function pause(Request $request, GroupChallengeSession $session): JsonResponse
+    {
+        $session = $this->groupChallengeService->pause($request->user(), $session);
+
+        return response()->json([
+            'success' => true,
+            'session' => $session,
+        ]);
+    }
+
+    public function resume(Request $request, GroupChallengeSession $session): JsonResponse
+    {
+        $session = $this->groupChallengeService->resume($request->user(), $session);
+
+        return response()->json([
+            'success' => true,
+            'session' => $session,
+        ]);
+    }
+
+    public function leave(Request $request, GroupChallengeSession $session): JsonResponse
+    {
+        $participant = $this->groupChallengeService->leave($request->user(), $session);
+
+        return response()->json([
+            'success' => true,
+            'participant' => $participant,
+        ]);
+    }
+
     public function progress(Request $request, GroupChallengeSession $session): JsonResponse
     {
         $data = $request->validate([

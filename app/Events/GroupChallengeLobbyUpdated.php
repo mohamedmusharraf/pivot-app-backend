@@ -35,7 +35,7 @@ class GroupChallengeLobbyUpdated implements ShouldBroadcastNow
 
     public function broadcastAs(): string
     {
-        return 'group.challenge.lobby.updated';
+        return 'lobby.updated';
     }
 
     public function broadcastWith(): array

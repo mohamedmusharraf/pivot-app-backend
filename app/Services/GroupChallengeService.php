@@ -6,7 +6,10 @@ use App\Events\ChallengeInviteReceived;
 use App\Events\GroupChallengeCancelled;
 use App\Events\GroupChallengeCompleted;
 use App\Events\GroupChallengeLobbyUpdated;
+use App\Events\GroupChallengeParticipantLeft;
+use App\Events\GroupChallengePaused;
 use App\Events\GroupChallengeProgressUpdated;
+use App\Events\GroupChallengeResumed;
 use App\Events\GroupChallengeStarted;
 use App\Exceptions\GroupChallengeException;
 use App\Models\GroupChallengeParticipant;
@@ -22,6 +25,7 @@ class GroupChallengeService
 {
     public function __construct(
         protected AuthService $authService,
+        protected FcmService $fcmService,
     ) {}
 
     /**
@@ -74,19 +78,38 @@ class GroupChallengeService
 
             $this->authService->updateStatusForUser($host->id, GroupChallengeStatus::GROUP_CHALLENGE_STATUS_IN_CHALLENGE);
 
+            $challengeTitle = $session->challenge?->activity_title;
+            $invitedTeammates = $users->only($teammateIds->all())->map(fn (User $u) => [
+                'id' => $u->id,
+                'name' => $u->name,
+            ])->values();
+
             foreach ($teammateIds as $teammateId) {
                 event(new ChallengeInviteReceived(
                     recipientId: $teammateId,
                     payload: [
                         'session_id' => $session->id,
                         'challenge_id' => $challengeId,
-                        'host' => [
-                            'id' => $host->id,
-                            'name' => $host->name,
-                        ],
+                        'challenge_title' => $challengeTitle,
+                        'host_id' => $host->id,
+                        'host_name' => $host->name,
+                        'invited_teammates' => $invitedTeammates,
                     ],
                 ));
             }
+
+            $this->fcmService->sendToMany(
+                $users->only($teammateIds->all())->values(),
+                'Group Challenge Invite! 🤝',
+                "{$host->name} invited you to " . ($challengeTitle ?? 'a group challenge'),
+                [
+                    'type' => 'GROUP_CHALLENGE_INVITE',
+                    'session_id' => $session->id,
+                    'challenge_id' => $challengeId,
+                    'host_id' => $host->id,
+                    'host_name' => $host->name,
+                ],
+            );
 
             return $session->load('participants');
         });
@@ -185,17 +208,32 @@ class GroupChallengeService
             'started_at' => now(),
         ]);
 
+        $activeParticipants = $session->participants()
+            ->where('invite_status', GroupChallengeParticipant::INVITE_STATUS_ACCEPTED)
+            ->with('user')
+            ->get();
+
         event(new GroupChallengeStarted(
             sessionId: $session->id,
             payload: [
                 'session_id' => $session->id,
                 'challenge_id' => $session->challenge_id,
+                'host_id' => $session->host_id,
                 'started_at' => $session->started_at->toIso8601String(),
-                'participant_ids' => $session->participants()
-                    ->where('invite_status', GroupChallengeParticipant::INVITE_STATUS_ACCEPTED)
-                    ->pluck('user_id'),
+                'participant_ids' => $activeParticipants->pluck('user_id'),
             ],
         ));
+
+        $this->fcmService->sendToMany(
+            $activeParticipants->pluck('user')->filter(),
+            'Challenge Started! 🏁',
+            'Your group challenge has begun — jump back in!',
+            [
+                'type' => 'GROUP_CHALLENGE_STARTED',
+                'session_id' => $session->id,
+                'challenge_id' => $session->challenge_id,
+            ],
+        );
 
         return $session;
     }
@@ -206,9 +244,80 @@ class GroupChallengeService
             throw new GroupChallengeException('Only the host can cancel this challenge.', 403);
         }
 
-        $this->assertSessionPending($session);
+        $this->assertSessionActive($session);
 
-        return $this->cancel($session, 'Cancelled by host.');
+        return $this->cancel($session, 'Host cancelled the session.');
+    }
+
+    public function pause(User|Users $host, GroupChallengeSession $session): GroupChallengeSession
+    {
+        if ($session->host_id !== $host->id) {
+            throw new GroupChallengeException('Only the host can pause this challenge.', 403);
+        }
+
+        if ($session->status !== GroupChallengeSession::STATUS_IN_PROGRESS) {
+            throw new GroupChallengeException('This challenge is not currently in progress.');
+        }
+
+        $session->update(['status' => GroupChallengeSession::STATUS_PAUSED]);
+
+        event(new GroupChallengePaused(sessionId: $session->id));
+
+        return $session;
+    }
+
+    public function resume(User|Users $host, GroupChallengeSession $session): GroupChallengeSession
+    {
+        if ($session->host_id !== $host->id) {
+            throw new GroupChallengeException('Only the host can resume this challenge.', 403);
+        }
+
+        if ($session->status !== GroupChallengeSession::STATUS_PAUSED) {
+            throw new GroupChallengeException('This challenge is not currently paused.');
+        }
+
+        $session->update(['status' => GroupChallengeSession::STATUS_IN_PROGRESS]);
+
+        event(new GroupChallengeResumed(sessionId: $session->id));
+
+        return $session;
+    }
+
+    public function leave(User|Users $user, GroupChallengeSession $session): GroupChallengeParticipant
+    {
+        if ($session->host_id === $user->id) {
+            throw new GroupChallengeException('The host cannot leave — cancel the challenge instead.', 403);
+        }
+
+        if (! in_array($session->status, [GroupChallengeSession::STATUS_IN_PROGRESS, GroupChallengeSession::STATUS_PAUSED], true)) {
+            throw new GroupChallengeException('This challenge is not currently active.');
+        }
+
+        $participant = $this->findAcceptedParticipantOrFail($session, $user);
+
+        $participant->update([
+            'invite_status' => GroupChallengeParticipant::INVITE_STATUS_LEFT,
+            'left_at' => now(),
+        ]);
+
+        $this->authService->updateStatusForUser($user->id, GroupChallengeStatus::GROUP_CHALLENGE_STATUS_READY);
+
+        event(new GroupChallengeParticipantLeft(
+            sessionId: $session->id,
+            userId: $user->id,
+            userName: $user->name,
+        ));
+
+        $remainingTeammates = $session->participants()
+            ->where('user_id', '!=', $session->host_id)
+            ->where('invite_status', GroupChallengeParticipant::INVITE_STATUS_ACCEPTED)
+            ->count();
+
+        if ($remainingTeammates === 0) {
+            $this->cancel($session, 'All participants left.');
+        }
+
+        return $participant;
     }
 
     public function updateProgress(User|Users $user, GroupChallengeSession $session, int $progress): GroupChallengeParticipant
@@ -263,6 +372,7 @@ class GroupChallengeService
             payload: [
                 'session_id' => $session->id,
                 'user_id' => $user->id,
+                'completed_at' => $participant->completed_at->toIso8601String(),
                 'session_completed' => $sessionCompleted,
                 'participants' => $activeParticipants->map(fn (GroupChallengeParticipant $p) => [
                     'user_id' => $p->user_id,
@@ -309,6 +419,7 @@ class GroupChallengeService
             sessionId: $session->id,
             payload: [
                 'session_id' => $session->id,
+                'status' => $session->status,
                 'participants' => $participants->map(fn (GroupChallengeParticipant $p) => [
                     'user_id' => $p->user_id,
                     'invite_status' => $p->invite_status,
@@ -339,6 +450,19 @@ class GroupChallengeService
     {
         if ($session->status !== GroupChallengeSession::STATUS_PENDING) {
             throw new GroupChallengeException('This challenge has already started or ended.');
+        }
+    }
+
+    protected function assertSessionActive(GroupChallengeSession $session): void
+    {
+        $activeStatuses = [
+            GroupChallengeSession::STATUS_PENDING,
+            GroupChallengeSession::STATUS_IN_PROGRESS,
+            GroupChallengeSession::STATUS_PAUSED,
+        ];
+
+        if (! in_array($session->status, $activeStatuses, true)) {
+            throw new GroupChallengeException('This challenge has already ended.');
         }
     }
 
