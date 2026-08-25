@@ -25,6 +25,9 @@ class Users extends Model
 
     protected $hidden = [
         'password_hash',
+        'password',
+        'remember_token',
+        'fcm_token',
     ];
 
 

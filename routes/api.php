@@ -66,6 +66,8 @@ Route::prefix('v1')->group(function () {
 
         // Group challenge routes
         Route::post('group-challenges/start', [GroupChallengeController::class, 'start']);
+        Route::get('group-challenges/{session}', [GroupChallengeController::class, 'show']);
+        Route::post('group-challenges/{session}/invite', [GroupChallengeController::class, 'invite']);
         Route::post('group-challenges/{session}/accept', [GroupChallengeController::class, 'accept']);
         Route::post('group-challenges/{session}/decline', [GroupChallengeController::class, 'decline']);
         Route::post('group-challenges/{session}/begin', [GroupChallengeController::class, 'begin']);

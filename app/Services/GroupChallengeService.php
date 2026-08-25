@@ -33,11 +33,10 @@ class GroupChallengeService
     public function start(User|Users $host, array $teammateIds, ?int $challengeId): GroupChallengeSession
     {
         $teammateIds = collect($teammateIds)
-            ->map(fn($id) => (int) $id)
+            ->map(fn ($id) => (int) $id)
             ->unique()
-            ->reject(fn($id) => $id === $host->id)
+            ->reject(fn ($id) => $id === $host->id)
             ->values();
-
 
         return DB::transaction(function () use ($host, $teammateIds, $challengeId) {
             $participantIds = $teammateIds->concat([$host->id])->unique()->values();
@@ -69,41 +68,61 @@ class GroupChallengeService
 
             $this->authService->updateStatusForUser($host->id, GroupChallengeStatus::GROUP_CHALLENGE_STATUS_IN_CHALLENGE);
 
-            $challengeTitle = $session->challenge?->activity_title;
-            $invitedTeammates = $users->only($teammateIds->all())->map(fn(User $u) => [
-                'id' => $u->id,
-                'name' => $u->name,
-            ])->values();
-
-            foreach ($teammateIds as $teammateId) {
-                event(new ChallengeInviteReceived(
-                    recipientId: $teammateId,
-                    payload: [
-                        'session_id' => $session->id,
-                        'challenge_id' => $challengeId,
-                        'challenge_title' => $challengeTitle,
-                        'host_id' => $host->id,
-                        'host_name' => $host->name,
-                        'invited_teammates' => $invitedTeammates,
-                    ],
-                ));
-            }
-
-            $this->fcmService->sendToMany(
-                $users->only($teammateIds->all())->values(),
-                'Group Challenge Invite! 🤝',
-                "{$host->name} invited you to " . ($challengeTitle ?? 'a group challenge'),
-                [
-                    'type' => 'GROUP_CHALLENGE_INVITE',
-                    'session_id' => $session->id,
-                    'challenge_id' => $challengeId,
-                    'host_id' => $host->id,
-                    'host_name' => $host->name,
-                ],
-            );
+            $this->notifyInvitees($session, $host, $users->only($teammateIds->all()));
 
             return $session->load('participants');
         });
+    }
+
+    /**
+     * @param array<int, int|string> $invitedUserIds
+     */
+    public function inviteMore(User|Users $host, GroupChallengeSession $session, array $invitedUserIds): GroupChallengeSession
+    {
+        if ($session->host_id !== $host->id) {
+            throw new GroupChallengeException('Only the host can invite more teammates.', 403);
+        }
+
+        $this->assertSessionPending($session);
+
+        $existingParticipantIds = $session->participants()->pluck('user_id');
+
+        $newInviteeIds = collect($invitedUserIds)
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->reject(fn ($id) => $id === $host->id || $existingParticipantIds->contains($id))
+            ->values();
+
+        if ($newInviteeIds->isEmpty()) {
+            throw new GroupChallengeException('No new teammates to invite.');
+        }
+
+        return DB::transaction(function () use ($host, $session, $newInviteeIds) {
+            $users = User::whereIn('id', $newInviteeIds)->lockForUpdate()->get()->keyBy('id');
+
+            $this->assertAllReady($users);
+
+            foreach ($newInviteeIds as $inviteeId) {
+                GroupChallengeParticipant::create([
+                    'session_id' => $session->id,
+                    'user_id' => $inviteeId,
+                    'invite_status' => GroupChallengeParticipant::INVITE_STATUS_INVITED,
+                ]);
+            }
+
+            $this->notifyInvitees($session, $host, $users);
+
+            $this->broadcastLobby($session);
+
+            return $session->load('participants.user');
+        });
+    }
+
+    public function getSessionForUser(User|Users $user, GroupChallengeSession $session): GroupChallengeSession
+    {
+        $this->findParticipantOrFail($session, $user);
+
+        return $session->load(['host', 'participants.user']);
     }
 
     public function accept(User|Users $user, GroupChallengeSession $session): GroupChallengeParticipant
@@ -404,19 +423,63 @@ class GroupChallengeService
 
     protected function broadcastLobby(GroupChallengeSession $session): void
     {
-        $participants = $session->participants()->get(['user_id', 'invite_status', 'responded_at']);
+        $participants = $session->participants()->with('user:id,name')->get();
 
         event(new GroupChallengeLobbyUpdated(
             sessionId: $session->id,
             payload: [
                 'session_id' => $session->id,
                 'status' => $session->status,
-                'participants' => $participants->map(fn(GroupChallengeParticipant $p) => [
+                'participants' => $participants->map(fn (GroupChallengeParticipant $p) => [
                     'user_id' => $p->user_id,
+                    'name' => $p->user->name ?? 'Teammate',
+                    'avatar' => $p->user->avatar ?? null,
                     'invite_status' => $p->invite_status,
                 ]),
             ],
         ));
+    }
+
+    /**
+     * Fires ChallengeInviteReceived + FCM push for a batch of newly invited
+     * teammates. Shared by start() and inviteMore().
+     *
+     * @param Collection<int, User> $invitedUsers
+     */
+    protected function notifyInvitees(GroupChallengeSession $session, User|Users $host, Collection $invitedUsers): void
+    {
+        $challengeTitle = $session->challenge?->activity_title;
+        $invitedTeammates = $invitedUsers->map(fn (User $u) => [
+            'id' => $u->id,
+            'name' => $u->name,
+        ])->values();
+
+        foreach ($invitedUsers as $invitee) {
+            event(new ChallengeInviteReceived(
+                recipientId: $invitee->id,
+                payload: [
+                    'session_id' => $session->id,
+                    'challenge_id' => $session->challenge_id,
+                    'challenge_title' => $challengeTitle,
+                    'host_id' => $host->id,
+                    'host_name' => $host->name,
+                    'invited_teammates' => $invitedTeammates,
+                ],
+            ));
+        }
+
+        $this->fcmService->sendToMany(
+            $invitedUsers->values(),
+            'Group Challenge Invite! 🤝',
+            "{$host->name} invited you to " . ($challengeTitle ?? 'a group challenge'),
+            [
+                'type' => 'GROUP_CHALLENGE_INVITE',
+                'session_id' => $session->id,
+                'challenge_id' => $session->challenge_id,
+                'host_id' => $host->id,
+                'host_name' => $host->name,
+            ],
+        );
     }
 
     /**

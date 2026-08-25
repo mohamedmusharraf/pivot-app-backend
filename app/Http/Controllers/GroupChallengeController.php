@@ -33,6 +33,31 @@ class GroupChallengeController extends Controller
         ], 201);
     }
 
+    public function show(Request $request, GroupChallengeSession $session): JsonResponse
+    {
+        $session = $this->groupChallengeService->getSessionForUser($request->user(), $session);
+
+        return response()->json([
+            'success' => true,
+            'session' => $session,
+        ]);
+    }
+
+    public function invite(Request $request, GroupChallengeSession $session): JsonResponse
+    {
+        $data = $request->validate([
+            'invited_user_ids' => ['required', 'array', 'min:1'],
+            'invited_user_ids.*' => ['integer', 'distinct'],
+        ]);
+
+        $session = $this->groupChallengeService->inviteMore($request->user(), $session, $data['invited_user_ids']);
+
+        return response()->json([
+            'success' => true,
+            'session' => $session,
+        ], 201);
+    }
+
     public function accept(Request $request, GroupChallengeSession $session): JsonResponse
     {
         $participant = $this->groupChallengeService->accept($request->user(), $session);
