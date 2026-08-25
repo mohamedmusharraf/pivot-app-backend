@@ -274,7 +274,106 @@ class GroupChallengeControllerTest extends TestCase
         ]);
         $this->assertSame(3, GroupChallengeParticipant::where('session_id', $session->id)->count());
         Event::assertDispatched(ChallengeInviteReceived::class, fn ($event) => $event->recipientId === $newInvitee->id);
+        // Resend: $existing was already 'invited' and was included in the request too.
+        Event::assertDispatched(ChallengeInviteReceived::class, fn ($event) => $event->recipientId === $existing->id);
         Event::assertDispatched(GroupChallengeLobbyUpdated::class);
+    }
+
+    public function test_invite_resends_to_a_waiting_participant_without_duplicating_the_row(): void
+    {
+        Event::fake();
+
+        $host = $this->makeUser('ready');
+        $waiting = $this->makeUser('ready');
+
+        $session = GroupChallengeSession::create(['host_id' => $host->id, 'status' => GroupChallengeSession::STATUS_PENDING]);
+        GroupChallengeParticipant::create([
+            'session_id' => $session->id,
+            'user_id' => $host->id,
+            'invite_status' => GroupChallengeParticipant::INVITE_STATUS_ACCEPTED,
+            'responded_at' => now(),
+        ]);
+        GroupChallengeParticipant::create([
+            'session_id' => $session->id,
+            'user_id' => $waiting->id,
+            'invite_status' => GroupChallengeParticipant::INVITE_STATUS_INVITED,
+        ]);
+
+        Sanctum::actingAs($host);
+
+        // Client sends the resend under `teammate_ids` (no `invited_user_ids`).
+        $response = $this->postJson("/api/v1/group-challenges/{$session->id}/invite", [
+            'teammate_ids' => [$waiting->id],
+        ]);
+
+        $response->assertStatus(201);
+        $this->assertSame(2, GroupChallengeParticipant::where('session_id', $session->id)->count());
+        Event::assertDispatched(ChallengeInviteReceived::class, fn ($event) => $event->recipientId === $waiting->id);
+    }
+
+    public function test_invite_reactivates_a_declined_participant(): void
+    {
+        Event::fake();
+
+        $host = $this->makeUser('ready');
+        $declined = $this->makeUser('ready');
+
+        $session = GroupChallengeSession::create(['host_id' => $host->id, 'status' => GroupChallengeSession::STATUS_PENDING]);
+        GroupChallengeParticipant::create([
+            'session_id' => $session->id,
+            'user_id' => $host->id,
+            'invite_status' => GroupChallengeParticipant::INVITE_STATUS_ACCEPTED,
+            'responded_at' => now(),
+        ]);
+        GroupChallengeParticipant::create([
+            'session_id' => $session->id,
+            'user_id' => $declined->id,
+            'invite_status' => GroupChallengeParticipant::INVITE_STATUS_DECLINED,
+            'responded_at' => now(),
+        ]);
+
+        Sanctum::actingAs($host);
+
+        $this->postJson("/api/v1/group-challenges/{$session->id}/invite", [
+            'invited_user_ids' => [$declined->id],
+        ])->assertStatus(201);
+
+        $this->assertDatabaseHas('group_challenge_participants', [
+            'session_id' => $session->id,
+            'user_id' => $declined->id,
+            'invite_status' => GroupChallengeParticipant::INVITE_STATUS_INVITED,
+        ]);
+        Event::assertDispatched(ChallengeInviteReceived::class, fn ($event) => $event->recipientId === $declined->id);
+    }
+
+    public function test_invite_skips_an_already_accepted_participant(): void
+    {
+        Event::fake();
+
+        $host = $this->makeUser('ready');
+        $accepted = $this->makeUser('ready');
+
+        $session = GroupChallengeSession::create(['host_id' => $host->id, 'status' => GroupChallengeSession::STATUS_PENDING]);
+        GroupChallengeParticipant::create([
+            'session_id' => $session->id,
+            'user_id' => $host->id,
+            'invite_status' => GroupChallengeParticipant::INVITE_STATUS_ACCEPTED,
+            'responded_at' => now(),
+        ]);
+        GroupChallengeParticipant::create([
+            'session_id' => $session->id,
+            'user_id' => $accepted->id,
+            'invite_status' => GroupChallengeParticipant::INVITE_STATUS_ACCEPTED,
+            'responded_at' => now(),
+        ]);
+
+        Sanctum::actingAs($host);
+
+        $this->postJson("/api/v1/group-challenges/{$session->id}/invite", [
+            'invited_user_ids' => [$accepted->id],
+        ])->assertStatus(422);
+
+        Event::assertNotDispatched(ChallengeInviteReceived::class);
     }
 
     public function test_non_host_cannot_invite_more_teammates(): void

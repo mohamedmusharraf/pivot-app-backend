@@ -85,32 +85,62 @@ class GroupChallengeService
 
         $this->assertSessionPending($session);
 
-        $existingParticipantIds = $session->participants()->pluck('user_id');
-
-        $newInviteeIds = collect($invitedUserIds)
+        $requestedIds = collect($invitedUserIds)
             ->map(fn ($id) => (int) $id)
             ->unique()
-            ->reject(fn ($id) => $id === $host->id || $existingParticipantIds->contains($id))
+            ->reject(fn ($id) => $id === $host->id)
             ->values();
 
-        if ($newInviteeIds->isEmpty()) {
-            throw new GroupChallengeException('No new teammates to invite.');
+        if ($requestedIds->isEmpty()) {
+            throw new GroupChallengeException('No teammates selected to invite.');
         }
 
-        return DB::transaction(function () use ($host, $session, $newInviteeIds) {
-            $users = User::whereIn('id', $newInviteeIds)->lockForUpdate()->get()->keyBy('id');
+        return DB::transaction(function () use ($host, $session, $requestedIds) {
+            $existingParticipants = $session->participants()
+                ->whereIn('user_id', $requestedIds)
+                ->get()
+                ->keyBy('user_id');
 
-            $this->assertAllReady($users);
+            $brandNewIds = $requestedIds->reject(fn ($id) => $existingParticipants->has($id))->values();
 
-            foreach ($newInviteeIds as $inviteeId) {
-                GroupChallengeParticipant::create([
-                    'session_id' => $session->id,
-                    'user_id' => $inviteeId,
-                    'invite_status' => GroupChallengeParticipant::INVITE_STATUS_INVITED,
-                ]);
+            if ($brandNewIds->isNotEmpty()) {
+                $newUsers = User::whereIn('id', $brandNewIds)->lockForUpdate()->get()->keyBy('id');
+
+                $this->assertAllReady($newUsers);
+
+                foreach ($brandNewIds as $id) {
+                    GroupChallengeParticipant::create([
+                        'session_id' => $session->id,
+                        'user_id' => $id,
+                        'invite_status' => GroupChallengeParticipant::INVITE_STATUS_INVITED,
+                    ]);
+                }
             }
 
-            $this->notifyInvitees($session, $host, $users);
+            $resendIds = collect();
+            foreach ($existingParticipants as $userId => $participant) {
+                if ($participant->invite_status === GroupChallengeParticipant::INVITE_STATUS_ACCEPTED) {
+                    continue;
+                }
+
+                if ($participant->invite_status !== GroupChallengeParticipant::INVITE_STATUS_INVITED) {
+                    $participant->update([
+                        'invite_status' => GroupChallengeParticipant::INVITE_STATUS_INVITED,
+                        'responded_at' => null,
+                        'left_at' => null,
+                    ]);
+                }
+
+                $resendIds->push($userId);
+            }
+
+            $notifyIds = $brandNewIds->concat($resendIds)->unique()->values();
+
+            if ($notifyIds->isEmpty()) {
+                throw new GroupChallengeException('Everyone selected has already joined this challenge.');
+            }
+
+            $this->notifyInvitees($session, $host, User::whereIn('id', $notifyIds)->get());
 
             $this->broadcastLobby($session);
 
@@ -449,17 +479,21 @@ class GroupChallengeService
     protected function notifyInvitees(GroupChallengeSession $session, User|Users $host, Collection $invitedUsers): void
     {
         $challengeTitle = $session->challenge?->activity_title;
-        $invitedTeammates = $invitedUsers->map(fn (User $u) => [
-            'id' => $u->id,
-            'name' => $u->name,
-        ])->values();
+        $challengeId = $session->challenge_id !== null ? (string) $session->challenge_id : null;
+
+        $invitedTeammates = $session->participants()
+            ->with('user:id,name')
+            ->get()
+            ->pluck('user.name')
+            ->filter()
+            ->values();
 
         foreach ($invitedUsers as $invitee) {
             event(new ChallengeInviteReceived(
                 recipientId: $invitee->id,
                 payload: [
                     'session_id' => $session->id,
-                    'challenge_id' => $session->challenge_id,
+                    'challenge_id' => $challengeId,
                     'challenge_title' => $challengeTitle,
                     'host_id' => $host->id,
                     'host_name' => $host->name,
@@ -475,7 +509,7 @@ class GroupChallengeService
             [
                 'type' => 'GROUP_CHALLENGE_INVITE',
                 'session_id' => $session->id,
-                'challenge_id' => $session->challenge_id,
+                'challenge_id' => $challengeId,
                 'host_id' => $host->id,
                 'host_name' => $host->name,
             ],

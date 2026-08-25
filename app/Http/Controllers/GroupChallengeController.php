@@ -45,9 +45,14 @@ class GroupChallengeController extends Controller
 
     public function invite(Request $request, GroupChallengeSession $session): JsonResponse
     {
+
+        $request->merge([
+            'invited_user_ids' => $request->input('invited_user_ids', $request->input('teammate_ids')),
+        ]);
+
         $data = $request->validate([
             'invited_user_ids' => ['required', 'array', 'min:1'],
-            'invited_user_ids.*' => ['integer', 'distinct'],
+            'invited_user_ids.*' => ['integer'],
         ]);
 
         $session = $this->groupChallengeService->inviteMore($request->user(), $session, $data['invited_user_ids']);
