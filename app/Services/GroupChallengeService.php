@@ -14,7 +14,6 @@ use App\Events\GroupChallengeStarted;
 use App\Exceptions\GroupChallengeException;
 use App\Models\GroupChallengeParticipant;
 use App\Models\GroupChallengeSession;
-use App\Models\TeamConnection;
 use App\Models\User;
 use App\Models\Users;
 use App\Support\GroupChallengeStatus;
@@ -34,19 +33,11 @@ class GroupChallengeService
     public function start(User|Users $host, array $teammateIds, ?int $challengeId): GroupChallengeSession
     {
         $teammateIds = collect($teammateIds)
-            ->map(fn ($id) => (int) $id)
+            ->map(fn($id) => (int) $id)
             ->unique()
-            ->reject(fn ($id) => $id === $host->id)
+            ->reject(fn($id) => $id === $host->id)
             ->values();
 
-        $connectedIds = TeamConnection::query()
-            ->where('user_id', $host->id)
-            ->whereIn('connected_user_id', $teammateIds)
-            ->pluck('connected_user_id');
-
-        if ($teammateIds->diff($connectedIds)->isNotEmpty()) {
-            throw new GroupChallengeException('One or more selected users are not on your team.');
-        }
 
         return DB::transaction(function () use ($host, $teammateIds, $challengeId) {
             $participantIds = $teammateIds->concat([$host->id])->unique()->values();
@@ -79,7 +70,7 @@ class GroupChallengeService
             $this->authService->updateStatusForUser($host->id, GroupChallengeStatus::GROUP_CHALLENGE_STATUS_IN_CHALLENGE);
 
             $challengeTitle = $session->challenge?->activity_title;
-            $invitedTeammates = $users->only($teammateIds->all())->map(fn (User $u) => [
+            $invitedTeammates = $users->only($teammateIds->all())->map(fn(User $u) => [
                 'id' => $u->id,
                 'name' => $u->name,
             ])->values();
@@ -195,7 +186,7 @@ class GroupChallengeService
 
         $invitees = $session->participants()->where('user_id', '!=', $host->id)->get();
 
-        if ($invitees->contains(fn (GroupChallengeParticipant $p) => $p->invite_status === GroupChallengeParticipant::INVITE_STATUS_INVITED)) {
+        if ($invitees->contains(fn(GroupChallengeParticipant $p) => $p->invite_status === GroupChallengeParticipant::INVITE_STATUS_INVITED)) {
             throw new GroupChallengeException('Waiting for everyone to respond to the invite.');
         }
 
@@ -358,7 +349,7 @@ class GroupChallengeService
             ->where('invite_status', GroupChallengeParticipant::INVITE_STATUS_ACCEPTED)
             ->get();
 
-        $sessionCompleted = $activeParticipants->every(fn (GroupChallengeParticipant $p) => $p->completed_at !== null);
+        $sessionCompleted = $activeParticipants->every(fn(GroupChallengeParticipant $p) => $p->completed_at !== null);
 
         if ($sessionCompleted) {
             $session->update([
@@ -374,7 +365,7 @@ class GroupChallengeService
                 'user_id' => $user->id,
                 'completed_at' => $participant->completed_at->toIso8601String(),
                 'session_completed' => $sessionCompleted,
-                'participants' => $activeParticipants->map(fn (GroupChallengeParticipant $p) => [
+                'participants' => $activeParticipants->map(fn(GroupChallengeParticipant $p) => [
                     'user_id' => $p->user_id,
                     'progress' => $p->progress,
                     'completed_at' => $p->completed_at?->toIso8601String(),
@@ -420,7 +411,7 @@ class GroupChallengeService
             payload: [
                 'session_id' => $session->id,
                 'status' => $session->status,
-                'participants' => $participants->map(fn (GroupChallengeParticipant $p) => [
+                'participants' => $participants->map(fn(GroupChallengeParticipant $p) => [
                     'user_id' => $p->user_id,
                     'invite_status' => $p->invite_status,
                 ]),
@@ -434,7 +425,7 @@ class GroupChallengeService
     protected function assertAllReady(Collection $users): void
     {
         $busyNames = $users
-            ->filter(fn (User $user) => $user->status !== GroupChallengeStatus::GROUP_CHALLENGE_STATUS_READY)
+            ->filter(fn(User $user) => $user->status !== GroupChallengeStatus::GROUP_CHALLENGE_STATUS_READY)
             ->pluck('name');
 
         if ($busyNames->isEmpty()) {

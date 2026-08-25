@@ -79,11 +79,11 @@ class GroupChallengeControllerTest extends TestCase
 
         $this->postJson("/api/v1/group-challenges/{$session->id}/pause")->assertStatus(200);
         $this->assertSame(GroupChallengeSession::STATUS_PAUSED, $session->fresh()->status);
-        Event::assertDispatched(GroupChallengePaused::class, fn ($event) => $event->sessionId === $session->id);
+        Event::assertDispatched(GroupChallengePaused::class, fn($event) => $event->sessionId === $session->id);
 
         $this->postJson("/api/v1/group-challenges/{$session->id}/resume")->assertStatus(200);
         $this->assertSame(GroupChallengeSession::STATUS_IN_PROGRESS, $session->fresh()->status);
-        Event::assertDispatched(GroupChallengeResumed::class, fn ($event) => $event->sessionId === $session->id);
+        Event::assertDispatched(GroupChallengeResumed::class, fn($event) => $event->sessionId === $session->id);
     }
 
     public function test_non_host_cannot_pause_session(): void
@@ -114,7 +114,7 @@ class GroupChallengeControllerTest extends TestCase
         $this->assertSame(GroupChallengeSession::STATUS_CANCELLED, $session->fresh()->status);
         $this->assertSame('ready', $host->fresh()->status);
         $this->assertSame('ready', $teammate->fresh()->status);
-        Event::assertDispatched(GroupChallengeCancelled::class, fn ($event) => $event->sessionId === $session->id);
+        Event::assertDispatched(GroupChallengeCancelled::class, fn($event) => $event->sessionId === $session->id);
     }
 
     public function test_host_cannot_leave_session(): void
@@ -143,7 +143,7 @@ class GroupChallengeControllerTest extends TestCase
         $this->postJson("/api/v1/group-challenges/{$session->id}/leave")->assertStatus(200);
 
         $this->assertSame('ready', $teammate->fresh()->status);
-        Event::assertDispatched(GroupChallengeParticipantLeft::class, fn ($event) => $event->userId === $teammate->id);
+        Event::assertDispatched(GroupChallengeParticipantLeft::class, fn($event) => $event->userId === $teammate->id);
 
         $this->assertSame(GroupChallengeSession::STATUS_CANCELLED, $session->fresh()->status);
         $this->assertSame('ready', $host->fresh()->status);
@@ -210,7 +210,28 @@ class GroupChallengeControllerTest extends TestCase
         ]);
 
         $this->assertSame('in_challenge', $host->fresh()->status);
-        Event::assertDispatched(ChallengeInviteReceived::class, fn ($event) => $event->recipientId === $teammate->id);
+        Event::assertDispatched(ChallengeInviteReceived::class, fn($event) => $event->recipientId === $teammate->id);
+    }
+
+    public function test_host_can_invite_a_user_who_is_not_on_their_team(): void
+    {
+        Event::fake();
+
+        $host = $this->makeUser('ready');
+        $lobbyMember = $this->makeUser('ready');
+
+        Sanctum::actingAs($host);
+
+        $response = $this->postJson('/api/v1/group-challenges/start', [
+            'teammate_ids' => [$lobbyMember->id],
+        ]);
+
+        $response->assertStatus(201);
+        $this->assertDatabaseHas('group_challenge_participants', [
+            'session_id' => $response->json('session.id'),
+            'user_id' => $lobbyMember->id,
+            'invite_status' => GroupChallengeParticipant::INVITE_STATUS_INVITED,
+        ]);
     }
 
     public function test_invitee_can_accept_and_joins_lobby(): void
@@ -343,7 +364,7 @@ class GroupChallengeControllerTest extends TestCase
         $session->refresh();
         $this->assertSame(GroupChallengeSession::STATUS_IN_PROGRESS, $session->status);
         $this->assertNotNull($session->started_at);
-        Event::assertDispatched(GroupChallengeStarted::class, fn ($event) => $event->sessionId === $session->id);
+        Event::assertDispatched(GroupChallengeStarted::class, fn($event) => $event->sessionId === $session->id);
     }
 
     public function test_progress_and_complete_finish_the_session_for_all_participants(): void
@@ -387,6 +408,6 @@ class GroupChallengeControllerTest extends TestCase
 
         $this->assertSame(GroupChallengeSession::STATUS_COMPLETED, $session->fresh()->status);
         $this->assertSame('ready', $teammate->fresh()->status);
-        Event::assertDispatched(GroupChallengeCompleted::class, fn ($event) => $event->payload['session_completed'] === true);
+        Event::assertDispatched(GroupChallengeCompleted::class, fn($event) => $event->payload['session_completed'] === true);
     }
 }
