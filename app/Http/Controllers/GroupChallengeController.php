@@ -133,9 +133,9 @@ class GroupChallengeController extends Controller
         ]);
     }
 
-    public function removeParticipant(Request $request, GroupChallengeSession $session, int $participant): JsonResponse
+    public function removeParticipant(Request $request, GroupChallengeSession $session, int $user): JsonResponse
     {
-        $removed = $this->groupChallengeService->removeParticipant($request->user(), $session, $participant);
+        $removed = $this->groupChallengeService->removeParticipant($request->user(), $session, $user);
 
         return response()->json([
             'success' => true,
