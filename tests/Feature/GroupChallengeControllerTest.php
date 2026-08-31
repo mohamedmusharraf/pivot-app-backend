@@ -168,7 +168,7 @@ class GroupChallengeControllerTest extends TestCase
 
         Sanctum::actingAs($host);
 
-        $this->postJson("/api/v1/group-challenges/{$session->id}/remove-participant", ['user_id' => $teammate->id])
+        $this->deleteJson("/api/v1/group-challenges/{$session->id}/participants/{$teammate->id}")
             ->assertStatus(200);
 
         $this->assertSame(
@@ -188,7 +188,7 @@ class GroupChallengeControllerTest extends TestCase
 
         Sanctum::actingAs($teammate);
 
-        $this->postJson("/api/v1/group-challenges/{$session->id}/remove-participant", ['user_id' => $host->id])
+        $this->deleteJson("/api/v1/group-challenges/{$session->id}/participants/{$host->id}")
             ->assertStatus(403);
     }
 
@@ -203,7 +203,7 @@ class GroupChallengeControllerTest extends TestCase
 
         Sanctum::actingAs($host);
 
-        $this->postJson("/api/v1/group-challenges/{$session->id}/remove-participant", ['user_id' => $teammate->id])
+        $this->deleteJson("/api/v1/group-challenges/{$session->id}/participants/{$teammate->id}")
             ->assertStatus(200);
 
         $this->assertSame('ready', $teammate->fresh()->status);

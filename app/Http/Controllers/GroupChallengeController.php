@@ -133,21 +133,13 @@ class GroupChallengeController extends Controller
         ]);
     }
 
-    public function removeParticipant(Request $request, GroupChallengeSession $session): JsonResponse
+    public function removeParticipant(Request $request, GroupChallengeSession $session, int $participant): JsonResponse
     {
-        $request->merge([
-            'user_id' => $request->input('user_id', $request->input('participant_id', $request->input('teammate_id'))),
-        ]);
-
-        $data = $request->validate([
-            'user_id' => ['required', 'integer'],
-        ]);
-
-        $participant = $this->groupChallengeService->removeParticipant($request->user(), $session, (int) $data['user_id']);
+        $removed = $this->groupChallengeService->removeParticipant($request->user(), $session, $participant);
 
         return response()->json([
             'success' => true,
-            'participant' => $participant,
+            'participant' => $removed,
         ]);
     }
 

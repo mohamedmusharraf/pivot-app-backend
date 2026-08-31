@@ -360,22 +360,28 @@ class GroupChallengeService
         return $participant;
     }
 
-    public function removeParticipant(User|Users $host, GroupChallengeSession $session, int $userId): GroupChallengeParticipant
+    public function removeParticipant(User|Users $host, GroupChallengeSession $session, int $participantOrUserId): GroupChallengeParticipant
     {
         if ($session->host_id !== $host->id) {
             throw new GroupChallengeException('Only the host can remove participants.', 403);
         }
 
-        if ($userId === $session->host_id) {
-            throw new GroupChallengeException('The host cannot be removed — cancel the challenge instead.', 403);
-        }
-
         $this->assertSessionActive($session);
 
-        $participant = $session->participants()->where('user_id', $userId)->first();
+        $participant = $session->participants()
+            ->where(fn ($query) => $query
+                ->where('id', $participantOrUserId)
+                ->orWhere('user_id', $participantOrUserId))
+            ->first();
 
         if (! $participant) {
             throw new GroupChallengeException('That user is not part of this challenge.', 404);
+        }
+
+        $userId = (int) $participant->user_id;
+
+        if ($userId === $session->host_id) {
+            throw new GroupChallengeException('The host cannot be removed — cancel the challenge instead.', 403);
         }
 
         $wasActive = in_array($participant->invite_status, [
