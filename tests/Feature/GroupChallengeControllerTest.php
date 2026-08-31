@@ -171,10 +171,10 @@ class GroupChallengeControllerTest extends TestCase
         $this->deleteJson("/api/v1/group-challenges/{$session->id}/participants/{$teammate->id}")
             ->assertStatus(200);
 
-        $this->assertSame(
-            GroupChallengeParticipant::INVITE_STATUS_LEFT,
-            $session->participants()->where('user_id', $teammate->id)->first()->invite_status,
-        );
+        $this->assertDatabaseMissing('group_challenge_participants', [
+            'session_id' => $session->id,
+            'user_id' => $teammate->id,
+        ]);
         $this->assertSame('ready', $teammate->fresh()->status);
         Event::assertDispatched(GroupChallengeParticipantLeft::class, fn($event) => $event->userId === $teammate->id);
     }

@@ -389,10 +389,10 @@ class GroupChallengeService
             GroupChallengeParticipant::INVITE_STATUS_ACCEPTED,
         ], true);
 
-        $participant->update([
-            'invite_status' => GroupChallengeParticipant::INVITE_STATUS_LEFT,
-            'left_at' => now(),
-        ]);
+        // Hard-delete the row for this user from group_challenge_participants.
+        $removedParticipant = $participant->replicate();
+        $removedParticipant->id = $participant->id;
+        $participant->delete();
 
         $this->authService->updateStatusForUser($userId, GroupChallengeStatus::GROUP_CHALLENGE_STATUS_READY);
 
@@ -413,7 +413,7 @@ class GroupChallengeService
             $this->broadcastLobby($session);
         }
 
-        return $participant;
+        return $removedParticipant;
     }
 
     public function updateProgress(User|Users $user, GroupChallengeSession $session, int $progress): GroupChallengeParticipant
