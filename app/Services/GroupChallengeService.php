@@ -360,6 +360,58 @@ class GroupChallengeService
         return $participant;
     }
 
+    public function removeParticipant(User|Users $host, GroupChallengeSession $session, int $userId): GroupChallengeParticipant
+    {
+        if ($session->host_id !== $host->id) {
+            throw new GroupChallengeException('Only the host can remove participants.', 403);
+        }
+
+        if ($userId === $session->host_id) {
+            throw new GroupChallengeException('The host cannot be removed — cancel the challenge instead.', 403);
+        }
+
+        $this->assertSessionActive($session);
+
+        $participant = $session->participants()->where('user_id', $userId)->first();
+
+        if (! $participant) {
+            throw new GroupChallengeException('That user is not part of this challenge.', 404);
+        }
+
+        $wasActive = in_array($participant->invite_status, [
+            GroupChallengeParticipant::INVITE_STATUS_INVITED,
+            GroupChallengeParticipant::INVITE_STATUS_ACCEPTED,
+        ], true);
+
+        $participant->update([
+            'invite_status' => GroupChallengeParticipant::INVITE_STATUS_LEFT,
+            'left_at' => now(),
+        ]);
+
+        $removedUser = User::find($userId);
+
+        $this->authService->updateStatusForUser($userId, GroupChallengeStatus::GROUP_CHALLENGE_STATUS_READY);
+
+        event(new GroupChallengeParticipantLeft(
+            sessionId: $session->id,
+            userId: $userId,
+            userName: $removedUser->name ?? 'Teammate',
+        ));
+
+        $remainingTeammates = $session->participants()
+            ->where('user_id', '!=', $session->host_id)
+            ->where('invite_status', GroupChallengeParticipant::INVITE_STATUS_ACCEPTED)
+            ->count();
+
+        if ($wasActive && $remainingTeammates === 0 && $session->status !== GroupChallengeSession::STATUS_PENDING) {
+            $this->cancel($session, 'All participants were removed.');
+        } else {
+            $this->broadcastLobby($session);
+        }
+
+        return $participant;
+    }
+
     public function updateProgress(User|Users $user, GroupChallengeSession $session, int $progress): GroupChallengeParticipant
     {
         if ($session->status !== GroupChallengeSession::STATUS_IN_PROGRESS) {

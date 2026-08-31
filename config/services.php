@@ -54,6 +54,16 @@ return [
 
     'firebase' => [
         'project_id' => env('FIREBASE_PROJECT_ID'),
-        'credentials' => env('FIREBASE_CREDENTIALS_PATH', storage_path('app/firebase-credentials.json')),
+        'credentials' => (function () {
+            $path = env('FIREBASE_CREDENTIALS_PATH');
+
+            if (! $path) {
+                return storage_path('app/firebase-credentials.json');
+            }
+
+            $isAbsolute = str_starts_with($path, '/') || preg_match('/^[A-Za-z]:[\\\\\/]/', $path);
+
+            return $isAbsolute ? $path : base_path($path);
+        })(),
     ],
 ];

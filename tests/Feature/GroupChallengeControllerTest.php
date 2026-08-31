@@ -150,6 +150,68 @@ class GroupChallengeControllerTest extends TestCase
         Event::assertDispatched(GroupChallengeCancelled::class);
     }
 
+    public function test_host_can_remove_a_participant_and_their_status_becomes_ready(): void
+    {
+        Event::fake();
+
+        $host = $this->makeUser('in_challenge');
+        $teammate = $this->makeUser('in_challenge');
+        $other = $this->makeUser('in_challenge');
+        $this->connectTeammates($host, $teammate);
+        $session = $this->createInProgressSession($host, $teammate);
+        GroupChallengeParticipant::create([
+            'session_id' => $session->id,
+            'user_id' => $other->id,
+            'invite_status' => GroupChallengeParticipant::INVITE_STATUS_ACCEPTED,
+            'responded_at' => now(),
+        ]);
+
+        Sanctum::actingAs($host);
+
+        $this->postJson("/api/v1/group-challenges/{$session->id}/remove-participant", ['user_id' => $teammate->id])
+            ->assertStatus(200);
+
+        $this->assertSame(
+            GroupChallengeParticipant::INVITE_STATUS_LEFT,
+            $session->participants()->where('user_id', $teammate->id)->first()->invite_status,
+        );
+        $this->assertSame('ready', $teammate->fresh()->status);
+        Event::assertDispatched(GroupChallengeParticipantLeft::class, fn($event) => $event->userId === $teammate->id);
+    }
+
+    public function test_non_host_cannot_remove_a_participant(): void
+    {
+        $host = $this->makeUser('in_challenge');
+        $teammate = $this->makeUser('in_challenge');
+        $this->connectTeammates($host, $teammate);
+        $session = $this->createInProgressSession($host, $teammate);
+
+        Sanctum::actingAs($teammate);
+
+        $this->postJson("/api/v1/group-challenges/{$session->id}/remove-participant", ['user_id' => $host->id])
+            ->assertStatus(403);
+    }
+
+    public function test_removing_last_teammate_auto_cancels_session(): void
+    {
+        Event::fake();
+
+        $host = $this->makeUser('in_challenge');
+        $teammate = $this->makeUser('in_challenge');
+        $this->connectTeammates($host, $teammate);
+        $session = $this->createInProgressSession($host, $teammate);
+
+        Sanctum::actingAs($host);
+
+        $this->postJson("/api/v1/group-challenges/{$session->id}/remove-participant", ['user_id' => $teammate->id])
+            ->assertStatus(200);
+
+        $this->assertSame('ready', $teammate->fresh()->status);
+        $this->assertSame(GroupChallengeSession::STATUS_CANCELLED, $session->fresh()->status);
+        $this->assertSame('ready', $host->fresh()->status);
+        Event::assertDispatched(GroupChallengeCancelled::class);
+    }
+
     public function test_user_can_register_fcm_token(): void
     {
         $user = $this->makeUser('ready');
