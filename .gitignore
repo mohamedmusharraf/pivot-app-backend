@@ -22,3 +22,6 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+# Firebase service account credentials
+*firebase-adminsdk*.json
+pivot-e2d54-firebase-adminsdk-fbsvc-b0d4d89345.json
