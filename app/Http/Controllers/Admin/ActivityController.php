@@ -15,9 +15,9 @@ class ActivityController extends Controller
         $query = Activity::with('hobby');
 
         if ($request->filled('search')) {
-            $query->where(function($q) use ($request) {
+            $query->where(function ($q) use ($request) {
                 $q->where('activity_title', 'like', '%' . $request->search . '%')
-                  ->orWhere('description', 'like', '%' . $request->search . '%');
+                    ->orWhere('description', 'like', '%' . $request->search . '%');
             });
         }
 
@@ -52,7 +52,12 @@ class ActivityController extends Controller
     {
         $activity = Activity::findOrFail($id);
         $data = $request->validated();
+
         $data['neurodivergent_friendly'] = $request->has('neurodivergent_friendly') ? 'Yes' : 'No';
+
+        if (empty($data['hobby_id'])) {
+            $data['hobby_id'] = $activity->hobby_id ?? 1;
+        }
 
         $activity->update($data);
 

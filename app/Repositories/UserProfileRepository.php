@@ -24,16 +24,18 @@ class UserProfileRepository implements UserProfileRepositoryInterface
 
             $defaultTierId = 1;
 
-            Subscription::create([
-                'user_id' => $data['user_id'],
-                'tier_id' => $defaultTierId,
-                'active' => true,
-                'store' => null,
-                'product_id' => null,
-                'revenuecat_user_id' => null,
-                'started_at' => null,
-                'expires_at' => null,
-            ]);
+            Subscription::updateOrCreate(
+                ['user_id' => $data['user_id']],
+                [
+                    'tier_id' => $defaultTierId,
+                    'active' => true,
+                    'store' => null,
+                    'product_id' => null,
+                    'revenuecat_user_id' => null,
+                    'started_at' => null,
+                    'expires_at' => null,
+                ]
+            );
 
             return $profile;
         });

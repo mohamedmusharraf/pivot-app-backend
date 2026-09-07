@@ -14,7 +14,7 @@ class ActivityRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'hobby_id'                => 'nullable|integer',
+            'hobby_id'                => 'required|integer|exists:hobbies,id',
             'activity_title'          => 'required|string|max:255',
             'instruction'             => 'nullable|string',
             'activity_type'           => 'nullable|string|max:255',

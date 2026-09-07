@@ -98,11 +98,11 @@
             <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
                 <div class="form-grid-2">
                     <div class="form-group col-span-2">
-                        <label class="form-label">Category</label>
-                        <select name="hobby_id" class="form-control">
+                        <label class="form-label">Category *</label>
+                        <select name="hobby_id" class="form-control" required>
                             <option value="">Select a category</option>
                             @foreach($hobbies as $hobby)
-                                <option value="{{ $hobby->id }}">{{ $hobby->name }}</option>
+                            <option value="{{ $hobby->id }}">{{ $hobby->name }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -214,12 +214,12 @@
                         <input type="text" name="activity_title" id="edit-title" class="form-control" required>
                     </div>
 
-                    <div class="form-group">
-                        <label class="form-label">Category</label>
-                        <select name="hobby_id" id="edit-hobby" class="form-control">
+                    <div class="form-group col-span-2">
+                        <label class="form-label">Category *</label>
+                        <select name="hobby_id" id="edit-hobby" class="form-control" required>
                             <option value="">Select a category</option>
                             @foreach($hobbies as $hobby)
-                                <option value="{{ $hobby->id }}">{{ $hobby->name }}</option>
+                            <option value="{{ $hobby->id }}">{{ $hobby->name }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -336,6 +336,7 @@
         document.getElementById('edit-activity-form').action = updateUrl;
 
         document.getElementById('edit-title').value = activity.activity_title ?? '';
+        document.getElementById('edit-hobby').value = activity.hobby_id ?? ''; // Populates category select
         document.getElementById('edit-type').value = activity.activity_type ?? '';
         document.getElementById('edit-subcategory').value = activity.subcategory ?? '';
         document.getElementById('edit-duration').value = activity.duration_minutes ?? '';
