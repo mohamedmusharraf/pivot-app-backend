@@ -41,6 +41,8 @@ use App\Repositories\Contracts\EmotionLogsRepositoryInterface;
 use App\Repositories\EmotionLogsRepository;
 use App\Repositories\Contracts\StreakLogsRepositoryInterface;
 use App\Repositories\StreakLogsRepository;
+use App\Repositories\Contracts\GroupChallengeSessionRepositoryInterface;
+use App\Repositories\GroupChallengeSessionRepository;
 
 use Illuminate\Routing\Middleware\ThrottleRequests;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -72,6 +74,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(EmotionLogsRepositoryInterface::class, EmotionLogsRepository::class);
         $this->app->bind(ChallengePackRepositoryInterface::class, ChallengePackRepository::class);
         $this->app->bind(StreakLogsRepositoryInterface::class, StreakLogsRepository::class);
+        $this->app->bind(GroupChallengeSessionRepositoryInterface::class, GroupChallengeSessionRepository::class);
     }
 
     /**

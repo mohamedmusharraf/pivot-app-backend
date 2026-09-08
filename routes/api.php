@@ -27,6 +27,7 @@ use App\Http\Controllers\StreakLogsController;
 use App\Http\Controllers\AppleAuthController;
 use App\Http\Controllers\ChallengePackController;
 use App\Http\Controllers\GroupChallengeController;
+use App\Http\Controllers\GroupChallengeSessionController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -65,6 +66,7 @@ Route::prefix('v1')->group(function () {
         Route::patch('challenge-pack', [ChallengePackController::class, 'decrementRemaining']);
 
         // Group challenge routes
+        Route::get('group-challenge-sessions', [GroupChallengeSessionController::class, 'index']);
         Route::post('group-challenges/start', [GroupChallengeController::class, 'start']);
         Route::get('group-challenges/{session}', [GroupChallengeController::class, 'show']);
         Route::post('group-challenges/{session}/invite', [GroupChallengeController::class, 'invite']);
