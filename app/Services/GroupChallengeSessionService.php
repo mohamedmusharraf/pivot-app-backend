@@ -16,10 +16,12 @@ class GroupChallengeSessionService
         return $this->repository->getForUser($userId)->map(function ($session) {
             return [
                 'challenge_name' => $session->challenge?->activity_title,
+                'host_id' => $session->host_id,
+                'status' => $session->status,
                 'started_at' => $session->started_at,
                 'ended_at' => $session->ended_at,
-                'play_time_seconds' => $session->started_at && $session->ended_at
-                    ? $session->started_at->diffInSeconds($session->ended_at)
+                'play_time_minutes' => $session->started_at && $session->ended_at
+                    ? $session->started_at->diffInMinutes($session->ended_at)
                     : null,
             ];
         });
