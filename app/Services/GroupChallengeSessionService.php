@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\ChallengeLog;
+use App\Models\ActivityLogs;
 use App\Models\User;
 use App\Models\Users;
 use App\Repositories\Contracts\GroupChallengeSessionRepositoryInterface;
@@ -16,7 +16,7 @@ class GroupChallengeSessionService
 
     public function getLeaderboard(): Collection
     {
-        $dailyTotals = ChallengeLog::query()
+        $dailyTotals = ActivityLogs::query()
             ->where('status', 'completed')
             ->get(['user_id', 'duration_minutes'])
             ->groupBy('user_id')
