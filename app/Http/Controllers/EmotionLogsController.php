@@ -26,7 +26,6 @@ class EmotionLogsController extends Controller
                 'success' => true,
                 'message' => 'Emotion logs stored successfully.',
             ], 201);
-
         } catch (\Throwable $th) {
             return response()->json([
                 'success' => false,
@@ -34,5 +33,13 @@ class EmotionLogsController extends Controller
                 'error' => $th->getMessage()
             ], 500);
         }
+    }
+
+    public function counts(): JsonResponse
+    {
+        return response()->json([
+            'success' => true,
+            'data' => $this->emotionLogsService->getEmotionCounts(),
+        ]);
     }
 }

@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Models\EmotionLogs;
 use App\Repositories\Contracts\EmotionLogsRepositoryInterface;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class EmotionLogsRepository implements EmotionLogsRepositoryInterface
@@ -18,5 +19,15 @@ class EmotionLogsRepository implements EmotionLogsRepositoryInterface
         return DB::transaction(function () use ($records) {
             return EmotionLogs::insert($records);
         });
+    }
+
+    public function getEmotionCounts(): Collection
+    {
+        return EmotionLogs::query()
+            ->selectRaw('emotion, COUNT(*) as count')
+            ->groupBy('emotion')
+            ->orderByDesc('count')
+            ->pluck('count', 'emotion')
+            ->map(fn($count) => (int) $count);
     }
 }

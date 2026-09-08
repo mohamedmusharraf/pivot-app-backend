@@ -53,6 +53,7 @@ Route::prefix('v1')->group(function () {
     Route::delete('/devices', [BetaDeviceController::class, 'deleteAll']);
     Route::delete('/devices/{id}', [BetaDeviceController::class, 'deleteById']);
     Route::get('leaderboard', [GroupChallengeSessionController::class, 'index']);
+    Route::get('leaderboard/emotion', [EmotionLogsController::class, 'counts']);
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/auth/logout', [AuthController::class, 'logout']);

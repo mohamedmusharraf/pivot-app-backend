@@ -12,6 +12,7 @@ use App\Events\GroupChallengeResumed;
 use App\Events\GroupChallengeStarted;
 use App\Models\GroupChallengeParticipant;
 use App\Models\GroupChallengeSession;
+use App\Models\EmotionLogs;
 use App\Models\TeamConnection;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -310,6 +311,33 @@ class GroupChallengeControllerTest extends TestCase
                 'total_challenge_count' => 1,
                 'total_duration_minutes' => 25,
             ]);
+    }
+
+    public function test_user_can_view_emotion_counts(): void
+    {
+        $user = $this->makeUser('ready');
+        EmotionLogs::create([
+            'user_id' => $user->id,
+            'emotion' => 'Happy',
+            'logged_at' => now(),
+        ]);
+        EmotionLogs::create([
+            'user_id' => $user->id,
+            'emotion' => 'Happy',
+            'logged_at' => now(),
+        ]);
+        EmotionLogs::create([
+            'user_id' => $user->id,
+            'emotion' => 'Sad',
+            'logged_at' => now(),
+        ]);
+
+        Sanctum::actingAs($user);
+
+        $this->getJson('/api/v1/emotion-log/counts')
+            ->assertOk()
+            ->assertJsonPath('data.Happy', 2)
+            ->assertJsonPath('data.Sad', 1);
     }
 
     public function test_host_can_invite_a_user_who_is_not_on_their_team(): void

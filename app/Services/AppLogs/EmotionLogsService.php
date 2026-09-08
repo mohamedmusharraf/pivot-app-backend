@@ -4,6 +4,7 @@ namespace App\Services\AppLogs;
 
 use App\Repositories\Contracts\EmotionLogsRepositoryInterface;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 
 class EmotionLogsService
 {
@@ -28,5 +29,10 @@ class EmotionLogsService
         }
 
         return $this->emotionLogsRepository->insertBatch($records);
+    }
+
+    public function getEmotionCounts(): Collection
+    {
+        return $this->emotionLogsRepository->getEmotionCounts();
     }
 }
