@@ -66,7 +66,7 @@ Route::prefix('v1')->group(function () {
         Route::patch('challenge-pack', [ChallengePackController::class, 'decrementRemaining']);
 
         // Group challenge routes
-        Route::get('group-challenge-sessions', [GroupChallengeSessionController::class, 'index']);
+        Route::get('leaderboard', [GroupChallengeSessionController::class, 'index']);
         Route::post('group-challenges/start', [GroupChallengeController::class, 'start']);
         Route::get('group-challenges/{session}', [GroupChallengeController::class, 'show']);
         Route::post('group-challenges/{session}/invite', [GroupChallengeController::class, 'invite']);
