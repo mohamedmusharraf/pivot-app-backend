@@ -17,7 +17,7 @@ class GroupChallengeSessionService
     public function getLeaderboard(): Collection
     {
         $dailyTotals = ActivityLogs::query()
-            ->where('status', 'completed')
+            ->where('completed', true)
             ->get(['user_id', 'duration_minutes'])
             ->groupBy('user_id')
             ->map(fn(Collection $logs) => [
