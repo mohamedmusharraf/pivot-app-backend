@@ -56,8 +56,8 @@ class GroupChallengeSessionService
                 $group = $groupTotals[$user->id] ?? ['count' => 0, 'duration' => 0];
 
                 return [
-                    'host_id' => $user->id,
-                    'host_name' => $user->name,
+                    'user_id' => $user->id,
+                    'user_name' => $user->name,
                     'total_challenge_count' => $daily['count'] + $group['count'],
                     'total_duration_minutes' => (int) ($daily['duration'] + $group['duration']),
                 ];
