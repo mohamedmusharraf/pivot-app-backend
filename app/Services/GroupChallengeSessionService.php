@@ -14,31 +14,55 @@ class GroupChallengeSessionService
         protected GroupChallengeSessionRepositoryInterface $repository
     ) {}
 
-    public function getLeaderboard(User | Users $user): array
+    public function getLeaderboard(): Collection
     {
-        $groupSessions = $this->repository->getForUser($user->id)
+        $dailyTotals = ChallengeLog::query()
             ->where('status', 'completed')
-            ->filter(fn($session) => $session->started_at && $session->ended_at);
+            ->get(['user_id', 'duration_minutes'])
+            ->groupBy('user_id')
+            ->map(fn(Collection $logs) => [
+                'count' => $logs->count(),
+                'duration' => (int) $logs->sum('duration_minutes'),
+            ]);
 
-        $dailyChallengeCount = ChallengeLog::query()
-            ->where('user_id', $user->id)
-            ->where('status', 'completed')
-            ->count();
+        $groupTotals = [];
+        foreach ($this->repository->getLeaderboardSessions() as $session) {
+            if ($session->status !== 'completed' || ! $session->started_at || ! $session->ended_at) {
+                continue;
+            }
 
-        $dailyDurationMinutes = ChallengeLog::query()
-            ->where('user_id', $user->id)
-            ->where('status', 'completed')
-            ->sum('duration_minutes');
+            $userIds = $session->participants
+                ->where('invite_status', 'accepted')
+                ->pluck('user_id')
+                ->push($session->host_id)
+                ->unique();
+            $duration = $session->started_at->diffInMinutes($session->ended_at);
 
-        $groupDurationMinutes = $groupSessions->sum(
-            fn($session) => $session->started_at->diffInMinutes($session->ended_at)
-        );
+            foreach ($userIds as $userId) {
+                $groupTotals[$userId]['count'] = ($groupTotals[$userId]['count'] ?? 0) + 1;
+                $groupTotals[$userId]['duration'] = ($groupTotals[$userId]['duration'] ?? 0) + $duration;
+            }
+        }
 
-        return [
-            'host_id' => $user->id,
-            'host_name' => $user->name,
-            'total_challenge_count' => $dailyChallengeCount + $groupSessions->count(),
-            'total_duration_minutes' => (int) $dailyDurationMinutes + $groupDurationMinutes,
-        ];
+        $users = User::query()
+            ->get(['id', 'name'])
+            ->merge(Users::query()->get(['id', 'name']))
+            ->unique('id')
+            ->values();
+
+        return $users
+            ->map(function (User|Users $user) use ($dailyTotals, $groupTotals) {
+                $daily = $dailyTotals->get($user->id, ['count' => 0, 'duration' => 0]);
+                $group = $groupTotals[$user->id] ?? ['count' => 0, 'duration' => 0];
+
+                return [
+                    'host_id' => $user->id,
+                    'host_name' => $user->name,
+                    'total_challenge_count' => $daily['count'] + $group['count'],
+                    'total_duration_minutes' => $daily['duration'] + $group['duration'],
+                ];
+            })
+            ->sortByDesc('total_challenge_count')
+            ->values();
     }
 }

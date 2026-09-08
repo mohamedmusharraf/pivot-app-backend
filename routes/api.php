@@ -41,7 +41,7 @@ Route::prefix('v1')->group(function () {
     Route::post('/auth/apple', [AppleAuthController::class, 'appleLogin']);
     Route::post('/webhooks/revenuecat', RevenueCatWebhookController::class);
     Route::post('/webhooks/revenuecat/challenge-packs', [ChallengePacksWebhookController::class, 'handleChallengePackWebhook']);
-    
+
     Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])
         ->middleware('throttle:forgot-password');
     Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
@@ -52,6 +52,7 @@ Route::prefix('v1')->group(function () {
     Route::get('/devices', [BetaDeviceController::class, 'getAll']);
     Route::delete('/devices', [BetaDeviceController::class, 'deleteAll']);
     Route::delete('/devices/{id}', [BetaDeviceController::class, 'deleteById']);
+    Route::get('leaderboard', [GroupChallengeSessionController::class, 'index']);
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/auth/logout', [AuthController::class, 'logout']);
@@ -66,7 +67,6 @@ Route::prefix('v1')->group(function () {
         Route::patch('challenge-pack', [ChallengePackController::class, 'decrementRemaining']);
 
         // Group challenge routes
-        Route::get('leaderboard', [GroupChallengeSessionController::class, 'index']);
         Route::post('group-challenges/start', [GroupChallengeController::class, 'start']);
         Route::get('group-challenges/{session}', [GroupChallengeController::class, 'show']);
         Route::post('group-challenges/{session}/invite', [GroupChallengeController::class, 'invite']);

@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Services\GroupChallengeSessionService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class GroupChallengeSessionController extends Controller
 {
@@ -12,11 +11,11 @@ class GroupChallengeSessionController extends Controller
         protected GroupChallengeSessionService $service
     ) {}
 
-    public function index(Request $request): JsonResponse
+    public function index(): JsonResponse
     {
         return response()->json([
             'success' => true,
-            'data' => $this->service->getLeaderboard($request->user()),
+            'data' => $this->service->getLeaderboard(),
         ]);
     }
 }

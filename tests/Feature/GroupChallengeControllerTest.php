@@ -275,7 +275,7 @@ class GroupChallengeControllerTest extends TestCase
         Event::assertDispatched(ChallengeInviteReceived::class, fn($event) => $event->recipientId === $teammate->id);
     }
 
-    public function test_authenticated_user_can_view_their_challenge_totals(): void
+    public function test_anyone_can_view_all_users_challenge_totals(): void
     {
         $host = $this->makeUser('ready');
         $teammate = $this->makeUser('ready');
@@ -295,14 +295,21 @@ class GroupChallengeControllerTest extends TestCase
             'responded_at' => $startedAt,
         ]);
 
-        Sanctum::actingAs($teammate);
-
         $this->getJson('/api/v1/leaderboard')
             ->assertOk()
-            ->assertJsonPath('data.host_id', $teammate->id)
-            ->assertJsonPath('data.host_name', $teammate->name)
-            ->assertJsonPath('data.total_challenge_count', 1)
-            ->assertJsonPath('data.total_duration_minutes', 25);
+            ->assertJsonCount(2, 'data')
+            ->assertJsonFragment([
+                'host_id' => $host->id,
+                'host_name' => $host->name,
+                'total_challenge_count' => 1,
+                'total_duration_minutes' => 25,
+            ])
+            ->assertJsonFragment([
+                'host_id' => $teammate->id,
+                'host_name' => $teammate->name,
+                'total_challenge_count' => 1,
+                'total_duration_minutes' => 25,
+            ]);
     }
 
     public function test_host_can_invite_a_user_who_is_not_on_their_team(): void
