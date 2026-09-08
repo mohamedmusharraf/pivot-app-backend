@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Models\ChallengeLog;
+use App\Models\User;
 use App\Repositories\Contracts\GroupChallengeSessionRepositoryInterface;
 use Illuminate\Support\Collection;
 
@@ -11,19 +13,31 @@ class GroupChallengeSessionService
         protected GroupChallengeSessionRepositoryInterface $repository
     ) {}
 
-    public function getForUser(int $userId): Collection
+    public function getLeaderboard(User $user): array
     {
-        return $this->repository->getForUser($userId)->map(function ($session) {
-            return [
-                'challenge_name' => $session->challenge?->activity_title,
-                'host_id' => $session->host_id,
-                'status' => $session->status,
-                'started_at' => $session->started_at,
-                'ended_at' => $session->ended_at,
-                'play_time_minutes' => $session->started_at && $session->ended_at
-                    ? $session->started_at->diffInMinutes($session->ended_at)
-                    : null,
-            ];
-        });
+        $groupSessions = $this->repository->getForUser($user->id)
+            ->where('status', 'completed')
+            ->filter(fn($session) => $session->started_at && $session->ended_at);
+
+        $dailyChallengeCount = ChallengeLog::query()
+            ->where('user_id', $user->id)
+            ->where('status', 'completed')
+            ->count();
+
+        $dailyDurationMinutes = ChallengeLog::query()
+            ->where('user_id', $user->id)
+            ->where('status', 'completed')
+            ->sum('duration_minutes');
+
+        $groupDurationMinutes = $groupSessions->sum(
+            fn($session) => $session->started_at->diffInMinutes($session->ended_at)
+        );
+
+        return [
+            'host_id' => $user->id,
+            'host_name' => $user->name,
+            'total_challenge_count' => $dailyChallengeCount + $groupSessions->count(),
+            'total_duration_minutes' => (int) $dailyDurationMinutes + $groupDurationMinutes,
+        ];
     }
 }

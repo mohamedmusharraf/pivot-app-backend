@@ -7,4 +7,6 @@ use Illuminate\Support\Collection;
 interface GroupChallengeSessionRepositoryInterface
 {
     public function getForUser(int $userId): Collection;
+
+    public function getLeaderboardSessions(): Collection;
 }

@@ -275,6 +275,36 @@ class GroupChallengeControllerTest extends TestCase
         Event::assertDispatched(ChallengeInviteReceived::class, fn($event) => $event->recipientId === $teammate->id);
     }
 
+    public function test_authenticated_user_can_view_their_challenge_totals(): void
+    {
+        $host = $this->makeUser('ready');
+        $teammate = $this->makeUser('ready');
+        $startedAt = now()->subMinutes(25);
+
+        $session = GroupChallengeSession::create([
+            'host_id' => $host->id,
+            'status' => GroupChallengeSession::STATUS_COMPLETED,
+            'started_at' => $startedAt,
+            'ended_at' => now(),
+        ]);
+
+        GroupChallengeParticipant::create([
+            'session_id' => $session->id,
+            'user_id' => $teammate->id,
+            'invite_status' => GroupChallengeParticipant::INVITE_STATUS_ACCEPTED,
+            'responded_at' => $startedAt,
+        ]);
+
+        Sanctum::actingAs($teammate);
+
+        $this->getJson('/api/v1/leaderboard')
+            ->assertOk()
+            ->assertJsonPath('data.host_id', $teammate->id)
+            ->assertJsonPath('data.host_name', $teammate->name)
+            ->assertJsonPath('data.total_challenge_count', 1)
+            ->assertJsonPath('data.total_duration_minutes', 25);
+    }
+
     public function test_host_can_invite_a_user_who_is_not_on_their_team(): void
     {
         Event::fake();
@@ -335,9 +365,9 @@ class GroupChallengeControllerTest extends TestCase
             'invite_status' => GroupChallengeParticipant::INVITE_STATUS_INVITED,
         ]);
         $this->assertSame(3, GroupChallengeParticipant::where('session_id', $session->id)->count());
-        Event::assertDispatched(ChallengeInviteReceived::class, fn ($event) => $event->recipientId === $newInvitee->id);
+        Event::assertDispatched(ChallengeInviteReceived::class, fn($event) => $event->recipientId === $newInvitee->id);
         // Resend: $existing was already 'invited' and was included in the request too.
-        Event::assertDispatched(ChallengeInviteReceived::class, fn ($event) => $event->recipientId === $existing->id);
+        Event::assertDispatched(ChallengeInviteReceived::class, fn($event) => $event->recipientId === $existing->id);
         Event::assertDispatched(GroupChallengeLobbyUpdated::class);
     }
 
@@ -370,7 +400,7 @@ class GroupChallengeControllerTest extends TestCase
 
         $response->assertStatus(201);
         $this->assertSame(2, GroupChallengeParticipant::where('session_id', $session->id)->count());
-        Event::assertDispatched(ChallengeInviteReceived::class, fn ($event) => $event->recipientId === $waiting->id);
+        Event::assertDispatched(ChallengeInviteReceived::class, fn($event) => $event->recipientId === $waiting->id);
     }
 
     public function test_invite_reactivates_a_declined_participant(): void
@@ -405,7 +435,7 @@ class GroupChallengeControllerTest extends TestCase
             'user_id' => $declined->id,
             'invite_status' => GroupChallengeParticipant::INVITE_STATUS_INVITED,
         ]);
-        Event::assertDispatched(ChallengeInviteReceived::class, fn ($event) => $event->recipientId === $declined->id);
+        Event::assertDispatched(ChallengeInviteReceived::class, fn($event) => $event->recipientId === $declined->id);
     }
 
     public function test_invite_skips_an_already_accepted_participant(): void

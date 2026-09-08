@@ -16,7 +16,7 @@ class GroupChallengeSessionController extends Controller
     {
         return response()->json([
             'success' => true,
-            'data' => $this->service->getForUser($request->user()->id),
+            'data' => $this->service->getLeaderboard($request->user()),
         ]);
     }
 }

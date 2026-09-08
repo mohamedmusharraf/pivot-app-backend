@@ -22,4 +22,11 @@ class GroupChallengeSessionRepository implements GroupChallengeSessionRepository
             ->orderByDesc('created_at')
             ->get();
     }
+
+    public function getLeaderboardSessions(): Collection
+    {
+        return GroupChallengeSession::query()
+            ->with('host:id,name')
+            ->get(['host_id', 'started_at', 'ended_at']);
+    }
 }
