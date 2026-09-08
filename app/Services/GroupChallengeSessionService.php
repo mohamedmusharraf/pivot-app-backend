@@ -59,7 +59,7 @@ class GroupChallengeSessionService
                     'host_id' => $user->id,
                     'host_name' => $user->name,
                     'total_challenge_count' => $daily['count'] + $group['count'],
-                    'total_duration_minutes' => $daily['duration'] + $group['duration'],
+                    'total_duration_minutes' => (int) ($daily['duration'] + $group['duration']),
                 ];
             })
             ->sortByDesc('total_challenge_count')
