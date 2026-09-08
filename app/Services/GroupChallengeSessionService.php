@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\ChallengeLog;
 use App\Models\User;
+use App\Models\Users;
 use App\Repositories\Contracts\GroupChallengeSessionRepositoryInterface;
 use Illuminate\Support\Collection;
 
@@ -13,7 +14,7 @@ class GroupChallengeSessionService
         protected GroupChallengeSessionRepositoryInterface $repository
     ) {}
 
-    public function getLeaderboard(User $user): array
+    public function getLeaderboard(User | Users $user): array
     {
         $groupSessions = $this->repository->getForUser($user->id)
             ->where('status', 'completed')
