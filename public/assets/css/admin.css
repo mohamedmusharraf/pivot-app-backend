@@ -593,8 +593,8 @@ body {
 .modal-backdrop {
     position: fixed;
     inset: 0;
-    background: rgba(15, 23, 42, 0.4);
-    backdrop-filter: blur(4px);
+    background: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(5px);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -602,6 +602,7 @@ body {
     pointer-events: none;
     transition: var(--transition);
     z-index: 100;
+    padding: 1.5rem;
 }
 
 .modal-backdrop.active {
@@ -612,15 +613,25 @@ body {
 .modal-dialog {
     background: var(--bg-surface);
     width: 100%;
-    max-width: 580px;
+    max-width: 560px;
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-lg);
     display: flex;
     flex-direction: column;
-    max-height: 90vh;
+    max-height: calc(100vh - 3rem);
     overflow: hidden;
     transform: translateY(-20px);
     transition: var(--transition);
+}
+
+.modal-dialog > form,
+.modal-dialog form {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    margin: 0;
 }
 
 .modal-backdrop.active .modal-dialog {
@@ -634,12 +645,40 @@ body {
     align-items: center;
     justify-content: space-between;
     background: var(--bg-surface);
+    flex-shrink: 0;
+}
+
+.modal-header h3 {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--text-heading);
+}
+
+.modal-close-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.125rem;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.modal-close-btn:hover {
+    background: var(--bg-main);
+    color: var(--text-heading);
 }
 
 .modal-body {
     padding: 1.5rem;
     overflow-y: auto;
     flex: 1;
+    min-height: 0;
 }
 
 .modal-footer {
@@ -647,8 +686,10 @@ body {
     background: var(--bg-main);
     border-top: 1px solid var(--border-color);
     display: flex;
+    align-items: center;
     justify-content: flex-end;
     gap: 0.75rem;
+    flex-shrink: 0;
 }
 
 /* --------------------------------------------------------------------------

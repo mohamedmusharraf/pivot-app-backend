@@ -15,14 +15,16 @@ class ActivityController extends Controller
         $query = Activity::with('hobby');
 
         if ($request->filled('search')) {
-            $query->where(function ($q) use ($request) {
-                $q->where('activity_title', 'like', '%' . $request->search . '%')
-                    ->orWhere('description', 'like', '%' . $request->search . '%');
+            $search = strtolower(trim($request->search));
+            $query->where(function ($q) use ($search) {
+                $q->whereRaw('LOWER(activity_title) LIKE ?', ["%{$search}%"])
+                  ->orWhereRaw('LOWER(description) LIKE ?', ["%{$search}%"]);
             });
         }
 
         if ($request->filled('tier')) {
-            $query->where('tier', 'like', '%' . $request->tier . '%');
+            $tier = strtolower(trim($request->tier));
+            $query->whereRaw('LOWER(tier) LIKE ?', ["%{$tier}%"]);
         }
 
         $activities = $query->orderBy('created_at', 'desc')->paginate(10);

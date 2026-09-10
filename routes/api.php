@@ -52,6 +52,8 @@ Route::prefix('v1')->group(function () {
     Route::get('/devices', [BetaDeviceController::class, 'getAll']);
     Route::delete('/devices', [BetaDeviceController::class, 'deleteAll']);
     Route::delete('/devices/{id}', [BetaDeviceController::class, 'deleteById']);
+
+    // Leaderboard routes
     Route::get('leaderboard', [GroupChallengeSessionController::class, 'index']);
     Route::get('leaderboard/emotion', [EmotionLogsController::class, 'counts']);
 
@@ -66,7 +68,7 @@ Route::prefix('v1')->group(function () {
         // Challenge pack routes
         Route::get('challenge-pack', [ChallengePackController::class, 'index']);
         Route::patch('challenge-pack', [ChallengePackController::class, 'decrementRemaining']);
-
+    
         // Group challenge routes
         Route::post('group-challenges/start', [GroupChallengeController::class, 'start']);
         Route::get('group-challenges/{session}', [GroupChallengeController::class, 'show']);

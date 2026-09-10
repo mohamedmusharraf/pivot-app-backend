@@ -225,6 +225,33 @@
             const modal = document.getElementById(id);
             if (modal) modal.classList.remove('active');
         }
+
+        // Close active modal when clicking outside on backdrop
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal-backdrop')) {
+                e.target.classList.remove('active');
+            }
+        });
+
+        // ── Debounced Auto-Search for Inputs ──────────────────────────────────
+        let searchTimer = null;
+        function debouncedSubmit(inputElement, delay = 450) {
+            clearTimeout(searchTimer);
+            searchTimer = setTimeout(() => {
+                inputElement.form.submit();
+            }, delay);
+        }
+
+        // Restore focus & position cursor at end of input on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            const searchInput = document.querySelector('input[name="search"]');
+            if (searchInput && searchInput.value) {
+                searchInput.focus();
+                const val = searchInput.value;
+                searchInput.value = '';
+                searchInput.value = val;
+            }
+        });
     </script>
     @stack('scripts')
 </body>

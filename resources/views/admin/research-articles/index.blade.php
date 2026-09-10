@@ -24,9 +24,16 @@
     </div>
 
     <!-- Filter Form -->
-    <form method="GET" action="{{ route('admin.research-articles.index') }}" style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
-        <input type="text" name="search" value="{{ request('search') }}" placeholder="Search summary or fun facts..." class="form-control" style="max-width: 320px;">
-        <button type="submit" class="btn btn-secondary"><i class="fa-solid fa-filter"></i> Filter</button>
+    <form method="GET" action="{{ route('admin.research-articles.index') }}" style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; align-items: center;">
+        <div style="position: relative; flex: 1; max-width: 320px;">
+            <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 0.875rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none;"></i>
+            <input type="text" name="search" value="{{ request('search') }}" placeholder="Search summary or fun facts..." class="form-control" style="padding-left: 2.375rem;" oninput="debouncedSubmit(this, 450)">
+        </div>
+        @if(request('search'))
+            <a href="{{ route('admin.research-articles.index') }}" class="btn btn-secondary btn-sm" title="Clear Search" style="height: 38px; padding: 0 0.875rem; display: inline-flex; align-items: center;">
+                <i class="fa-solid fa-xmark"></i> Clear
+            </a>
+        @endif
     </form>
 
     <!-- Data Table -->
@@ -121,7 +128,7 @@
                     <span style="font-size: 0.75rem; color: var(--text-muted);">Overview & attachments</span>
                 </div>
             </div>
-            <button type="button" onclick="closeModal('view-article-modal')" style="background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 1.1rem;"><i class="fa-solid fa-xmark"></i></button>
+            <button type="button" class="modal-close-btn" onclick="closeModal('view-article-modal')"><i class="fa-solid fa-xmark"></i></button>
         </div>
 
         <div class="modal-body" style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem;">
@@ -168,7 +175,7 @@
     <div class="modal-dialog">
         <div class="modal-header">
             <h3>Add New Research Article</h3>
-            <button type="button" onclick="closeModal('create-article-modal')" style="background: none; border: none; cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
+            <button type="button" class="modal-close-btn" onclick="closeModal('create-article-modal')"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <form action="{{ route('admin.research-articles.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
@@ -192,7 +199,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" onclick="closeModal('create-article-modal')" class="btn btn-secondary">Cancel</button>
-                <button type="submit" class="btn btn-primary">Save Article</button>
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Save Article</button>
             </div>
         </form>
     </div>
@@ -203,7 +210,7 @@
     <div class="modal-dialog">
         <div class="modal-header">
             <h3>Edit Research Article</h3>
-            <button type="button" onclick="closeModal('edit-article-modal')" style="background: none; border: none; cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
+            <button type="button" class="modal-close-btn" onclick="closeModal('edit-article-modal')"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <form id="edit-article-form" method="POST" enctype="multipart/form-data">
             @csrf
@@ -228,7 +235,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" onclick="closeModal('edit-article-modal')" class="btn btn-secondary">Cancel</button>
-                <button type="submit" class="btn btn-primary">Update Article</button>
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Update Article</button>
             </div>
         </form>
     </div>
@@ -236,20 +243,20 @@
 
 <!-- DELETE CONFIRMATION MODAL -->
 <div class="modal-backdrop" id="delete-modal">
-    <div class="modal-dialog">
+    <div class="modal-dialog" style="max-width: 460px;">
         <div class="modal-header">
             <h3>Confirm Delete</h3>
-            <button type="button" onclick="closeModal('delete-modal')" style="background: none; border: none; cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
+            <button type="button" class="modal-close-btn" onclick="closeModal('delete-modal')"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <form id="delete-form" method="POST">
             @csrf
             @method('DELETE')
             <div class="modal-body">
-                <p>Are you sure you want to delete this research article record?</p>
+                <p style="font-size: 0.9375rem; color: var(--text-body); margin: 0;">Are you sure you want to delete this research article record? This action cannot be undone.</p>
             </div>
             <div class="modal-footer">
                 <button type="button" onclick="closeModal('delete-modal')" class="btn btn-secondary">Cancel</button>
-                <button type="submit" class="btn btn-danger">Delete</button>
+                <button type="submit" class="btn btn-danger"><i class="fa-solid fa-trash"></i> Delete</button>
             </div>
         </form>
     </div>

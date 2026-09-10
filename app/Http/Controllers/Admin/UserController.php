@@ -15,10 +15,10 @@ class UserController extends Controller
         $query = Users::query();
 
         if ($request->filled('search')) {
-            $search = $request->input('search');
+            $search = strtolower(trim($request->input('search')));
             $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%");
+                $q->whereRaw('LOWER(name) LIKE ?', ["%{$search}%"])
+                  ->orWhereRaw('LOWER(email) LIKE ?', ["%{$search}%"]);
             });
         }
 

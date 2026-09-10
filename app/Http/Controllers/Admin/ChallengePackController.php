@@ -15,10 +15,11 @@ class ChallengePackController extends Controller
         $query = ChallengePacksWebhook::with('user');
 
         if ($request->filled('search')) {
-            $query->where(function ($q) use ($request) {
-                $q->where('product_id', 'like', '%' . $request->search . '%')
-                  ->orWhere('app_id', 'like', '%' . $request->search . '%')
-                  ->orWhere('transaction_id', 'like', '%' . $request->search . '%');
+            $search = strtolower(trim($request->search));
+            $query->where(function ($q) use ($search) {
+                $q->whereRaw('LOWER(product_id) LIKE ?', ["%{$search}%"])
+                  ->orWhereRaw('LOWER(app_id) LIKE ?', ["%{$search}%"])
+                  ->orWhereRaw('LOWER(transaction_id) LIKE ?', ["%{$search}%"]);
             });
         }
 

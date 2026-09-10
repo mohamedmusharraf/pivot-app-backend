@@ -22,9 +22,16 @@
     </div>
 
     <!-- Filter Form -->
-    <form method="GET" action="{{ route('admin.categories.index') }}" style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
-        <input type="text" name="search" value="{{ request('search') }}" placeholder="Search category name..." class="form-control" style="max-width: 280px;">
-        <button type="submit" class="btn btn-secondary"><i class="fa-solid fa-filter"></i> Filter</button>
+    <form method="GET" action="{{ route('admin.categories.index') }}" style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; align-items: center;">
+        <div style="position: relative; flex: 1; max-width: 320px;">
+            <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 0.875rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none;"></i>
+            <input type="text" name="search" value="{{ request('search') }}" placeholder="Search category name..." class="form-control" style="padding-left: 2.375rem;" oninput="debouncedSubmit(this, 450)">
+        </div>
+        @if(request('search'))
+            <a href="{{ route('admin.categories.index') }}" class="btn btn-secondary btn-sm" title="Clear Search" style="height: 38px; padding: 0 0.875rem; display: inline-flex; align-items: center;">
+                <i class="fa-solid fa-xmark"></i> Clear
+            </a>
+        @endif
     </form>
 
     <!-- Data Table -->
@@ -83,10 +90,10 @@
 
 <!-- CREATE CATEGORY MODAL -->
 <div class="modal-backdrop" id="create-category-modal">
-    <div class="modal-dialog" style="max-width: 540px;">
+    <div class="modal-dialog" style="max-width: 500px;">
         <div class="modal-header">
             <h3>Add New Category</h3>
-            <button type="button" onclick="closeModal('create-category-modal')" style="background: none; border: none; cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
+            <button type="button" class="modal-close-btn" onclick="closeModal('create-category-modal')"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <form action="{{ route('admin.categories.store') }}" method="POST">
             @csrf
@@ -98,7 +105,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" onclick="closeModal('create-category-modal')" class="btn btn-secondary">Cancel</button>
-                <button type="submit" class="btn btn-primary">Create Category</button>
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Create Category</button>
             </div>
         </form>
     </div>
@@ -106,10 +113,10 @@
 
 <!-- EDIT CATEGORY MODAL -->
 <div class="modal-backdrop" id="edit-category-modal">
-    <div class="modal-dialog" style="max-width: 540px;">
+    <div class="modal-dialog" style="max-width: 500px;">
         <div class="modal-header">
             <h3>Edit Category</h3>
-            <button type="button" onclick="closeModal('edit-category-modal')" style="background: none; border: none; cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
+            <button type="button" class="modal-close-btn" onclick="closeModal('edit-category-modal')"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <form id="edit-category-form" method="POST">
             @csrf
@@ -122,7 +129,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" onclick="closeModal('edit-category-modal')" class="btn btn-secondary">Cancel</button>
-                <button type="submit" class="btn btn-primary">Update Category</button>
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Update Category</button>
             </div>
         </form>
     </div>
@@ -130,20 +137,20 @@
 
 <!-- DELETE MODAL -->
 <div class="modal-backdrop" id="delete-modal">
-    <div class="modal-dialog">
+    <div class="modal-dialog" style="max-width: 460px;">
         <div class="modal-header">
             <h3>Confirm Delete</h3>
-            <button type="button" onclick="closeModal('delete-modal')" style="background: none; border: none; cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
+            <button type="button" class="modal-close-btn" onclick="closeModal('delete-modal')"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <form id="delete-form" method="POST">
             @csrf
             @method('DELETE')
             <div class="modal-body">
-                <p>Are you sure you want to delete this category record?</p>
+                <p style="font-size: 0.9375rem; color: var(--text-body); margin: 0;">Are you sure you want to delete this category record? This action cannot be undone.</p>
             </div>
             <div class="modal-footer">
                 <button type="button" onclick="closeModal('delete-modal')" class="btn btn-secondary">Cancel</button>
-                <button type="submit" class="btn btn-danger">Delete</button>
+                <button type="submit" class="btn btn-danger"><i class="fa-solid fa-trash"></i> Delete</button>
             </div>
         </form>
     </div>

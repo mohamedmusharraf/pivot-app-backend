@@ -22,10 +22,17 @@
     </div>
 
     <!-- Filter Form -->
-    <form method="GET" action="{{ route('admin.activities.index') }}" style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
-        <input type="text" name="search" value="{{ request('search') }}" placeholder="Search title, description..." class="form-control" style="max-width: 280px;">
-        <input type="text" name="tier" value="{{ request('tier') }}" placeholder="Tier (e.g. Free, Premium)" class="form-control" style="max-width: 180px;">
-        <button type="submit" class="btn btn-secondary"><i class="fa-solid fa-filter"></i> Filter</button>
+    <form method="GET" action="{{ route('admin.activities.index') }}" style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; align-items: center;">
+        <div style="position: relative; flex: 1; max-width: 320px;">
+            <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 0.875rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none;"></i>
+            <input type="text" name="search" value="{{ request('search') }}" placeholder="Search title, description..." class="form-control" style="padding-left: 2.375rem;" oninput="debouncedSubmit(this, 450)">
+        </div>
+        <input type="text" name="tier" value="{{ request('tier') }}" placeholder="Tier (e.g. Free, Premium)" class="form-control" style="max-width: 180px;" oninput="debouncedSubmit(this, 450)">
+        @if(request('search') || request('tier'))
+            <a href="{{ route('admin.activities.index') }}" class="btn btn-secondary btn-sm" title="Clear Filters" style="height: 38px; padding: 0 0.875rem; display: inline-flex; align-items: center;">
+                <i class="fa-solid fa-xmark"></i> Clear
+            </a>
+        @endif
     </form>
 
     <!-- Data Table -->

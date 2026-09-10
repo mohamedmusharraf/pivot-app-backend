@@ -14,10 +14,10 @@ class ResearchArticleController extends Controller
         $query = Research::query();
 
         if ($request->filled('search')) {
-            $search = $request->search;
+            $search = strtolower(trim($request->search));
             $query->where(function($q) use ($search) {
-                $q->where('summary', 'like', "%{$search}%")
-                  ->orWhere('fun_facts', 'like', "%{$search}%");
+                $q->whereRaw('LOWER(summary) LIKE ?', ["%{$search}%"])
+                  ->orWhereRaw('LOWER(fun_facts) LIKE ?', ["%{$search}%"]);
             });
         }
 

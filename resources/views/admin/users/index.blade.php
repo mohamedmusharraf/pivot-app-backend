@@ -54,20 +54,27 @@
     </div>
 
     <!-- Filters -->
-    <form method="GET" action="{{ route('admin.users.index') }}" style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
-        <input type="text" name="search" value="{{ request('search') }}" placeholder="Search name, email..." class="form-control" style="max-width: 280px;">
-        <select name="status" class="form-control" style="max-width: 160px;">
+    <form method="GET" action="{{ route('admin.users.index') }}" style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; align-items: center;">
+        <div style="position: relative; flex: 1; max-width: 320px;">
+            <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 0.875rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none;"></i>
+            <input type="text" name="search" value="{{ request('search') }}" placeholder="Search name, email..." class="form-control" style="padding-left: 2.375rem;" oninput="debouncedSubmit(this, 450)">
+        </div>
+        <select name="status" class="form-control" style="max-width: 170px;" onchange="this.form.submit()">
             <option value="">All Statuses</option>
             <option value="ready" {{ request('status') === 'ready' ? 'selected' : '' }}>Ready</option>
             <option value="not_ready" {{ request('status') === 'not_ready' ? 'selected' : '' }}>Not Ready</option>
         </select>
-        <select name="provider" class="form-control" style="max-width: 160px;">
+        <select name="provider" class="form-control" style="max-width: 170px;" onchange="this.form.submit()">
             <option value="">All Providers</option>
             <option value="email" {{ request('provider') === 'email' ? 'selected' : '' }}>Email</option>
             <option value="google" {{ request('provider') === 'google' ? 'selected' : '' }}>Google</option>
             <option value="apple" {{ request('provider') === 'apple' ? 'selected' : '' }}>Apple</option>
         </select>
-        <button type="submit" class="btn btn-secondary"><i class="fa-solid fa-filter"></i> Filter</button>
+        @if(request('search') || request('status') || request('provider'))
+            <a href="{{ route('admin.users.index') }}" class="btn btn-secondary btn-sm" title="Clear Filters" style="height: 38px; padding: 0 0.875rem; display: inline-flex; align-items: center;">
+                <i class="fa-solid fa-xmark"></i> Clear
+            </a>
+        @endif
     </form>
 
     <!-- Table -->
@@ -141,42 +148,44 @@
     <div class="modal-dialog">
         <div class="modal-header">
             <h3>Add New User</h3>
-            <button type="button" onclick="closeModal('create-user-modal')" style="background: none; border: none; cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
+            <button type="button" class="modal-close-btn" onclick="closeModal('create-user-modal')"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <form action="{{ route('admin.users.store') }}" method="POST">
             @csrf
             <div class="modal-body">
                 <div class="form-group">
                     <label class="form-label">Full Name *</label>
-                    <input type="text" name="name" class="form-control" required>
+                    <input type="text" name="name" class="form-control" placeholder="Enter full name" required>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Email Address *</label>
-                    <input type="email" name="email" class="form-control" required>
+                    <input type="email" name="email" class="form-control" placeholder="name@example.com" required>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Password *</label>
-                    <input type="password" name="password" class="form-control" required>
+                    <input type="password" name="password" class="form-control" placeholder="••••••••" required>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Provider *</label>
-                    <select name="provider" class="form-control" required>
-                        <option value="email">Email</option>
-                        <option value="google">Google</option>
-                        <option value="apple">Apple</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Status *</label>
-                    <select name="status" class="form-control" required>
-                        <option value="ready">Ready</option>
-                        <option value="not_ready" selected>Not Ready</option>
-                    </select>
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Provider *</label>
+                        <select name="provider" class="form-control" required>
+                            <option value="email">Email</option>
+                            <option value="google">Google</option>
+                            <option value="apple">Apple</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Status *</label>
+                        <select name="status" class="form-control" required>
+                            <option value="ready">Ready</option>
+                            <option value="not_ready" selected>Not Ready</option>
+                        </select>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" onclick="closeModal('create-user-modal')" class="btn btn-secondary">Cancel</button>
-                <button type="submit" class="btn btn-primary">Create User</button>
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Create User</button>
             </div>
         </form>
     </div>
@@ -187,7 +196,7 @@
     <div class="modal-dialog">
         <div class="modal-header">
             <h3>Edit User</h3>
-            <button type="button" onclick="closeModal('edit-user-modal')" style="background: none; border: none; cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
+            <button type="button" class="modal-close-btn" onclick="closeModal('edit-user-modal')"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <form id="edit-user-form" method="POST">
             @csrf
@@ -203,27 +212,29 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label">New Password (Leave empty to keep existing)</label>
-                    <input type="password" name="password" class="form-control">
+                    <input type="password" name="password" class="form-control" placeholder="••••••••">
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Provider *</label>
-                    <select name="provider" id="edit-provider" class="form-control" required>
-                        <option value="email">Email</option>
-                        <option value="google">Google</option>
-                        <option value="apple">Apple</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Status *</label>
-                    <select name="status" id="edit-status" class="form-control" required>
-                        <option value="ready">Ready</option>
-                        <option value="not_ready">Not Ready</option>
-                    </select>
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Provider *</label>
+                        <select name="provider" id="edit-provider" class="form-control" required>
+                            <option value="email">Email</option>
+                            <option value="google">Google</option>
+                            <option value="apple">Apple</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Status *</label>
+                        <select name="status" id="edit-status" class="form-control" required>
+                            <option value="ready">Ready</option>
+                            <option value="not_ready">Not Ready</option>
+                        </select>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" onclick="closeModal('edit-user-modal')" class="btn btn-secondary">Cancel</button>
-                <button type="submit" class="btn btn-primary">Update User</button>
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Update User</button>
             </div>
         </form>
     </div>
@@ -231,20 +242,20 @@
 
 <!-- DELETE USER MODAL -->
 <div class="modal-backdrop" id="delete-modal">
-    <div class="modal-dialog">
+    <div class="modal-dialog" style="max-width: 460px;">
         <div class="modal-header">
             <h3>Confirm Delete</h3>
-            <button type="button" onclick="closeModal('delete-modal')" style="background: none; border: none; cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
+            <button type="button" class="modal-close-btn" onclick="closeModal('delete-modal')"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <form id="delete-form" method="POST">
             @csrf
             @method('DELETE')
             <div class="modal-body">
-                <p>Are you sure you want to delete this user record?</p>
+                <p style="font-size: 0.9375rem; color: var(--text-body); margin: 0;">Are you sure you want to delete this user record? This action cannot be undone.</p>
             </div>
             <div class="modal-footer">
                 <button type="button" onclick="closeModal('delete-modal')" class="btn btn-secondary">Cancel</button>
-                <button type="submit" class="btn btn-danger">Delete</button>
+                <button type="submit" class="btn btn-danger"><i class="fa-solid fa-trash"></i> Delete User</button>
             </div>
         </form>
     </div>

@@ -13,15 +13,22 @@
     </div>
 
     <!-- Filters -->
-    <form method="GET" action="{{ route('admin.user-profiles.index') }}" style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
-        <input type="text" name="search" value="{{ request('search') }}" placeholder="Search user name, email..." class="form-control" style="max-width: 280px;">
-        <select name="gender" class="form-control" style="max-width: 160px;">
+    <form method="GET" action="{{ route('admin.user-profiles.index') }}" style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; align-items: center;">
+        <div style="position: relative; flex: 1; max-width: 320px;">
+            <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 0.875rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none;"></i>
+            <input type="text" name="search" value="{{ request('search') }}" placeholder="Search user name, email..." class="form-control" style="padding-left: 2.375rem;" oninput="debouncedSubmit(this, 450)">
+        </div>
+        <select name="gender" class="form-control" style="max-width: 170px;" onchange="this.form.submit()">
             <option value="">All Genders</option>
             <option value="male" {{ request('gender') === 'male' ? 'selected' : '' }}>Male</option>
             <option value="female" {{ request('gender') === 'female' ? 'selected' : '' }}>Female</option>
             <option value="other" {{ request('gender') === 'other' ? 'selected' : '' }}>Other</option>
         </select>
-        <button type="submit" class="btn btn-secondary"><i class="fa-solid fa-filter"></i> Filter</button>
+        @if(request('search') || request('gender'))
+            <a href="{{ route('admin.user-profiles.index') }}" class="btn btn-secondary btn-sm" title="Clear Filters" style="height: 38px; padding: 0 0.875rem; display: inline-flex; align-items: center;">
+                <i class="fa-solid fa-xmark"></i> Clear
+            </a>
+        @endif
     </form>
 
     <!-- Data Table -->
@@ -83,52 +90,54 @@
     <div class="modal-dialog">
         <div class="modal-header">
             <h3>Edit User Profile</h3>
-            <button type="button" onclick="closeModal('edit-profile-modal')" style="background: none; border: none; cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
+            <button type="button" class="modal-close-btn" onclick="closeModal('edit-profile-modal')"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <form id="edit-profile-form" method="POST">
             @csrf
             @method('PUT')
             <div class="modal-body">
-                <div class="form-group">
-                    <label class="form-label">Country</label>
-                    <select name="country_id" id="edit-country-id" class="form-control">
-                        <option value="">Select Country</option>
-                        @foreach($countries as $country)
-                        <option value="{{ $country->id }}">{{ $country->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Gender</label>
-                    <select name="gender" id="edit-gender" class="form-control">
-                        <option value="male">Male</option>
-                        <option value="female">Female</option>
-                        <option value="other">Other</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Birth Year</label>
-                    <input type="number" name="birth_year" id="edit-birth-year" class="form-control" min="1900" max="{{ date('Y') }}">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Set Goal</label>
-                    <input type="number" step="0.01" name="set_your_goal" id="edit-set-goal" class="form-control">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Weekly Goal (Minutes)</label>
-                    <input type="number" name="weekly_goal_minutes" id="edit-goal-minutes" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Onboarding Status</label>
-                    <select name="onboarding_completed" id="edit-onboarding" class="form-control">
-                        <option value="1">Completed</option>
-                        <option value="0">Pending</option>
-                    </select>
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Country</label>
+                        <select name="country_id" id="edit-country-id" class="form-control">
+                            <option value="">Select Country</option>
+                            @foreach($countries as $country)
+                            <option value="{{ $country->id }}">{{ $country->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Gender</label>
+                        <select name="gender" id="edit-gender" class="form-control">
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Birth Year</label>
+                        <input type="number" name="birth_year" id="edit-birth-year" class="form-control" min="1900" max="{{ date('Y') }}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Set Goal</label>
+                        <input type="number" step="0.01" name="set_your_goal" id="edit-set-goal" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Weekly Goal (Minutes)</label>
+                        <input type="number" name="weekly_goal_minutes" id="edit-goal-minutes" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Onboarding Status</label>
+                        <select name="onboarding_completed" id="edit-onboarding" class="form-control">
+                            <option value="1">Completed</option>
+                            <option value="0">Pending</option>
+                        </select>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" onclick="closeModal('edit-profile-modal')" class="btn btn-secondary">Cancel</button>
-                <button type="submit" class="btn btn-primary">Update Profile</button>
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Update Profile</button>
             </div>
         </form>
     </div>
@@ -136,20 +145,20 @@
 
 <!-- Delete Confirmation Modal -->
 <div class="modal-backdrop" id="delete-modal">
-    <div class="modal-dialog">
+    <div class="modal-dialog" style="max-width: 460px;">
         <div class="modal-header">
             <h3>Confirm Delete</h3>
-            <button type="button" onclick="closeModal('delete-modal')" style="background: none; border: none; cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
+            <button type="button" class="modal-close-btn" onclick="closeModal('delete-modal')"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <form id="delete-form" method="POST">
             @csrf
             @method('DELETE')
             <div class="modal-body">
-                <p>Are you sure you want to delete this user profile?</p>
+                <p style="font-size: 0.9375rem; color: var(--text-body); margin: 0;">Are you sure you want to delete this user profile? This action cannot be undone.</p>
             </div>
             <div class="modal-footer">
                 <button type="button" onclick="closeModal('delete-modal')" class="btn btn-secondary">Cancel</button>
-                <button type="submit" class="btn btn-danger">Delete Profile</button>
+                <button type="submit" class="btn btn-danger"><i class="fa-solid fa-trash"></i> Delete Profile</button>
             </div>
         </form>
     </div>
