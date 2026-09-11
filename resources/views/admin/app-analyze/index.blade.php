@@ -202,13 +202,10 @@
 <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.5rem; padding: 0.75rem 1rem; background: var(--surface-2, #f8fafc); border: 1px solid var(--border-light); border-radius: 0.5rem; align-items: center;">
     <span style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em; margin-right: 0.5rem;">Activity Type:</span>
     <a href="?tab=activity&sub=single" class="btn btn-sm {{ $activitySubTab === 'single' ? 'btn-primary' : 'btn-secondary' }}" style="font-size: 0.8125rem;">
-        <i class="fa-solid fa-person-running"></i> Single Activity
+        <i class="fa-solid fa-person-running"></i> Daily Challenges
     </a>
     <a href="?tab=activity&sub=group" class="btn btn-sm {{ $activitySubTab === 'group' ? 'btn-primary' : 'btn-secondary' }}" style="font-size: 0.8125rem;">
-        <i class="fa-solid fa-people-group"></i> Group Activity
-    </a>
-    <a href="?tab=activity&sub=challenge" class="btn btn-sm {{ $activitySubTab === 'challenge' ? 'btn-primary' : 'btn-secondary' }}" style="font-size: 0.8125rem;">
-        <i class="fa-solid fa-trophy"></i> Challenge
+        <i class="fa-solid fa-people-group"></i> Group Challenges
     </a>
 </div>
 @endif
