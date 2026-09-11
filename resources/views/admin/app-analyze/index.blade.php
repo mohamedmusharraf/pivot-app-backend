@@ -53,19 +53,60 @@
             break;
 
         case 'activity':
-            $logs = \App\Models\ActivityLogs::with(['user', 'activity'])->orderBy('created_at', 'desc')->paginate(10);
-            $kpis = [
-                ['label' => 'Total Logs', 'value' => \App\Models\ActivityLogs::count()],
-                ['label' => 'Completion Rate', 'value' => (\App\Models\ActivityLogs::count() > 0 ? round((\App\Models\ActivityLogs::where('completed', true)->count() / \App\Models\ActivityLogs::count()) * 100, 1) : 0) . '%'],
-                ['label' => 'Total Activity Minutes', 'value' => \App\Models\ActivityLogs::sum('duration_minutes') . ' mins'],
-            ];
-            $chartLabels = ['Completed', 'Pending/Incomplete'];
-            $chartData = [
-                \App\Models\ActivityLogs::where('completed', true)->count(),
-                \App\Models\ActivityLogs::where('completed', false)->count()
-            ];
-            $chartTitle = 'Activity Completion Statistics';
-            $chartType = 'doughnut';
+            $activitySubTab = request()->get('sub', 'single');
+
+            if ($activitySubTab === 'group') {
+                // Group Activity: group_challenge_participants joined with sessions
+                $logs = \App\Models\GroupChallengeParticipant::with(['user', 'session.challenge'])
+                    ->orderBy('created_at', 'desc')->paginate(10);
+                $totalGroup = \App\Models\GroupChallengeParticipant::count();
+                $completedGroup = \App\Models\GroupChallengeParticipant::whereNotNull('completed_at')->count();
+                $kpis = [
+                    ['label' => 'Total Participants', 'value' => $totalGroup],
+                    ['label' => 'Completed', 'value' => $completedGroup],
+                    ['label' => 'Active Sessions', 'value' => \App\Models\GroupChallengeSession::whereIn('status', ['pending','in_progress'])->count()],
+                ];
+                $chartRaw = \App\Models\GroupChallengeParticipant::selectRaw('invite_status, COUNT(*) as count')
+                    ->groupBy('invite_status')->get();
+                $chartLabels = $chartRaw->pluck('invite_status')->toArray();
+                $chartData   = $chartRaw->pluck('count')->toArray();
+                $chartTitle  = 'Group Activity Participant Status';
+                $chartType   = 'doughnut';
+
+            } elseif ($activitySubTab === 'challenge') {
+                // Challenge (single) logs
+                $logs = \App\Models\ChallengeLog::with(['user', 'challenge'])->orderBy('created_at', 'desc')->paginate(10);
+                $totalChallenge = \App\Models\ChallengeLog::count();
+                $completedChallenge = \App\Models\ChallengeLog::where('status', 'completed')->count();
+                $kpis = [
+                    ['label' => 'Total Challenge Logs', 'value' => $totalChallenge],
+                    ['label' => 'Completed', 'value' => $completedChallenge],
+                    ['label' => 'Total Challenge Mins', 'value' => \App\Models\ChallengeLog::sum('duration_minutes') . ' mins'],
+                ];
+                $chartRaw = \App\Models\ChallengeLog::selectRaw('status, COUNT(*) as count')
+                    ->groupBy('status')->get();
+                $chartLabels = $chartRaw->pluck('status')->toArray();
+                $chartData   = $chartRaw->pluck('count')->toArray();
+                $chartTitle  = 'Challenge Log Status Breakdown';
+                $chartType   = 'doughnut';
+
+            } else {
+                // Single (individual) activity logs
+                $logs = \App\Models\ActivityLogs::with(['user', 'activity'])->orderBy('created_at', 'desc')->paginate(10);
+                $total = \App\Models\ActivityLogs::count();
+                $kpis = [
+                    ['label' => 'Total Logs', 'value' => $total],
+                    ['label' => 'Completion Rate', 'value' => ($total > 0 ? round((\App\Models\ActivityLogs::where('completed', true)->count() / $total) * 100, 1) : 0) . '%'],
+                    ['label' => 'Total Activity Mins', 'value' => \App\Models\ActivityLogs::sum('duration_minutes') . ' mins'],
+                ];
+                $chartLabels = ['Completed', 'Pending/Incomplete'];
+                $chartData = [
+                    \App\Models\ActivityLogs::where('completed', true)->count(),
+                    \App\Models\ActivityLogs::where('completed', false)->count()
+                ];
+                $chartTitle = 'Activity Completion Statistics';
+                $chartType  = 'doughnut';
+            }
             break;
 
         case 'goal':
@@ -121,6 +162,16 @@
     <li style="color: var(--text-heading); font-weight: 600;">App Analytics</li>
 </ul>
 
+@if(session('success'))
+    <div style="background-color: #d1fae5; border: 1px solid #a7f3d0; color: #065f46; padding: 0.85rem 1.25rem; border-radius: 0.5rem; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; font-weight: 500;">
+        <div>
+            <i class="fa-solid fa-circle-check" style="margin-right: 0.5rem;"></i>
+            {{ session('success') }}
+        </div>
+        <button type="button" onclick="this.parentElement.remove()" style="background: none; border: none; color: #065f46; cursor: pointer; font-size: 1rem;">&times;</button>
+    </div>
+@endif
+
 <!-- Filter Tabs Navigation -->
 <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.5rem;">
     <a href="?tab=app-usage" class="btn {{ $activeTab === 'app-usage' ? 'btn-primary' : 'btn-secondary' }}">
@@ -145,6 +196,22 @@
         <i class="fa-solid fa-fire"></i> Streak
     </a>
 </div>
+
+@if($activeTab === 'activity')
+@php $activitySubTab = request()->get('sub', 'single'); @endphp
+<div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.5rem; padding: 0.75rem 1rem; background: var(--surface-2, #f8fafc); border: 1px solid var(--border-light); border-radius: 0.5rem; align-items: center;">
+    <span style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em; margin-right: 0.5rem;">Activity Type:</span>
+    <a href="?tab=activity&sub=single" class="btn btn-sm {{ $activitySubTab === 'single' ? 'btn-primary' : 'btn-secondary' }}" style="font-size: 0.8125rem;">
+        <i class="fa-solid fa-person-running"></i> Single Activity
+    </a>
+    <a href="?tab=activity&sub=group" class="btn btn-sm {{ $activitySubTab === 'group' ? 'btn-primary' : 'btn-secondary' }}" style="font-size: 0.8125rem;">
+        <i class="fa-solid fa-people-group"></i> Group Activity
+    </a>
+    <a href="?tab=activity&sub=challenge" class="btn btn-sm {{ $activitySubTab === 'challenge' ? 'btn-primary' : 'btn-secondary' }}" style="font-size: 0.8125rem;">
+        <i class="fa-solid fa-trophy"></i> Challenge
+    </a>
+</div>
+@endif
 
 <!-- KPI Summary Cards -->
 <div class="grid grid-cols-3" style="margin-bottom: 1.5rem;">
@@ -179,9 +246,29 @@
 
 <!-- Logs Data Table -->
 <div class="card">
-    <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--text-heading); margin-bottom: 1.25rem;">
-        Data Records
-    </h3>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 1rem;">
+        <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--text-heading); margin: 0;">
+            Data Records
+        </h3>
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <form action="{{ route('admin.app-analyze.purge') }}" method="POST" onsubmit="return confirm('Are you sure you want to delete all {{ $activeTab }} records older than 1 month?');">
+                @csrf
+                @method('DELETE')
+                <input type="hidden" name="tab" value="{{ $activeTab }}">
+                <button type="submit" class="btn" style="background-color: #dc2626; color: #ffffff; border: none; padding: 0.5rem 0.85rem; font-size: 0.8125rem; font-weight: 600; border-radius: 0.375rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#b91c1c'" onmouseout="this.style.backgroundColor='#dc2626'">
+                    <i class="fa-solid fa-trash-can"></i> Clear {{ ucfirst(str_replace('-', ' ', $activeTab)) }} Logs Older Than 1 Month
+                </button>
+            </form>
+            <form action="{{ route('admin.app-analyze.purge') }}" method="POST" onsubmit="return confirm('Are you sure you want to delete ALL app analytics records (all categories) older than 1 month?');">
+                @csrf
+                @method('DELETE')
+                <input type="hidden" name="tab" value="all">
+                <button type="submit" class="btn" style="background-color: #4b5563; color: #ffffff; border: none; padding: 0.5rem 0.85rem; font-size: 0.8125rem; font-weight: 600; border-radius: 0.375rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#374151'" onmouseout="this.style.backgroundColor='#4b5563'">
+                    <i class="fa-solid fa-broom"></i> Clear All Old Logs (>1 Mo)
+                </button>
+            </form>
+        </div>
+    </div>
     <div class="table-wrapper">
         @if($logs->count() > 0)
             <table class="data-table">
@@ -195,6 +282,7 @@
                             <th>Ended At</th>
                             <th>Duration</th>
                             <th>Opens</th>
+                            <th style="text-align: right;">Actions</th>
                         @elseif($activeTab === 'app-block')
                             <th>User</th>
                             <th>App Name</th>
@@ -204,34 +292,58 @@
                             <th>Released At</th>
                             <th>Success</th>
                             <th>Time Saved</th>
+                            <th style="text-align: right;">Actions</th>
                         @elseif($activeTab === 'focus-session')
                             <th>User</th>
                             <th>Started At</th>
                             <th>Ended At</th>
                             <th>Duration</th>
                             <th>Status</th>
+                            <th style="text-align: right;">Actions</th>
                         @elseif($activeTab === 'activity')
-                            <th>User</th>
-                            <th>Activity</th>
-                            <th>Duration</th>
-                            <th>Completed At</th>
-                            <th>Status</th>
+                            @php $activitySubTab = request()->get('sub', 'single'); @endphp
+                            @if($activitySubTab === 'group')
+                                <th>User</th>
+                                <th>Session</th>
+                                <th>Challenge Activity</th>
+                                <th>Invite Status</th>
+                                <th>Progress</th>
+                                <th>Completed At</th>
+                                <th style="text-align: right;">Actions</th>
+                            @elseif($activitySubTab === 'challenge')
+                                <th>User</th>
+                                <th>Challenge Activity</th>
+                                <th>Status</th>
+                                <th>Duration</th>
+                                <th>Completed At</th>
+                                <th style="text-align: right;">Actions</th>
+                            @else
+                                <th>User</th>
+                                <th>Activity</th>
+                                <th>Duration</th>
+                                <th>Completed At</th>
+                                <th>Status</th>
+                                <th style="text-align: right;">Actions</th>
+                            @endif
                         @elseif($activeTab === 'goal')
                             <th>User</th>
                             <th>Target</th>
                             <th>Achieved</th>
                             <th>Date</th>
                             <th>Status</th>
+                            <th style="text-align: right;">Actions</th>
                         @elseif($activeTab === 'emotion')
                             <th>User</th>
                             <th>Emotion</th>
                             <th>Source App</th>
                             <th>Logged At</th>
+                            <th style="text-align: right;">Actions</th>
                         @elseif($activeTab === 'streak')
                             <th>User</th>
                             <th>Current Streak</th>
                             <th>Longest Streak</th>
                             <th>Last Active Date</th>
+                            <th style="text-align: right;">Actions</th>
                         @endif
                     </tr>
                 </thead>
@@ -239,7 +351,11 @@
                     @foreach($logs as $log)
                         <tr>
                             @if($activeTab === 'app-usage')
-                                <td><strong style="color: var(--text-heading);">{{ $log->user?->name ?? 'User ID: '.$log->user_id }}</strong></td>
+                                <td>
+                                    <a href="{{ route('admin.users.analytics', ['user' => $log->user_id, 'tab' => $activeTab]) }}" style="text-decoration: none;">
+                                        <strong style="color: var(--text-heading);">{{ $log->user?->name ?? 'User ID: '.$log->user_id }}</strong>
+                                    </a>
+                                </td>
                                 <td><strong>{{ $log->app_name }}</strong></td>
                                 <td><span style="font-family: monospace; font-size: 0.8rem; color: var(--text-muted);">{{ $log->package_name }}</span></td>
                                 <td>{{ $log->started_at?->format('M d, H:i') ?? 'N/A' }}</td>
@@ -247,7 +363,11 @@
                                 <td>{{ $log->duration_minutes }} mins</td>
                                 <td>{{ $log->opened_count }}</td>
                             @elseif($activeTab === 'app-block')
-                                <td><strong style="color: var(--text-heading);">{{ $log->user?->name ?? 'User ID: '.$log->user_id }}</strong></td>
+                                <td>
+                                    <a href="{{ route('admin.users.analytics', ['user' => $log->user_id, 'tab' => $activeTab]) }}" style="text-decoration: none;">
+                                        <strong style="color: var(--text-heading);">{{ $log->user?->name ?? 'User ID: '.$log->user_id }}</strong>
+                                    </a>
+                                </td>
                                 <td><strong>{{ $log->app_name }}</strong></td>
                                 <td><span style="font-family: monospace; font-size: 0.8rem; color: var(--text-muted);">{{ $log->package_name }}</span></td>
                                 <td><span class="badge badge-info">{{ $log->event_type ?? 'block' }}</span></td>
@@ -260,7 +380,11 @@
                                 </td>
                                 <td>{{ $log->time_saved_minutes }} mins</td>
                             @elseif($activeTab === 'focus-session')
-                                <td><strong style="color: var(--text-heading);">{{ $log->user?->name ?? 'User ID: '.$log->user_id }}</strong></td>
+                                <td>
+                                    <a href="{{ route('admin.users.analytics', ['user' => $log->user_id, 'tab' => $activeTab]) }}" style="text-decoration: none;">
+                                        <strong style="color: var(--text-heading);">{{ $log->user?->name ?? 'User ID: '.$log->user_id }}</strong>
+                                    </a>
+                                </td>
                                 <td>{{ $log->started_at?->format('M d, H:i') ?? 'N/A' }}</td>
                                 <td>{{ $log->ended_at?->format('M d, H:i') ?? 'N/A' }}</td>
                                 <td>{{ $log->duration_minutes }} mins</td>
@@ -270,17 +394,62 @@
                                     </span>
                                 </td>
                             @elseif($activeTab === 'activity')
-                                <td><strong style="color: var(--text-heading);">{{ $log->user?->name ?? 'User ID: '.$log->user_id }}</strong></td>
-                                <td><strong>{{ $log->activity?->activity_title ?? 'Activity ID: '.$log->activity_id }}</strong></td>
-                                <td>{{ $log->duration_minutes }} mins</td>
-                                <td>{{ $log->completed_at ? \Carbon\Carbon::parse($log->completed_at)->format('M d, H:i') : 'N/A' }}</td>
-                                <td>
-                                    <span class="badge {{ $log->completed ? 'badge-success' : 'badge-warning' }}">
-                                        {{ $log->completed ? 'Completed' : 'Logged' }}
-                                    </span>
-                                </td>
+                                @php $activitySubTab = request()->get('sub', 'single'); @endphp
+                                @if($activitySubTab === 'group')
+                                    {{-- Group Activity: group_challenge_participants --}}
+                                    <td>
+                                        <a href="{{ route('admin.users.analytics', ['user' => $log->user_id, 'tab' => $activeTab]) }}" style="text-decoration: none;">
+                                            <strong style="color: var(--text-heading);">{{ $log->user?->name ?? 'User ID: '.$log->user_id }}</strong>
+                                        </a>
+                                    </td>
+                                    <td><span style="font-size: 0.8rem; color: var(--text-muted);">#{{ $log->session_id }}</span></td>
+                                    <td><strong>{{ $log->session?->challenge?->activity_title ?? 'N/A' }}</strong></td>
+                                    <td>
+                                        <span class="badge
+                                            {{ $log->invite_status === 'accepted' ? 'badge-success' : ($log->invite_status === 'declined' ? 'badge-danger' : ($log->invite_status === 'left' ? 'badge-warning' : 'badge-info')) }}">
+                                            {{ ucfirst($log->invite_status) }}
+                                        </span>
+                                    </td>
+                                    <td>{{ $log->progress ?? 0 }}%</td>
+                                    <td>{{ $log->completed_at ? \Carbon\Carbon::parse($log->completed_at)->format('M d, H:i') : 'N/A' }}</td>
+                                @elseif($activitySubTab === 'challenge')
+                                    {{-- Challenge logs --}}
+                                    <td>
+                                        <a href="{{ route('admin.users.analytics', ['user' => $log->user_id, 'tab' => $activeTab]) }}" style="text-decoration: none;">
+                                            <strong style="color: var(--text-heading);">{{ $log->user?->name ?? 'User ID: '.$log->user_id }}</strong>
+                                        </a>
+                                    </td>
+                                    <td><strong>{{ $log->challenge?->activity_title ?? 'Challenge #'.$log->challenge_id }}</strong></td>
+                                    <td>
+                                        @php
+                                            $statusColors = ['started' => 'badge-info', 'completed' => 'badge-success', 'failed' => 'badge-danger', 'skipped' => 'badge-warning'];
+                                        @endphp
+                                        <span class="badge {{ $statusColors[$log->status] ?? 'badge-info' }}">{{ ucfirst($log->status) }}</span>
+                                    </td>
+                                    <td>{{ $log->duration_minutes }} mins</td>
+                                    <td>{{ $log->completed_at ? \Carbon\Carbon::parse($log->completed_at)->format('M d, H:i') : 'N/A' }}</td>
+                                @else
+                                    {{-- Single activity logs --}}
+                                    <td>
+                                        <a href="{{ route('admin.users.analytics', ['user' => $log->user_id, 'tab' => $activeTab]) }}" style="text-decoration: none;">
+                                            <strong style="color: var(--text-heading);">{{ $log->user?->name ?? 'User ID: '.$log->user_id }}</strong>
+                                        </a>
+                                    </td>
+                                    <td><strong>{{ $log->activity?->activity_title ?? 'Activity ID: '.$log->activity_id }}</strong></td>
+                                    <td>{{ $log->duration_minutes }} mins</td>
+                                    <td>{{ $log->completed_at ? \Carbon\Carbon::parse($log->completed_at)->format('M d, H:i') : 'N/A' }}</td>
+                                    <td>
+                                        <span class="badge {{ $log->completed ? 'badge-success' : 'badge-warning' }}">
+                                            {{ $log->completed ? 'Completed' : 'Logged' }}
+                                        </span>
+                                    </td>
+                                @endif
                             @elseif($activeTab === 'goal')
-                                <td><strong style="color: var(--text-heading);">{{ $log->user?->name ?? 'User ID: '.$log->user_id }}</strong></td>
+                                <td>
+                                    <a href="{{ route('admin.users.analytics', ['user' => $log->user_id, 'tab' => $activeTab]) }}" style="text-decoration: none;">
+                                        <strong style="color: var(--text-heading);">{{ $log->user?->name ?? 'User ID: '.$log->user_id }}</strong>
+                                    </a>
+                                </td>
                                 <td>{{ $log->target_minutes }} mins</td>
                                 <td>{{ $log->achieved_minutes }} mins</td>
                                 <td>{{ $log->goal_date }}</td>
@@ -290,16 +459,29 @@
                                     </span>
                                 </td>
                             @elseif($activeTab === 'emotion')
-                                <td><strong style="color: var(--text-heading);">{{ $log->user?->name ?? 'User ID: '.$log->user_id }}</strong></td>
+                                <td>
+                                    <a href="{{ route('admin.users.analytics', ['user' => $log->user_id, 'tab' => $activeTab]) }}" style="text-decoration: none;">
+                                        <strong style="color: var(--text-heading);">{{ $log->user?->name ?? 'User ID: '.$log->user_id }}</strong>
+                                    </a>
+                                </td>
                                 <td><strong>{{ $log->emotion }}</strong></td>
                                 <td>{{ $log->app_name ?? 'N/A' }}</td>
                                 <td>{{ $log->logged_at?->format('M d, H:i') ?? 'N/A' }}</td>
                             @elseif($activeTab === 'streak')
-                                <td><strong style="color: var(--text-heading);">{{ $log->user?->name ?? 'User ID: '.$log->user_id }}</strong></td>
+                                <td>
+                                    <a href="{{ route('admin.users.analytics', ['user' => $log->user_id, 'tab' => $activeTab]) }}" style="text-decoration: none;">
+                                        <strong style="color: var(--text-heading);">{{ $log->user?->name ?? 'User ID: '.$log->user_id }}</strong>
+                                    </a>
+                                </td>
                                 <td>{{ $log->current_streak }} days</td>
                                 <td>{{ $log->longest_streak }} days</td>
                                 <td>{{ $log->last_completed_date }}</td>
                             @endif
+                            <td style="text-align: right;">
+                                <a href="{{ route('admin.users.analytics', ['user' => $log->user_id, 'tab' => $activeTab]) }}" class="btn btn-secondary btn-sm" title="View User Analytics" style="display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.35rem 0.65rem; font-size: 0.75rem;">
+                                    <i class="fa-solid fa-chart-line" style="color: var(--primary);"></i> View Analytics
+                                </a>
+                            </td>
                         </tr>
                     @endforeach
                 </tbody>

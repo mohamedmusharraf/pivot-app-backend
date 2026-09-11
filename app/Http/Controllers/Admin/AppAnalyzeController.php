@@ -96,4 +96,71 @@ class AppAnalyzeController extends Controller
 
         return view('admin.app-analyze.user-show', compact('user', 'logs', 'kpis', 'activeTab'));
     }
+
+    /**
+     * Purge log records older than 1 month (30 days).
+     */
+    public function purgeOldLogs(Request $request)
+    {
+        $cutoffDate = now()->subMonth();
+        $tab = $request->get('tab', 'app-usage');
+
+        $deletedCount = 0;
+
+        switch ($tab) {
+            case 'app-usage':
+                $deletedCount = AppUsageLogs::where('created_at', '<', $cutoffDate)
+                    ->orWhere('started_at', '<', $cutoffDate)
+                    ->delete();
+                $label = 'App Usage';
+                break;
+
+            case 'app-block':
+                $deletedCount = AppBlockLog::where('created_at', '<', $cutoffDate)->delete();
+                $label = 'App Block';
+                break;
+
+            case 'focus-session':
+                $deletedCount = FocusSessionLogs::where('created_at', '<', $cutoffDate)->delete();
+                $label = 'Focus Session';
+                break;
+
+            case 'activity':
+                $deletedCount = ActivityLogs::where('created_at', '<', $cutoffDate)->delete();
+                $label = 'Activity';
+                break;
+
+            case 'goal':
+                $deletedCount = GoalLogs::where('created_at', '<', $cutoffDate)->delete();
+                $label = 'Goal';
+                break;
+
+            case 'emotion':
+                $deletedCount = EmotionLogs::where('created_at', '<', $cutoffDate)->delete();
+                $label = 'Emotion';
+                break;
+
+            case 'streak':
+                $deletedCount = StreakLogs::where('created_at', '<', $cutoffDate)->delete();
+                $label = 'Streak';
+                break;
+
+            case 'all':
+            default:
+                $usageCount = AppUsageLogs::where('created_at', '<', $cutoffDate)->orWhere('started_at', '<', $cutoffDate)->delete();
+                $blockCount = AppBlockLog::where('created_at', '<', $cutoffDate)->delete();
+                $focusCount = FocusSessionLogs::where('created_at', '<', $cutoffDate)->delete();
+                $activityCount = ActivityLogs::where('created_at', '<', $cutoffDate)->delete();
+                $goalCount = GoalLogs::where('created_at', '<', $cutoffDate)->delete();
+                $emotionCount = EmotionLogs::where('created_at', '<', $cutoffDate)->delete();
+                $streakCount = StreakLogs::where('created_at', '<', $cutoffDate)->delete();
+
+                $deletedCount = $usageCount + $blockCount + $focusCount + $activityCount + $goalCount + $emotionCount + $streakCount;
+                $label = 'all category';
+                break;
+        }
+
+        return redirect()->route('admin.app-analyze.index', ['tab' => $tab])
+            ->with('success', "Successfully purged {$deletedCount} {$label} log record(s) older than 1 month.");
+    }
 }

@@ -94,9 +94,10 @@ Route::prefix('dashboard')->name('admin.')->group(function () {
         // Route::resource('roles', RolePermissionController::class);
 
         Route::middleware('auth:admin')->group(function () {
-        Route::get('app-analyze', [AppAnalyzeController::class, 'index'])->name('app-analyze.index');
-        Route::get('users/{user}/analytics', [AppAnalyzeController::class, 'userAnalytics'])->name('users.analytics');
-    });
+            Route::get('app-analyze', [AppAnalyzeController::class, 'index'])->name('app-analyze.index');
+            Route::delete('app-analyze/purge', [AppAnalyzeController::class, 'purgeOldLogs'])->name('app-analyze.purge');
+            Route::get('users/{user}/analytics', [AppAnalyzeController::class, 'userAnalytics'])->name('users.analytics');
+        });
 
         Route::get('profile', [ProfileController::class, 'index'])->name('profile.index');
         Route::put('profile', [ProfileController::class, 'updateProfile'])->name('profile.update');

@@ -111,9 +111,6 @@
                     <td>{{ $user->created_at ? $user->created_at->format('M d, Y') : 'N/A' }}</td>
                     <td style="text-align: right;">
                         <div class="action-btn-group">
-                            <a href="{{ route('admin.users.analytics', $user->id) }}" class="btn btn-secondary btn-sm" title="View Analytics">
-                                <i class="fa-solid fa-chart-line" style="color: var(--primary);"></i>
-                            </a>
                             <a href="{{ route('admin.users.show', $user->id) }}" class="btn btn-secondary btn-sm" title="View Details">
                                 <i class="fa-solid fa-eye"></i>
                             </a>
