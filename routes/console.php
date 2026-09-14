@@ -28,3 +28,8 @@ Artisan::command('activities:normalize-instructions', function () {
 
     $this->info("Normalized instructions for {$updated} activities.");
 })->purpose('Normalize activities instruction text format and fix common key/format issues.');
+
+use Illuminate\Support\Facades\Schedule;
+
+// Automatically purge app analytics logs older than 30 days every day
+Schedule::command('app:purge-old-usage-logs')->daily();
