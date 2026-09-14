@@ -43,20 +43,27 @@ class RevenueCatWebhookController extends Controller
         $productId = $payload['product_id'] ?? null;
         $newProductId = $payload['new_product_id'] ?? null;
         $entitlementId = $this->resolvePrimaryEntitlementId($payload['entitlement_ids'] ?? []);
-        $incomingActive = $request->boolean('active');
 
-        $tierIdentifier = ($eventType === self::EVENT_PRODUCT_CHANGE ? $newProductId : $productId) ?: $entitlementId;
-        $incomingTierId = $this->resolveTierId($entitlementId,$subscription?->tier_id);
+        $incomingTierId = $this->resolveTierId($entitlementId, $subscription?->tier_id);
         $freeTierId = $this->resolveFreeTierId($subscription?->tier_id ?? 1);
         $purchasedAt = $this->fromMilliseconds($payload['purchased_at_ms'] ?? null);
         $expiresAt = $this->fromMilliseconds($payload['expiration_at_ms'] ?? null);
+        $eventAt = $this->fromMilliseconds($payload['event_timestamp_ms'] ?? null);
+
+        if ($subscription?->revenuecat_event_at && $eventAt && $eventAt->lessThanOrEqualTo($subscription->revenuecat_event_at)) {
+            return response()->json([
+                'message' => 'Older RevenueCat event ignored.',
+                'subscription_id' => $subscription->id,
+            ], 200);
+        }
+
         $eventState = $this->resolveEventState(
             $eventType,
-            $incomingActive,
             $incomingTierId,
             $freeTierId,
             $expiresAt,
-            $subscription?->expires_at
+            $subscription?->expires_at,
+            $subscription?->active
         );
 
         $record = Subscription::query()->updateOrCreate(
@@ -73,6 +80,7 @@ class RevenueCatWebhookController extends Controller
                 'revenuecat_user_id' => $payload['app_user_id'],
                 'started_at' => $purchasedAt ?? $subscription?->started_at,
                 'expires_at' => $expiresAt ?? $subscription?->expires_at,
+                'revenuecat_event_at' => $eventAt ?? $subscription?->revenuecat_event_at,
             ]
         );
 
@@ -208,11 +216,11 @@ class RevenueCatWebhookController extends Controller
 
     private function resolveEventState(
         ?string $eventType,
-        bool $incomingActive,
         int $incomingTierId,
         int $freeTierId,
         ?Carbon $incomingExpiresAt,
-        ?Carbon $currentExpiresAt
+        ?Carbon $currentExpiresAt,
+        ?bool $currentActive
     ): array {
         $effectiveExpiresAt = $incomingExpiresAt ?? $currentExpiresAt;
         $isExpired = $effectiveExpiresAt ? $effectiveExpiresAt->isPast() : false;
@@ -234,7 +242,7 @@ class RevenueCatWebhookController extends Controller
 
         if ($eventType === self::EVENT_CANCELLATION) {
             return [
-                'tier_id' => $freeTierId,
+                'tier_id' => $incomingTierId,
                 'active' => ! $isExpired,
             ];
         }
@@ -256,13 +264,13 @@ class RevenueCatWebhookController extends Controller
         if ($eventType === self::EVENT_NON_RENEWING_PURCHASE) {
             return [
                 'tier_id' => $incomingTierId,
-                'active' => $incomingActive,
+                'active' => ! $isExpired,
             ];
         }
 
         return [
             'tier_id' => $incomingTierId,
-            'active' => $incomingActive,
+            'active' => $currentActive ?? false,
         ];
     }
 }

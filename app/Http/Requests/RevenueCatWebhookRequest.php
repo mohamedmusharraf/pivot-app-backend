@@ -107,6 +107,7 @@ class RevenueCatWebhookRequest extends FormRequest
             'store' => ['nullable', 'string', 'max:50'],
             'purchased_at_ms' => ['nullable', 'numeric'],
             'expiration_at_ms' => ['nullable', 'numeric'],
+            'event_timestamp_ms' => ['nullable', 'numeric'],
         ];
     }
 }

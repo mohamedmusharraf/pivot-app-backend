@@ -20,12 +20,14 @@ class Subscription extends Model
         'revenuecat_user_id',
         'started_at',
         'expires_at',
+        'revenuecat_event_at',
     ];
 
     protected $casts = [
         'active' => 'boolean',
         'started_at' => 'datetime',
         'expires_at' => 'datetime',
+        'revenuecat_event_at' => 'datetime',
     ];
 
     public function user()
