@@ -37,8 +37,14 @@ class DashboardController extends Controller
                              : 0;
 
         // ── Subscriptions ──────────────────────────────────────────────────
-        $activeSubscriptions = Subscription::where('active', true)->count();
-        $totalSubscriptions  = Subscription::count();
+        // Only paid Tier 2 and Tier 3 users are subscriptions for dashboard reporting.
+        // Tier IDs are not assumed to be 2/3; the tier table's configured names are authoritative.
+        $paidSubscriptions = Subscription::query()
+            ->where('active', true)
+            ->whereHas('tier', fn ($query) => $query->whereIn('name', ['2', '3']));
+
+        $activeSubscriptions = (clone $paidSubscriptions)->count();
+        $totalSubscriptions = $activeSubscriptions;
 
         // ── Activities ─────────────────────────────────────────────────────
         $totalActivities         = Activity::count();

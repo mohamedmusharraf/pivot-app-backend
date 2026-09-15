@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\PromoCodeController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\UserProfileController;
 use App\Http\Controllers\Admin\ActivityController;
@@ -44,6 +45,8 @@ Route::prefix('dashboard')->name('admin.')->group(function () {
 
         // Dashboard Home
         Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+        Route::get('promo-codes', [PromoCodeController::class, 'index'])->name('promo-codes.index');
+        Route::post('promo-codes', [PromoCodeController::class, 'store'])->name('promo-codes.store');
 
         // Users Management
         Route::post('users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password');

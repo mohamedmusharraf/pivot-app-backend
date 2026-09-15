@@ -87,6 +87,10 @@ use Illuminate\Support\Facades\Auth;
                     <i class="fa-solid fa-receipt"></i>
                     <span>Payment History</span>
                 </a>
+                <!-- <a href="{{ route('admin.promo-codes.index') }}" class="nav-item {{ request()->routeIs('admin.promo-codes.*') ? 'active' : '' }}">
+                    <i class="fa-solid fa-ticket"></i>
+                    <span>Promo Codes</span>
+                </a> -->
 
                 <!-- System Section -->
                 <div class="nav-section-title">System</div>
