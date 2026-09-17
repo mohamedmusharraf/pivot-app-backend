@@ -28,6 +28,7 @@ use App\Http\Controllers\AppleAuthController;
 use App\Http\Controllers\ChallengePackController;
 use App\Http\Controllers\GroupChallengeController;
 use App\Http\Controllers\GroupChallengeSessionController;
+use App\Http\Controllers\PromoCodeController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -58,6 +59,9 @@ Route::prefix('v1')->group(function () {
     Route::get('leaderboard/emotion', [EmotionLogsController::class, 'counts']);
 
     Route::middleware('auth:sanctum')->group(function () {
+        Route::post('promo-codes/validate', [PromoCodeController::class, 'validateCode']);
+        Route::post('promo-codes/confirm', [PromoCodeController::class, 'confirm']);
+
         Route::post('/auth/logout', [AuthController::class, 'logout']);
         Route::get('/user/current-user', [AuthController::class, 'currentUser']);
         Route::get('/user/emergency', [AuthController::class, 'currentUserCountry']);
