@@ -63,7 +63,7 @@ class PromoCodeController extends Controller
             $redemption = PromoCodeRedemption::query()->create([
                 'promo_code_id' => $promo->id,
                 'user_id' => $userId,
-                'product_id' => null,
+                'product_id' => $promo->applicable_product_id,
                 'transaction_id' => $data['transaction_id'],
                 'status' => 'redeemed',
                 'validated_at' => now(),
