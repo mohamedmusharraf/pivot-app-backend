@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\PromoCode;
+use App\Models\PromoCodeRedemption;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -16,10 +17,15 @@ class PromoCodeController extends Controller
             ->withCount(['redemptions as redeemed_count' => fn($query) => $query->where('status', 'redeemed')])
             ->latest()
             ->paginate(20);
+        $redemptions = PromoCodeRedemption::query()
+            ->with(['promoCode:id,code', 'user:id,name'])
+            ->where('status', 'redeemed')
+            ->latest('redeemed_at')
+            ->paginate(20, ['*'], 'redemptions_page');
 
         $promoUsers = User::query()->orderBy('email')->limit(250)->get(['id', 'name', 'email']);
 
-        return view('admin.promo-codes.index', compact('promoCodes', 'promoUsers'));
+        return view('admin.promo-codes.index', compact('promoCodes', 'promoUsers', 'redemptions'));
     }
 
     public function store(Request $request)

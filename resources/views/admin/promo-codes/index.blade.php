@@ -72,10 +72,48 @@
         <div class="pagination">{{ $promoCodes->links('partials.pagination') }}</div>
     </section>
 </div>
+<section class="card redemption-card">
+    <div class="table-header">
+        <div>
+            <h2>Confirmed Redemptions</h2>
+            <p class="muted">Successful promo-code confirmations from the API.</p>
+        </div>
+    </div>
+    <div style="overflow-x:auto">
+        <table>
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>User</th>
+                    <th>Product ID</th>
+                    <th>Transaction ID</th>
+                    <th>Confirmed at</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($redemptions as $redemption)<tr>
+                    <td><strong>{{ $redemption->promoCode?->code ?? 'Unknown' }}</strong></td>
+                    <td>{{ $redemption->user?->name ?: 'Unnamed user' }}</td>
+                    <td><code>{{ $redemption->product_id }}</code></td>
+                    <td>{{ $redemption->transaction_id }}</td>
+                    <td>{{ $redemption->redeemed_at?->format('d M Y, H:i:s') ?? '—' }}</td>
+                </tr>
+                @empty<tr>
+                    <td colspan="5" class="empty">No confirmed redemptions yet.</td>
+                </tr>@endforelse
+            </tbody>
+        </table>
+    </div>
+    <div class="pagination">{{ $redemptions->links('partials.pagination') }}</div>
+</section>
 <style>
     .promo-layout {
         display: grid;
         gap: 1.5rem
+    }
+
+    .redemption-card {
+        margin-top: 1.5rem
     }
 
     .promo-layout h2 {
