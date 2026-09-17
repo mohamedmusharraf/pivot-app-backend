@@ -47,6 +47,10 @@ Route::prefix('dashboard')->name('admin.')->group(function () {
         Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
         Route::get('promo-codes', [PromoCodeController::class, 'index'])->name('promo-codes.index');
         Route::post('promo-codes', [PromoCodeController::class, 'store'])->name('promo-codes.store');
+        Route::get('promo-codes/{promoCode}/edit', [PromoCodeController::class, 'edit'])->name('promo-codes.edit');
+        Route::put('promo-codes/{promoCode}', [PromoCodeController::class, 'update'])->name('promo-codes.update');
+        Route::delete('promo-codes/{promoCode}', [PromoCodeController::class, 'destroy'])->name('promo-codes.destroy');
+        Route::patch('promo-codes/{promoCode}/toggle-status', [PromoCodeController::class, 'toggleStatus'])->name('promo-codes.toggle-status');
 
         // Users Management
         Route::post('users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password');
