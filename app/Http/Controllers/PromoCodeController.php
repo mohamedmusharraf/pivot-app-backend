@@ -19,7 +19,7 @@ class PromoCodeController extends Controller
             return $this->failure('INVALID_CODE', 'This promo code is not valid.');
         }
 
-        $reason = $this->ineligibilityReason($promo, $request->user()->id, $data['product_id']);
+        $reason = $this->ineligibilityReason($promo, $request->user()->id);
         if ($reason) {
             return $this->failure($reason, $this->messageFor($reason));
         }
@@ -29,7 +29,6 @@ class PromoCodeController extends Controller
             'code' => $promo->code,
             'discount_percent' => $promo->discount_percent,
             'offer_tag' => $promo->offer_tag,
-            'product_id' => $data['product_id'],
             'remaining_redemptions' => $this->remainingRedemptions($promo),
             'message' => 'Promo code approved.',
         ]);
@@ -55,7 +54,7 @@ class PromoCodeController extends Controller
                 return $this->failure('INVALID_CODE', 'This promo code is not valid.');
             }
 
-            $reason = $this->ineligibilityReason($promo, $userId, $data['product_id']);
+            $reason = $this->ineligibilityReason($promo, $userId);
             if ($reason) {
                 return $this->failure($reason, $this->messageFor($reason));
             }
@@ -63,7 +62,7 @@ class PromoCodeController extends Controller
             $redemption = PromoCodeRedemption::query()->create([
                 'promo_code_id' => $promo->id,
                 'user_id' => $userId,
-                'product_id' => $data['product_id'],
+                'product_id' => null,
                 'transaction_id' => $data['transaction_id'],
                 'status' => 'redeemed',
                 'validated_at' => now(),
@@ -80,12 +79,11 @@ class PromoCodeController extends Controller
 
         return $request->validate([
             'code' => ['required', 'string', 'max:100'],
-            'product_id' => ['required', 'string', 'max:255'],
             'transaction_id' => [$requiresTransaction ? 'required' : 'nullable', 'string', 'max:255'],
         ]);
     }
 
-    private function ineligibilityReason(PromoCode $promo, int $userId, string $productId): ?string
+    private function ineligibilityReason(PromoCode $promo, int $userId): ?string
     {
         if (! $promo->active) {
             return 'INACTIVE_CODE';
@@ -95,12 +93,6 @@ class PromoCodeController extends Controller
         }
         if ($promo->assigned_user_id && $promo->assigned_user_id !== $userId) {
             return 'USER_NOT_ELIGIBLE';
-        }
-        if ($promo->applicable_product_id && $promo->applicable_product_id !== $productId) {
-            return 'PRODUCT_NOT_ELIGIBLE';
-        }
-        if ($promo->applicable_tier && ! str_contains(strtolower($productId), strtolower($promo->applicable_tier))) {
-            return 'PRODUCT_NOT_ELIGIBLE';
         }
         if (! filled($promo->offer_tag)) {
             return 'INACTIVE_CODE';
