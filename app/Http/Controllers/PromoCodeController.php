@@ -28,7 +28,7 @@ class PromoCodeController extends Controller
             'valid' => true,
             'code' => $promo->code,
             'discount_percent' => $promo->discount_percent,
-            'product_id' => $promo->product_id,
+            'product_id' => $promo->applicable_product_id,
             'offer_tag' => $promo->offer_tag,
             'remaining_redemptions' => $this->remainingRedemptions($promo),
             'message' => 'Promo code approved.',
