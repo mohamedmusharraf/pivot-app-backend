@@ -18,7 +18,7 @@ class UserController extends Controller
             $search = strtolower(trim($request->input('search')));
             $query->where(function ($q) use ($search) {
                 $q->whereRaw('LOWER(name) LIKE ?', ["%{$search}%"])
-                  ->orWhereRaw('LOWER(email) LIKE ?', ["%{$search}%"]);
+                    ->orWhereRaw('LOWER(email) LIKE ?', ["%{$search}%"]);
             });
         }
 
@@ -56,7 +56,7 @@ class UserController extends Controller
 
     public function show($id)
     {
-        $user = Users::with(['userProfile', 'hobbies', 'activities', 'subscriptions', 'subscriptionLogs'])->findOrFail($id);
+        $user = Users::with(['userProfile', 'hobbies', 'activities', 'subscriptions.tier', 'subscriptionLogs'])->findOrFail($id);
 
         return view('admin.users.show', compact('user'));
     }

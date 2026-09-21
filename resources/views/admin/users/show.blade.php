@@ -70,6 +70,7 @@
         @php $sub = $user->subscriptions->where('active', true)->first(); @endphp
         <div style="background: var(--bg-hover); padding: 1rem; border-radius: 0.5rem; border-left: 4px solid var(--primary);">
             <div style="font-weight: 600; margin-bottom: 0.25rem;">Active Subscription</div>
+            <div style="font-size: 0.875rem; margin-bottom: 0.25rem;">Tier: {{ $sub->tier?->name ?? 'Unassigned' }}</div>
             <div style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">Started on {{ $sub->created_at->format('M d, Y') }}</div>
         </div>
         @else

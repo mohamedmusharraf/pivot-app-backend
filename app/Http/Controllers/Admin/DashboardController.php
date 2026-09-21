@@ -25,7 +25,7 @@ class DashboardController extends Controller
     {
         // ── Users ──────────────────────────────────────────────────────────
         $totalUsers        = User::count();
-        $activeUsers       = User::where('status', 'active')->count();
+        $activeUsers       = User::count();
         $newUsersThisMonth = User::whereMonth('created_at', now()->month)
                                  ->whereYear('created_at', now()->year)
                                  ->count();
