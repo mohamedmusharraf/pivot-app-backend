@@ -66,16 +66,34 @@
 
     <div class="card">
         <h3 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 1rem;">Subscription Status</h3>
-        @if($user->subscriptions->where('active', true)->first())
-        @php $sub = $user->subscriptions->where('active', true)->first(); @endphp
+        @php
+        $sub = $user->subscriptions->sortByDesc('updated_at')->first();
+        $inactiveReason = match ($sub?->type) {
+        'EXPIRATION' => 'Subscription expired',
+        'CANCELLATION' => 'Subscription cancelled',
+        'BILLING_ISSUE' => 'Billing issue',
+        'NON_RENEWING_PURCHASE' => 'Non-renewing purchase expired',
+        default => $sub?->active === false ? 'Subscription marked inactive' : null,
+        };
+        @endphp
+        @if($sub?->active)
         <div style="background: var(--bg-hover); padding: 1rem; border-radius: 0.5rem; border-left: 4px solid var(--primary);">
             <div style="font-weight: 600; margin-bottom: 0.25rem;">Active Subscription</div>
             <div style="font-size: 0.875rem; margin-bottom: 0.25rem;">Tier: {{ $sub->tier?->name ?? 'Unassigned' }}</div>
             <div style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">Started on {{ $sub->created_at->format('M d, Y') }}</div>
         </div>
+        @elseif($sub)
+        <div style="background: var(--bg-hover); padding: 1rem; border-radius: 0.5rem; border-left: 4px solid var(--danger);">
+            <div style="font-weight: 600; margin-bottom: 0.25rem;">Inactive Subscription</div>
+            <div style="font-size: 0.875rem; margin-bottom: 0.25rem;">Reason: {{ $inactiveReason }}</div>
+            <div style="font-size: 0.875rem; margin-bottom: 0.25rem;">Tier: {{ $sub->tier?->name ?? 'Unassigned' }}</div>
+            @if($sub->expires_at)
+            <div style="font-size: 0.875rem; color: var(--text-muted);">Expired on {{ $sub->expires_at->format('M d, Y') }}</div>
+            @endif
+        </div>
         @else
         <div style="padding: 1rem; text-align: center; color: var(--text-muted); background: var(--bg-hover); border-radius: 0.5rem;">
-            No active subscription found.
+            No subscription record found.
         </div>
         @endif
     </div>
@@ -98,7 +116,11 @@
     </div>
 
     <div class="card">
-        <h3 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 1rem;">Recent Activities ({{ $user->activities->count() }})</h3>
+        @php
+        $groupChallengeParticipants = $user->groupChallengeParticipants;
+        $totalRecentActivities = $user->activities->count() + $groupChallengeParticipants->count();
+        @endphp
+        <h3 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 1rem;">Recent Activities ({{ $totalRecentActivities }})</h3>
         @if($user->activities->count() > 0)
         <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.75rem;">
             @foreach($user->activities->take(5) as $activity)
@@ -112,6 +134,20 @@
         </ul>
         @else
         <p style="color: var(--text-muted); font-size: 0.875rem;">No activities associated.</p>
+        @endif
+
+        @if($groupChallengeParticipants->count() > 0)
+        <h4 style="font-size: 0.9375rem; font-weight: 700; margin: 1.25rem 0 0.75rem;">Group Challenge Activities</h4>
+        <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.75rem;">
+            @foreach($groupChallengeParticipants->sortByDesc('updated_at')->take(5) as $participant)
+            <li style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border-color);">
+                <div>
+                    <div style="font-weight: 600; font-size: 0.875rem;">{{ $participant->session?->challenge?->activity_title ?? 'Group Challenge' }}</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">Status: {{ ucfirst(str_replace('_', ' ', $participant->invite_status)) }} · Progress: {{ $participant->progress }}%</div>
+                </div>
+            </li>
+            @endforeach
+        </ul>
         @endif
     </div>
 </div>

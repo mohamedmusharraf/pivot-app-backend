@@ -82,6 +82,11 @@ class Users extends Model
         return $this->hasMany(SubscriptionLogs::class, 'user_id', 'id');
     }
 
+    public function groupChallengeParticipants()
+    {
+        return $this->hasMany(GroupChallengeParticipant::class, 'user_id', 'id');
+    }
+
     protected $casts = [
         'last_login_at' => 'datetime',
     ];

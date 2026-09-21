@@ -56,7 +56,14 @@ class UserController extends Controller
 
     public function show($id)
     {
-        $user = Users::with(['userProfile', 'hobbies', 'activities', 'subscriptions.tier', 'subscriptionLogs'])->findOrFail($id);
+        $user = Users::with([
+            'userProfile',
+            'hobbies',
+            'activities',
+            'subscriptions.tier',
+            'subscriptionLogs',
+            'groupChallengeParticipants.session.challenge',
+        ])->findOrFail($id);
 
         return view('admin.users.show', compact('user'));
     }
