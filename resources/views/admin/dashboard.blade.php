@@ -58,7 +58,7 @@
     {{-- Activities Completed --}}
     <div class="card stat-card">
         <div>
-            <span style="color: var(--text-muted); font-size: 0.875rem; font-weight: 500;">Activities Completed</span>
+            <span style="color: var(--text-muted); font-size: 0.875rem; font-weight: 500;">Individual Challenges Completed</span>
             <div class="stat-value">{{ number_format($completedActivityLogs) }}</div>
             <span style="color: var(--text-muted); font-size: 0.75rem; font-weight: 600;">
                 {{ $activityLogsThisMonth }} this month
@@ -121,7 +121,7 @@
     {{-- Challenges Completed --}}
     <div class="card stat-card">
         <div>
-            <span style="color: var(--text-muted); font-size: 0.875rem; font-weight: 500;">Challenges Completed</span>
+            <span style="color: var(--text-muted); font-size: 0.875rem; font-weight: 500;">Group Challenges Completed</span>
             <div class="stat-value">{{ number_format($completedChallenges) }}</div>
             <span style="color: var(--text-muted); font-size: 0.75rem; font-weight: 600;">
                 of {{ number_format($totalChallengeLogs) }} total
@@ -210,13 +210,13 @@
         </h3>
 
         @php
-            $contentItems = [
-                ['label' => 'Total Activities',       'value' => $totalActivities,      'icon' => 'fa-person-running', 'color' => 'var(--primary)'],
-                ['label' => 'Hobbies / Categories',   'value' => $totalHobbies,         'icon' => 'fa-heart',          'color' => '#a78bfa'],
-                ['label' => 'Research Articles',      'value' => $totalResearchArticles, 'icon' => 'fa-book-open',     'color' => '#f59e0b'],
-                ['label' => 'App Usage Logs',         'value' => $totalAppUsageLogs,    'icon' => 'fa-mobile-screen',  'color' => '#10b981'],
-                ['label' => 'Activity Logs (Total)',  'value' => $totalActivityLogs,    'icon' => 'fa-chart-bar',      'color' => '#3b82f6'],
-            ];
+        $contentItems = [
+        ['label' => 'Total Activities', 'value' => $totalActivities, 'icon' => 'fa-person-running', 'color' => 'var(--primary)'],
+        ['label' => 'Hobbies / Categories', 'value' => $totalHobbies, 'icon' => 'fa-heart', 'color' => '#a78bfa'],
+        ['label' => 'Research Articles', 'value' => $totalResearchArticles, 'icon' => 'fa-book-open', 'color' => '#f59e0b'],
+        ['label' => 'App Usage Logs', 'value' => $totalAppUsageLogs, 'icon' => 'fa-mobile-screen', 'color' => '#10b981'],
+        ['label' => 'Activity Logs (Total)', 'value' => $totalActivityLogs, 'icon' => 'fa-chart-bar', 'color' => '#3b82f6'],
+        ];
         @endphp
 
         <div style="display: flex; flex-direction: column; gap: 0.875rem;">
@@ -240,18 +240,18 @@
             <i class="fa-solid fa-star" style="margin-right: 0.5rem; color: #f59e0b;"></i>Top Hobbies by Activities
         </h3>
         @forelse($topHobbies as $hobby)
-            @php $pct = $totalActivities > 0 ? round(($hobby->activities_count / $totalActivities) * 100) : 0; @endphp
-            <div style="margin-bottom: 1rem;">
-                <div style="display: flex; justify-content: space-between; margin-bottom: 0.3rem;">
-                    <span style="font-size: 0.875rem; font-weight: 600; color: var(--text-heading);">{{ $hobby->name }}</span>
-                    <span style="font-size: 0.8rem; color: var(--text-muted);">{{ number_format($hobby->activities_count) }} activities</span>
-                </div>
-                <div style="background: var(--bg-secondary); border-radius: 9999px; height: 0.45rem; overflow: hidden;">
-                    <div style="width: {{ $pct }}%; background: var(--primary); height: 100%; border-radius: 9999px; transition: width 0.6s ease;"></div>
-                </div>
+        @php $pct = $totalActivities > 0 ? round(($hobby->activities_count / $totalActivities) * 100) : 0; @endphp
+        <div style="margin-bottom: 1rem;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.3rem;">
+                <span style="font-size: 0.875rem; font-weight: 600; color: var(--text-heading);">{{ $hobby->name }}</span>
+                <span style="font-size: 0.8rem; color: var(--text-muted);">{{ number_format($hobby->activities_count) }} activities</span>
             </div>
+            <div style="background: var(--bg-secondary); border-radius: 9999px; height: 0.45rem; overflow: hidden;">
+                <div style="width: {{ $pct }}%; background: var(--primary); height: 100%; border-radius: 9999px; transition: width 0.6s ease;"></div>
+            </div>
+        </div>
         @empty
-            <p style="color: var(--text-muted); font-size: 0.875rem;">No hobby data available.</p>
+        <p style="color: var(--text-muted); font-size: 0.875rem;">No hobby data available.</p>
         @endforelse
     </div>
 
@@ -263,12 +263,12 @@
 <div class="grid dash-grid-3col dash-mb">
 
     @php
-        $goalRate      = $totalGoalLogs > 0      ? round(($completedGoals / $totalGoalLogs) * 100) : 0;
-        $activityRate  = $totalActivityLogs > 0  ? round(($completedActivityLogs / $totalActivityLogs) * 100) : 0;
-        $focusRate     = $totalFocusSessions > 0 ? round(($completedFocusSessions / $totalFocusSessions) * 100) : 0;
-        $inviteRate    = $totalInvitations > 0   ? round(($acceptedInvitations / $totalInvitations) * 100) : 0;
-        $onboardRate   = $totalProfiles > 0      ? round(($onboardingCompleted / $totalProfiles) * 100) : 0;
-        $challengeRate = $totalChallengeLogs > 0 ? round(($completedChallenges / $totalChallengeLogs) * 100) : 0;
+    $goalRate = $totalGoalLogs > 0 ? round(($completedGoals / $totalGoalLogs) * 100) : 0;
+    $activityRate = $totalActivityLogs > 0 ? round(($completedActivityLogs / $totalActivityLogs) * 100) : 0;
+    $focusRate = $totalFocusSessions > 0 ? round(($completedFocusSessions / $totalFocusSessions) * 100) : 0;
+    $inviteRate = $totalInvitations > 0 ? round(($acceptedInvitations / $totalInvitations) * 100) : 0;
+    $onboardRate = $totalProfiles > 0 ? round(($onboardingCompleted / $totalProfiles) * 100) : 0;
+    $challengeRate = $totalChallengeLogs > 0 ? round(($completedChallenges / $totalChallengeLogs) * 100) : 0;
     @endphp
 
     <div class="card dash-ring-card">
@@ -277,10 +277,10 @@
         </h3>
         <div class="dash-ring-wrap">
             <svg viewBox="0 0 100 100" class="dash-ring" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="50" cy="50" r="40" fill="none" stroke="var(--bg-secondary)" stroke-width="10"/>
+                <circle cx="50" cy="50" r="40" fill="none" stroke="var(--bg-secondary)" stroke-width="10" />
                 <circle cx="50" cy="50" r="40" fill="none" stroke="var(--primary)" stroke-width="10"
                     stroke-dasharray="{{ round($goalRate * 2.513) }} 251.3"
-                    stroke-dashoffset="62.8" stroke-linecap="round"/>
+                    stroke-dashoffset="62.8" stroke-linecap="round" />
             </svg>
             <div class="dash-ring-label">{{ $goalRate }}%</div>
         </div>
@@ -293,10 +293,10 @@
         </h3>
         <div class="dash-ring-wrap">
             <svg viewBox="0 0 100 100" class="dash-ring" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="50" cy="50" r="40" fill="none" stroke="var(--bg-secondary)" stroke-width="10"/>
+                <circle cx="50" cy="50" r="40" fill="none" stroke="var(--bg-secondary)" stroke-width="10" />
                 <circle cx="50" cy="50" r="40" fill="none" stroke="#10b981" stroke-width="10"
                     stroke-dasharray="{{ round($activityRate * 2.513) }} 251.3"
-                    stroke-dashoffset="62.8" stroke-linecap="round"/>
+                    stroke-dashoffset="62.8" stroke-linecap="round" />
             </svg>
             <div class="dash-ring-label">{{ $activityRate }}%</div>
         </div>
@@ -309,10 +309,10 @@
         </h3>
         <div class="dash-ring-wrap">
             <svg viewBox="0 0 100 100" class="dash-ring" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="50" cy="50" r="40" fill="none" stroke="var(--bg-secondary)" stroke-width="10"/>
+                <circle cx="50" cy="50" r="40" fill="none" stroke="var(--bg-secondary)" stroke-width="10" />
                 <circle cx="50" cy="50" r="40" fill="none" stroke="#a78bfa" stroke-width="10"
                     stroke-dasharray="{{ round($focusRate * 2.513) }} 251.3"
-                    stroke-dashoffset="62.8" stroke-linecap="round"/>
+                    stroke-dashoffset="62.8" stroke-linecap="round" />
             </svg>
             <div class="dash-ring-label">{{ $focusRate }}%</div>
         </div>
@@ -446,266 +446,287 @@
 
         @if(session('success'))
             <div class="alert alert-success" style="margin-bottom: 1rem;">{{ session('success') }}</div>
-        @endif
+@endif
 
-        <form method="POST" action="{{ route('admin.promo-codes.store') }}" class="promo-form">
-            @csrf
-            <div class="promo-form-grid">
-                <div class="form-group">
-                    <label for="promo-code">Promo code</label>
-                    <input id="promo-code" name="code" value="{{ old('code') }}" placeholder="PIVOT20" required maxlength="100" style="text-transform: uppercase;">
-                    @error('code') <span class="form-error">{{ $message }}</span> @enderror
-                </div>
-                <div class="form-group">
-                    <label for="discount-percent">Discount %</label>
-                    <input id="discount-percent" type="number" name="discount_percent" value="{{ old('discount_percent') }}" min="1" max="100" required placeholder="20">
-                    @error('discount_percent') <span class="form-error">{{ $message }}</span> @enderror
-                </div>
-                <div class="form-group">
-                    <label for="offer-tag">Google Play offer tag</label>
-                    <input id="offer-tag" name="offer_tag" value="{{ old('offer_tag') }}" placeholder="pivot-20-off" required>
-                    @error('offer_tag') <span class="form-error">{{ $message }}</span> @enderror
-                </div>
-                <div class="form-group">
-                    <label for="max-redemptions">Maximum redemptions</label>
-                    <input id="max-redemptions" type="number" name="max_redemptions" value="{{ old('max_redemptions', 1) }}" min="1" required>
-                    @error('max_redemptions') <span class="form-error">{{ $message }}</span> @enderror
-                </div>
-                <div class="form-group">
-                    <label for="assigned-user">Assigned user <span>(optional)</span></label>
-                    <select id="assigned-user" name="assigned_user_id">
-                        <option value="">Any eligible user</option>
-                        @foreach($promoUsers as $user)
-                            <option value="{{ $user->id }}" @selected((string) old('assigned_user_id') === (string) $user->id)>{{ $user->email }}{{ $user->name ? ' — '.$user->name : '' }}</option>
-                        @endforeach
-                    </select>
-                    @error('assigned_user_id') <span class="form-error">{{ $message }}</span> @enderror
-                </div>
-                <div class="form-group">
-                    <label for="product-id">Applicable product <span>(optional)</span></label>
-                    <input id="product-id" name="applicable_product_id" value="{{ old('applicable_product_id') }}" placeholder="tier_2_android">
-                    @error('applicable_product_id') <span class="form-error">{{ $message }}</span> @enderror
-                </div>
-                <div class="form-group">
-                    <label for="applicable-tier">Applicable tier <span>(optional)</span></label>
-                    <input id="applicable-tier" name="applicable_tier" value="{{ old('applicable_tier') }}" placeholder="tier_2">
-                    @error('applicable_tier') <span class="form-error">{{ $message }}</span> @enderror
-                </div>
-                <div class="form-group">
-                    <label for="expires-at">Expires at <span>(optional)</span></label>
-                    <input id="expires-at" type="datetime-local" name="expires_at" value="{{ old('expires_at') }}">
-                    @error('expires_at') <span class="form-error">{{ $message }}</span> @enderror
-                </div>
-            </div>
-            <div class="promo-toggles">
-                <label><input type="checkbox" name="one_per_user" value="1" @checked(old('one_per_user', true))> One redemption per user</label>
-                <label><input type="checkbox" name="active" value="1" @checked(old('active', true))> Active immediately</label>
-            </div>
-            <button class="btn btn-primary" type="submit"><i class="fa-solid fa-plus"></i> Create Promo Code</button>
-        </form>
-    </div>
-
-    <div class="card">
-        <div class="dash-table-header">
-            <div>
-                <h3 style="margin: 0; color: var(--text-heading);">Recent Promo Codes</h3>
-                <p style="margin: 0.35rem 0 0; color: var(--text-muted); font-size: 0.8125rem;">Redeemed uses are recorded only after a successful purchase.</p>
-            </div>
+<form method="POST" action="{{ route('admin.promo-codes.store') }}" class="promo-form">
+    @csrf
+    <div class="promo-form-grid">
+        <div class="form-group">
+            <label for="promo-code">Promo code</label>
+            <input id="promo-code" name="code" value="{{ old('code') }}" placeholder="PIVOT20" required maxlength="100" style="text-transform: uppercase;">
+            @error('code') <span class="form-error">{{ $message }}</span> @enderror
         </div>
-        <div style="overflow-x: auto;">
-            <table class="promo-table">
-                <thead><tr><th>Code</th><th>Offer</th><th>Uses</th><th>Status</th></tr></thead>
-                <tbody>
-                    @forelse($promoCodes as $promoCode)
-                        <tr>
-                            <td><strong>{{ $promoCode->code }}</strong><small>{{ $promoCode->discount_percent }}% off</small></td>
-                            <td><code>{{ $promoCode->offer_tag }}</code></td>
-                            <td>{{ $promoCode->redeemed_count }} / {{ $promoCode->max_redemptions }}</td>
-                            <td><span class="badge badge-{{ $promoCode->active ? 'success' : 'warning' }}">{{ $promoCode->active ? 'Active' : 'Inactive' }}</span></td>
-                        </tr>
-                    @empty
-                        <tr><td colspan="4" style="text-align:center; color: var(--text-muted);">No promo codes created yet.</td></tr>
-                    @endforelse
-                </tbody>
-            </table>
+        <div class="form-group">
+            <label for="discount-percent">Discount %</label>
+            <input id="discount-percent" type="number" name="discount_percent" value="{{ old('discount_percent') }}" min="1" max="100" required placeholder="20">
+            @error('discount_percent') <span class="form-error">{{ $message }}</span> @enderror
+        </div>
+        <div class="form-group">
+            <label for="offer-tag">Google Play offer tag</label>
+            <input id="offer-tag" name="offer_tag" value="{{ old('offer_tag') }}" placeholder="pivot-20-off" required>
+            @error('offer_tag') <span class="form-error">{{ $message }}</span> @enderror
+        </div>
+        <div class="form-group">
+            <label for="max-redemptions">Maximum redemptions</label>
+            <input id="max-redemptions" type="number" name="max_redemptions" value="{{ old('max_redemptions', 1) }}" min="1" required>
+            @error('max_redemptions') <span class="form-error">{{ $message }}</span> @enderror
+        </div>
+        <div class="form-group">
+            <label for="assigned-user">Assigned user <span>(optional)</span></label>
+            <select id="assigned-user" name="assigned_user_id">
+                <option value="">Any eligible user</option>
+                @foreach($promoUsers as $user)
+                <option value="{{ $user->id }}" @selected((string) old('assigned_user_id')===(string) $user->id)>{{ $user->email }}{{ $user->name ? ' — '.$user->name : '' }}</option>
+                @endforeach
+            </select>
+            @error('assigned_user_id') <span class="form-error">{{ $message }}</span> @enderror
+        </div>
+        <div class="form-group">
+            <label for="product-id">Applicable product <span>(optional)</span></label>
+            <input id="product-id" name="applicable_product_id" value="{{ old('applicable_product_id') }}" placeholder="tier_2_android">
+            @error('applicable_product_id') <span class="form-error">{{ $message }}</span> @enderror
+        </div>
+        <div class="form-group">
+            <label for="applicable-tier">Applicable tier <span>(optional)</span></label>
+            <input id="applicable-tier" name="applicable_tier" value="{{ old('applicable_tier') }}" placeholder="tier_2">
+            @error('applicable_tier') <span class="form-error">{{ $message }}</span> @enderror
+        </div>
+        <div class="form-group">
+            <label for="expires-at">Expires at <span>(optional)</span></label>
+            <input id="expires-at" type="datetime-local" name="expires_at" value="{{ old('expires_at') }}">
+            @error('expires_at') <span class="form-error">{{ $message }}</span> @enderror
         </div>
     </div>
+    <div class="promo-toggles">
+        <label><input type="checkbox" name="one_per_user" value="1" @checked(old('one_per_user', true))> One redemption per user</label>
+        <label><input type="checkbox" name="active" value="1" @checked(old('active', true))> Active immediately</label>
+    </div>
+    <button class="btn btn-primary" type="submit"><i class="fa-solid fa-plus"></i> Create Promo Code</button>
+</form>
+</div>
+
+<div class="card">
+    <div class="dash-table-header">
+        <div>
+            <h3 style="margin: 0; color: var(--text-heading);">Recent Promo Codes</h3>
+            <p style="margin: 0.35rem 0 0; color: var(--text-muted); font-size: 0.8125rem;">Redeemed uses are recorded only after a successful purchase.</p>
+        </div>
+    </div>
+    <div style="overflow-x: auto;">
+        <table class="promo-table">
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Offer</th>
+                    <th>Uses</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($promoCodes as $promoCode)
+                <tr>
+                    <td><strong>{{ $promoCode->code }}</strong><small>{{ $promoCode->discount_percent }}% off</small></td>
+                    <td><code>{{ $promoCode->offer_tag }}</code></td>
+                    <td>{{ $promoCode->redeemed_count }} / {{ $promoCode->max_redemptions }}</td>
+                    <td><span class="badge badge-{{ $promoCode->active ? 'success' : 'warning' }}">{{ $promoCode->active ? 'Active' : 'Inactive' }}</span></td>
+                </tr>
+                @empty
+                <tr>
+                    <td colspan="4" style="text-align:center; color: var(--text-muted);">No promo codes created yet.</td>
+                </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+</div>
 </div>
 --}}
 
 <style>
-/* ── spacing helper ────────────────────────────────────────────────── */
-.dash-mb { margin-bottom: 1.5rem; }
-
-
-/* ── Row-4 two-column panel grid ──────────────────────────────────── */
-.dash-grid-2col {
-    grid-template-columns: 1fr 1fr;
-}
-
-/* ── Row-5 & Row-6 three-column grid ─────────────────────────────── */
-.dash-grid-3col {
-    grid-template-columns: repeat(3, 1fr);
-}
-
-/* ── Ring cards ───────────────────────────────────────────────────── */
-.dash-ring-card {
-    text-align: center;
-}
-.dash-ring-title {
-    font-size: 1rem;
-    font-weight: 700;
-    color: var(--text-heading);
-    margin-bottom: 1rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.4rem;
-}
-.dash-ring-wrap {
-    position: relative;
-    width: 7rem;
-    height: 7rem;
-    margin: 0 auto;
-}
-.dash-ring {
-    width: 100%;
-    height: 100%;
-    transform: rotate(-90deg);
-}
-.dash-ring-label {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.35rem;
-    font-weight: 800;
-    color: var(--text-heading);
-}
-.dash-ring-sub {
-    color: var(--text-muted);
-    font-size: 0.8rem;
-    margin-top: 0.75rem;
-}
-
-/* ── Metric-strip cards (Row 6) ───────────────────────────────────── */
-.dash-metric-strip {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
-.dash-metric-icon {
-    width: 3rem;
-    height: 3rem;
-    border-radius: 0.6rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.25rem;
-    flex-shrink: 0;
-}
-.dash-metric-value {
-    font-size: 1.5rem;
-    font-weight: 800;
-    color: var(--text-heading);
-}
-.dash-metric-label {
-    font-size: 0.8rem;
-    color: var(--text-muted);
-}
-.dash-metric-sub {
-    font-size: 0.75rem;
-    color: var(--text-muted);
-}
-
-/* ── Table card header (flex row) ─────────────────────────────────── */
-.dash-table-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 1.25rem;
-    flex-wrap: wrap;
-}
-
-/* ══════════════════════════════════════════════════════════════════
-   RESPONSIVE OVERRIDES
-══════════════════════════════════════════════════════════════════ */
-
-/* Tablet  ≤ 1024px */
-@media (max-width: 1024px) {
-    .dash-grid-2col {
-        grid-template-columns: 1fr;
-    }
-    .dash-grid-3col {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-/* Mobile  ≤ 768px */
-@media (max-width: 768px) {
+    /* ── spacing helper ────────────────────────────────────────────────── */
     .dash-mb {
-        margin-bottom: 1rem;
+        margin-bottom: 1.5rem;
     }
 
-    /* All dashboard grids collapse to single column */
-    .dash-grid-2col,
+
+    /* ── Row-4 two-column panel grid ──────────────────────────────────── */
+    .dash-grid-2col {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    /* ── Row-5 & Row-6 three-column grid ─────────────────────────────── */
     .dash-grid-3col {
-        grid-template-columns: 1fr !important;
+        grid-template-columns: repeat(3, 1fr);
     }
 
-    /* Table header wraps button below title */
-    .dash-table-header {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .dash-table-header .btn {
-        width: 100%;
-        justify-content: center;
-    }
-
-    /* Smaller ring on phones */
-    .dash-ring-wrap {
-        width: 6rem;
-        height: 6rem;
-    }
-
-    .dash-ring-label {
-        font-size: 1.15rem;
-    }
-
-    /* Metric strip stacks icon above text on very small cards */
-    .dash-metric-value {
-        font-size: 1.25rem;
-    }
-}
-
-/* Small phones  ≤ 480px */
-@media (max-width: 480px) {
-    .dash-ring-wrap {
-        width: 5.5rem;
-        height: 5.5rem;
-    }
-
-    .dash-ring-label {
-        font-size: 1rem;
+    /* ── Ring cards ───────────────────────────────────────────────────── */
+    .dash-ring-card {
+        text-align: center;
     }
 
     .dash-ring-title {
-        font-size: 0.9rem;
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--text-heading);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
     }
 
+    .dash-ring-wrap {
+        position: relative;
+        width: 7rem;
+        height: 7rem;
+        margin: 0 auto;
+    }
+
+    .dash-ring {
+        width: 100%;
+        height: 100%;
+        transform: rotate(-90deg);
+    }
+
+    .dash-ring-label {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.35rem;
+        font-weight: 800;
+        color: var(--text-heading);
+    }
+
+    .dash-ring-sub {
+        color: var(--text-muted);
+        font-size: 0.8rem;
+        margin-top: 0.75rem;
+    }
+
+    /* ── Metric-strip cards (Row 6) ───────────────────────────────────── */
     .dash-metric-strip {
-        gap: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
     }
 
     .dash-metric-icon {
-        width: 2.5rem;
-        height: 2.5rem;
-        font-size: 1rem;
+        width: 3rem;
+        height: 3rem;
+        border-radius: 0.6rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        flex-shrink: 0;
     }
-}
+
+    .dash-metric-value {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: var(--text-heading);
+    }
+
+    .dash-metric-label {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+    }
+
+    .dash-metric-sub {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+    }
+
+    /* ── Table card header (flex row) ─────────────────────────────────── */
+    .dash-table-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.25rem;
+        flex-wrap: wrap;
+    }
+
+    /* ══════════════════════════════════════════════════════════════════
+   RESPONSIVE OVERRIDES
+══════════════════════════════════════════════════════════════════ */
+
+    /* Tablet  ≤ 1024px */
+    @media (max-width: 1024px) {
+        .dash-grid-2col {
+            grid-template-columns: 1fr;
+        }
+
+        .dash-grid-3col {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    /* Mobile  ≤ 768px */
+    @media (max-width: 768px) {
+        .dash-mb {
+            margin-bottom: 1rem;
+        }
+
+        /* All dashboard grids collapse to single column */
+        .dash-grid-2col,
+        .dash-grid-3col {
+            grid-template-columns: 1fr !important;
+        }
+
+        /* Table header wraps button below title */
+        .dash-table-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .dash-table-header .btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        /* Smaller ring on phones */
+        .dash-ring-wrap {
+            width: 6rem;
+            height: 6rem;
+        }
+
+        .dash-ring-label {
+            font-size: 1.15rem;
+        }
+
+        /* Metric strip stacks icon above text on very small cards */
+        .dash-metric-value {
+            font-size: 1.25rem;
+        }
+    }
+
+    /* Small phones  ≤ 480px */
+    @media (max-width: 480px) {
+        .dash-ring-wrap {
+            width: 5.5rem;
+            height: 5.5rem;
+        }
+
+        .dash-ring-label {
+            font-size: 1rem;
+        }
+
+        .dash-ring-title {
+            font-size: 0.9rem;
+        }
+
+        .dash-metric-strip {
+            gap: 0.75rem;
+        }
+
+        .dash-metric-icon {
+            width: 2.5rem;
+            height: 2.5rem;
+            font-size: 1rem;
+        }
+    }
 </style>
 @endsection
