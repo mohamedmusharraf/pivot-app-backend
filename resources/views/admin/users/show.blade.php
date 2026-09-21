@@ -117,37 +117,33 @@
 
     <div class="card">
         @php
-        $groupChallengeParticipants = $user->groupChallengeParticipants;
-        $totalRecentActivities = $user->activities->count() + $groupChallengeParticipants->count();
+        $dailyChallenges = $user->challengeLogs->sortByDesc('updated_at');
+        $groupChallenges = $user->groupChallengeParticipants->sortByDesc('updated_at');
+        $totalChallenges = $dailyChallenges->count() + $groupChallenges->count();
         @endphp
-        <h3 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 1rem;">Recent Activities ({{ $totalRecentActivities }})</h3>
-        @if($user->activities->count() > 0)
+        <h3 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 1rem;">Recent Challenges</h3>
+        @if($totalChallenges > 0)
         <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.75rem;">
-            @foreach($user->activities->take(5) as $activity)
+            @foreach($dailyChallenges->take(5) as $challengeLog)
             <li style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border-color);">
                 <div>
-                    <div style="font-weight: 600; font-size: 0.875rem;">{{ $activity->activity_title ?? 'Unnamed Activity' }}</div>
-                    <div style="font-size: 0.75rem; color: var(--text-muted);">{{ $activity->duration_minutes }} mins</div>
+                    <div style="font-weight: 600; font-size: 0.875rem;">{{ $challengeLog->challenge?->activity_title ?? 'Daily Challenge' }}</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">Daily · {{ ucfirst($challengeLog->status) }}</div>
+                </div>
+            </li>
+            @endforeach
+
+            @foreach($groupChallenges->take(5) as $participant)
+            <li style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border-color);">
+                <div>
+                    <div style="font-weight: 600; font-size: 0.875rem;">{{ $participant->session?->challenge?->activity_title ?? 'Group Challenge' }} (Group)</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">{{ ucfirst(str_replace('_', ' ', $participant->invite_status)) }} · Progress: {{ $participant->progress }}%</div>
                 </div>
             </li>
             @endforeach
         </ul>
         @else
-        <p style="color: var(--text-muted); font-size: 0.875rem;">No activities associated.</p>
-        @endif
-
-        @if($groupChallengeParticipants->count() > 0)
-        <h4 style="font-size: 0.9375rem; font-weight: 700; margin: 1.25rem 0 0.75rem;">Group Challenge Activities</h4>
-        <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.75rem;">
-            @foreach($groupChallengeParticipants->sortByDesc('updated_at')->take(5) as $participant)
-            <li style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border-color);">
-                <div>
-                    <div style="font-weight: 600; font-size: 0.875rem;">{{ $participant->session?->challenge?->activity_title ?? 'Group Challenge' }}</div>
-                    <div style="font-size: 0.75rem; color: var(--text-muted);">Status: {{ ucfirst(str_replace('_', ' ', $participant->invite_status)) }} · Progress: {{ $participant->progress }}%</div>
-                </div>
-            </li>
-            @endforeach
-        </ul>
+        <p style="color: var(--text-muted); font-size: 0.875rem;">No challenges associated.</p>
         @endif
     </div>
 </div>

@@ -62,6 +62,7 @@ class UserController extends Controller
             'activities',
             'subscriptions.tier',
             'subscriptionLogs',
+            'challengeLogs.challenge',
             'groupChallengeParticipants.session.challenge',
         ])->findOrFail($id);
 
