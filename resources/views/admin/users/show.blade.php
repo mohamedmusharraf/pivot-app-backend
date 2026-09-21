@@ -116,23 +116,28 @@
     </div>
 
     <div class="card">
-        @php
-        $dailyChallenges = $user->challengeLogs->sortByDesc('updated_at');
-        $groupChallenges = $user->groupChallengeParticipants->sortByDesc('updated_at');
-        $totalChallenges = $dailyChallenges->count() + $groupChallenges->count();
-        @endphp
-        <h3 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 1rem;">Recent Challenges</h3>
-        @if($totalChallenges > 0)
+        <h3 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 1rem;">User Activities ({{ $user->activities->count() }})</h3>
+        @if($user->activities->count() > 0)
         <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.75rem;">
-            @foreach($dailyChallenges->take(5) as $challengeLog)
+            @foreach($user->activities->take(5) as $activity)
             <li style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border-color);">
                 <div>
-                    <div style="font-weight: 600; font-size: 0.875rem;">{{ $challengeLog->challenge?->activity_title ?? 'Daily Challenge' }}</div>
-                    <div style="font-size: 0.75rem; color: var(--text-muted);">Daily · {{ ucfirst($challengeLog->status) }}</div>
+                    <div style="font-weight: 600; font-size: 0.875rem;">{{ $activity->activity_title ?? 'Unnamed Activity' }}</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">{{ $activity->duration_minutes }} mins</div>
                 </div>
             </li>
             @endforeach
+        </ul>
+        @else
+        <p style="color: var(--text-muted); font-size: 0.875rem;">No activities associated.</p>
+        @endif
+    </div>
 
+    <div class="card">
+        @php $groupChallenges = $user->groupChallengeParticipants->sortByDesc('updated_at'); @endphp
+        <h3 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 1rem;">Group Challenges ({{ $groupChallenges->count() }})</h3>
+        @if($groupChallenges->count() > 0)
+        <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.75rem;">
             @foreach($groupChallenges->take(5) as $participant)
             <li style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border-color);">
                 <div>
@@ -143,7 +148,7 @@
             @endforeach
         </ul>
         @else
-        <p style="color: var(--text-muted); font-size: 0.875rem;">No challenges associated.</p>
+        <p style="color: var(--text-muted); font-size: 0.875rem;">No group challenges associated.</p>
         @endif
     </div>
 </div>
