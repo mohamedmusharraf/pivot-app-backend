@@ -116,7 +116,7 @@
     </div>
 
     <div class="card">
-        <h3 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 1rem;">User Activities ({{ $user->activities->count() }})</h3>
+        <h3 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 1rem;">User Activities</h3>
         @if($user->activities->count() > 0)
         <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.75rem;">
             @foreach($user->activities->take(5) as $activity)
@@ -135,13 +135,13 @@
 
     <div class="card">
         @php $groupChallenges = $user->groupChallengeParticipants->sortByDesc('updated_at'); @endphp
-        <h3 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 1rem;">Group Challenges ({{ $groupChallenges->count() }})</h3>
+        <h3 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 1rem;">Group Challenges</h3>
         @if($groupChallenges->count() > 0)
         <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.75rem;">
             @foreach($groupChallenges->take(5) as $participant)
             <li style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border-color);">
                 <div>
-                    <div style="font-weight: 600; font-size: 0.875rem;">{{ $participant->session?->challenge?->activity_title ?? 'Group Challenge' }} (Group)</div>
+                    <div style="font-weight: 600; font-size: 0.875rem;">{{ $participant->session?->challenge?->activity_title ?? 'Group Challenge' }}</div>
                     <div style="font-size: 0.75rem; color: var(--text-muted);">{{ ucfirst(str_replace('_', ' ', $participant->invite_status)) }} · Progress: {{ $participant->progress }}%</div>
                 </div>
             </li>
