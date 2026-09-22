@@ -55,6 +55,10 @@ use Illuminate\Support\Facades\Auth;
 
                 <!-- Content & Program Section -->
                 <div class="nav-section-title">Content & Program</div>
+                <a href="{{ route('admin.events.index') }}" class="nav-item {{ request()->routeIs('admin.events.*') ? 'active' : '' }}">
+                    <i class="fa-solid fa-calendar-days"></i>
+                    <span>Events</span>
+                </a>
                 <a href="{{ route('admin.activities.index') }}" class="nav-item {{ request()->routeIs('admin.activities.*') ? 'active' : '' }}">
                     <i class="fa-solid fa-person-running"></i>
                     <span>Activities</span>

@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\ChallengePackController;
 use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Admin\AppAnalyzeController;
 use App\Http\Controllers\Admin\ResearchArticleController;
+use App\Http\Controllers\Admin\EventController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -72,9 +73,11 @@ Route::prefix('dashboard')->name('admin.')->group(function () {
         // // Groups
         // Route::resource('groups', GroupController::class);
 
-        // // Research Articles
-        // Route::get('research-articles/{article}/download', [ResearchArticleController::class, 'downloadPdf'])->name('research-articles.download');
+        // Research Articles
         Route::resource('research-articles', ResearchArticleController::class);
+
+        // Events
+        Route::resource('events', EventController::class);
 
         // // Subscription Management
         // Route::resource('subscriptions', SubscriptionController::class);
