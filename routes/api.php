@@ -29,6 +29,7 @@ use App\Http\Controllers\ChallengePackController;
 use App\Http\Controllers\GroupChallengeController;
 use App\Http\Controllers\GroupChallengeSessionController;
 use App\Http\Controllers\PromoCodeController;
+use App\Http\Controllers\Api\EventController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -162,5 +163,9 @@ Route::prefix('v1')->group(function () {
 
         // Streak Logs Routes
         Route::apiResource('streak-log', StreakLogsController::class);
+
+        // Event Routes
+        Route::get('events', [EventController::class, 'index']);
+        Route::get('events/{id}', [EventController::class, 'show']);
     });
 });
