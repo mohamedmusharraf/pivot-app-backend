@@ -83,7 +83,7 @@ use Illuminate\Support\Facades\Auth;
 
                 <!-- Monetization Section -->
                 <div class="nav-section-title">Monetization</div>
-                <a href="{{ route('admin.subscriptions.index') }}" class="nav-item {{ request()->routeIs('admin.subscriptions.*') ? 'active' : '' }}">
+                <a href="#" class="nav-item {{ request()->routeIs('admin.subscriptions.*') ? 'active' : '' }}">
                     <i class="fa-solid fa-credit-card"></i>
                     <span>Subscriptions</span>
                 </a>
