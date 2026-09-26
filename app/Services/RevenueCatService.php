@@ -3,39 +3,42 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class RevenueCatService
 {
-    public function grantFreeTrial(string $appUserId, string $os = 'android'): void
+    protected string $apiKey;
+    protected string $projectId;
+    protected string $baseUrl;
+
+    public function __construct()
     {
-        $customer = Http::withHeaders([
-            'Authorization' => 'Bearer ' . config('services.revenuecat.secret_key'),
-            'Accept' => 'application/json',
-        ])->get("https://api.revenuecat.com/v1/subscribers/{$appUserId}");
+        $this->apiKey = config('services.revenuecat.api_key');
+        $this->projectId = config('services.revenuecat.project_id');
+        $this->baseUrl = config('services.revenuecat.api_url');
+    }
 
-        if (! $customer->successful()) {
-            throw new \Exception($customer->body());
-        }
-
-        if (strtolower($os) === 'ios') {
-            $entitlementId = 'tier_3_ios';
-        } else {
-            $entitlementId = 'tier_3_android';
+    /**
+     * Fetch raw subscription list from RevenueCat REST API v2
+     */
+    public function getSubscriptions(int $limit = 50, ?string $startingAfter = null): array
+    {
+        $params = ['limit' => $limit];
+        if ($startingAfter) {
+            $params['starting_after'] = $startingAfter;
         }
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . config('services.revenuecat.secret_key'),
-            'Accept' => 'application/json',
-            'Content-Type' => 'application/json',
-        ])->post(
-            "https://api.revenuecat.com/v1/subscribers/{$appUserId}/entitlements/{$entitlementId}/promotional",
-            [
-                'duration' => 'weekly',
-            ]
-        );
+            'Authorization' => 'Bearer ' . $this->apiKey,
+            'Content-Type'  => 'application/json',
+            'Accept'        => 'application/json',
+        ])->get("{$this->baseUrl}/projects/{$this->projectId}/subscriptions", $params);
 
-        if (! $response->successful()) {
-            throw new \Exception($response->body());
+        if ($response->failed()) {
+            Log::error('RevenueCat API Fetch Error: ' . $response->body());
+            return [];
         }
+
+        return $response->json();
     }
 }

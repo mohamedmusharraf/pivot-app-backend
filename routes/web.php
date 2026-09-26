@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Admin\AppAnalyzeController;
 use App\Http\Controllers\Admin\ResearchArticleController;
 use App\Http\Controllers\Admin\EventController;
+use App\Http\Controllers\Admin\SubscriptionController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -46,6 +47,7 @@ Route::prefix('dashboard')->name('admin.')->group(function () {
 
         // Dashboard Home
         Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+        Route::get('subscriptions', [SubscriptionController::class, 'index'])->name('subscriptions.index');
         Route::get('promo-codes', [PromoCodeController::class, 'index'])->name('promo-codes.index');
         Route::post('promo-codes', [PromoCodeController::class, 'store'])->name('promo-codes.store');
         Route::get('promo-codes/{promoCode}/edit', [PromoCodeController::class, 'edit'])->name('promo-codes.edit');

@@ -38,6 +38,9 @@ return [
     'revenuecat' => [
         'webhook_secret' => env('REVENUECAT_WEBHOOK_SECRET'),
         'secret_key' => env('REVENUECAT_SECRET_KEY'),
+        'api_key'    => env('REVENUECAT_SECRET_API_KEY'),
+        'project_id' => env('REVENUECAT_PROJECT_ID'),
+        'api_url'    => env('REVENUECAT_API_URL', 'https://api.revenuecat.com/v2'),
     ],
 
     'google' => [
