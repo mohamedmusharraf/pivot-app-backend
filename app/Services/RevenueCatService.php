@@ -18,27 +18,73 @@ class RevenueCatService
         $this->baseUrl = config('services.revenuecat.api_url');
     }
 
-    /**
-     * Fetch raw subscription list from RevenueCat REST API v2
-     */
-    public function getSubscriptions(int $limit = 50, ?string $startingAfter = null): array
+    public function getSubscriptions(int $limit = 50): array
     {
-        $params = ['limit' => $limit];
-        if ($startingAfter) {
-            $params['starting_after'] = $startingAfter;
-        }
-
-        $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $this->apiKey,
-            'Content-Type'  => 'application/json',
-            'Accept'        => 'application/json',
-        ])->get("{$this->baseUrl}/projects/{$this->projectId}/subscriptions", $params);
+        $response = Http::withHeaders($this->headers())
+            ->get("{$this->baseUrl}/projects/{$this->projectId}/customers", [
+                'limit' => $limit,
+            ]);
 
         if ($response->failed()) {
-            Log::error('RevenueCat API Fetch Error: ' . $response->body());
+            Log::error('RevenueCat Customers Fetch Error: ' . $response->body());
+            return ['items' => []];
+        }
+
+        $subscriptions = [];
+
+        foreach ($response->json('items', []) as $customer) {
+            $customerId = $customer['id'] ?? null;
+
+            if (! $customerId) {
+                continue;
+            }
+
+            $customerSubscriptions = $this->getCustomerSubscriptions((string) $customerId, $limit);
+
+            foreach ($customerSubscriptions['items'] ?? [] as $subscription) {
+                $subscription['app_user_id'] = $customerId;
+                $subscriptions[] = $subscription;
+            }
+        }
+
+        return ['items' => $subscriptions];
+    }
+
+    public function getCustomerSubscriptions(string $customerId, int $limit = 50): ?array
+    {
+        $response = Http::withHeaders($this->headers())
+            ->get("{$this->baseUrl}/projects/{$this->projectId}/customers/" . rawurlencode($customerId) . '/subscriptions', [
+                'limit' => $limit,
+            ]);
+
+        if ($response->failed()) {
+            Log::error("RevenueCat Customer Subscriptions Fetch Error for ID {$customerId}: " . $response->body());
+            return null;
+        }
+
+        return $response->json();
+    }
+
+    public function getSubscriptionByIdentifier(string $storeSubscriptionId): array
+    {
+        $response = Http::withHeaders($this->headers())
+            ->get("{$this->baseUrl}/projects/{$this->projectId}/subscriptions", [
+                'store_subscription_identifier' => $storeSubscriptionId,
+            ]);
+
+        if ($response->failed()) {
+            Log::error('RevenueCat Subscription Fetch Error: ' . $response->body());
             return [];
         }
 
         return $response->json();
+    }
+
+    protected function headers(): array
+    {
+        return [
+            'Authorization' => 'Bearer ' . $this->apiKey,
+            'Accept' => 'application/json',
+        ];
     }
 }
