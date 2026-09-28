@@ -45,12 +45,12 @@
     <div class="card stat-card">
         <div>
             <span style="color: var(--text-muted); font-size: 0.875rem; font-weight: 500;">Active Subscriptions</span>
-            <div class="stat-value">{{ number_format($activeSubscriptions) }}</div>
+            <div class="stat-value">{{ number_format($activeSubscriptions ?? 0) }}</div>
             <span style="color: var(--text-muted); font-size: 0.75rem; font-weight: 600;">
-                {{ $totalSubscriptions }} total subscriptions
+                {{ $activeSubscriptionSource }}
             </span>
         </div>
-        <div class="stat-icon warning">
+        <div class="stat-icon success">
             <i class="fa-solid fa-credit-card"></i>
         </div>
     </div>
@@ -69,6 +69,33 @@
         </div>
     </div>
 
+</div>
+
+<div class="grid grid-cols-4 dash-mb">
+    <div class="card stat-card">
+        <div><span style="color: var(--text-muted); font-size: 0.875rem;">Trial Subscriptions</span>
+            <div class="stat-value">{{ number_format($trialSubscriptions) }}</div>
+        </div>
+        <div class="stat-icon primary"><i class="fa-solid fa-hourglass-half"></i></div>
+    </div>
+    <div class="card stat-card">
+        <div><span style="color: var(--text-muted); font-size: 0.875rem;">Expired Subscriptions</span>
+            <div class="stat-value">{{ number_format($expiredSubscriptions) }}</div>
+        </div>
+        <div class="stat-icon warning"><i class="fa-solid fa-clock-rotate-left"></i></div>
+    </div>
+    <div class="card stat-card">
+        <div><span style="color: var(--text-muted); font-size: 0.875rem;">Cancelled / Non-renewing</span>
+            <div class="stat-value">{{ number_format($cancelledSubscriptions) }}</div>
+        </div>
+        <div class="stat-icon danger"><i class="fa-solid fa-ban"></i></div>
+    </div>
+    <div class="card stat-card">
+        <div><span style="color: var(--text-muted); font-size: 0.875rem;">Expiring Within 7 Days</span>
+            <div class="stat-value">{{ number_format($expiringSubscriptions) }}</div>
+        </div>
+        <div class="stat-icon warning"><i class="fa-solid fa-calendar-day"></i></div>
+    </div>
 </div>
 
 {{-- ══════════════════════════════════════════════════════════════════════

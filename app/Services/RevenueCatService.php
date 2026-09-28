@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class RevenueCatService
 {
@@ -13,71 +14,77 @@ class RevenueCatService
 
     public function __construct()
     {
-        $this->apiKey = config('services.revenuecat.api_key');
-        $this->projectId = config('services.revenuecat.project_id');
-        $this->baseUrl = config('services.revenuecat.api_url');
+        $this->apiKey = (string) config('services.revenuecat.api_key', '');
+        $this->projectId = (string) config('services.revenuecat.project_id', '');
+        $this->baseUrl = rtrim((string) config('services.revenuecat.api_url', 'https://api.revenuecat.com/v2'), '/');
     }
 
-    public function getSubscriptions(int $limit = 50): array
+    public function getCustomers(int $limit = 25, ?string $startingAfter = null): array
     {
-        $response = Http::withHeaders($this->headers())
-            ->get("{$this->baseUrl}/projects/{$this->projectId}/customers", [
-                'limit' => $limit,
-            ]);
+        $query = ['limit' => min(max($limit, 1), 100)];
 
-        if ($response->failed()) {
-            Log::error('RevenueCat Customers Fetch Error: ' . $response->body());
-            return ['items' => []];
+        if ($startingAfter !== null && $startingAfter !== '') {
+            $query['starting_after'] = $startingAfter;
         }
 
-        $subscriptions = [];
-
-        foreach ($response->json('items', []) as $customer) {
-            $customerId = $customer['id'] ?? null;
-
-            if (! $customerId) {
-                continue;
-            }
-
-            $customerSubscriptions = $this->getCustomerSubscriptions((string) $customerId, $limit);
-
-            foreach ($customerSubscriptions['items'] ?? [] as $subscription) {
-                $subscription['app_user_id'] = $customerId;
-                $subscriptions[] = $subscription;
-            }
-        }
-
-        return ['items' => $subscriptions];
+        return $this->getPage(
+            "{$this->baseUrl}/projects/{$this->projectId}/customers",
+            $query,
+            'Customers'
+        );
     }
 
     public function getCustomerSubscriptions(string $customerId, int $limit = 50): ?array
     {
-        $response = Http::withHeaders($this->headers())
-            ->get("{$this->baseUrl}/projects/{$this->projectId}/customers/" . rawurlencode($customerId) . '/subscriptions', [
-                'limit' => $limit,
-            ]);
+        $items = $this->getAllPages(
+            "{$this->baseUrl}/projects/{$this->projectId}/customers/" . rawurlencode($customerId) . '/subscriptions',
+            ['limit' => $limit],
+            "Customer Subscriptions for ID {$customerId}"
+        );
 
-        if ($response->failed()) {
-            Log::error("RevenueCat Customer Subscriptions Fetch Error for ID {$customerId}: " . $response->body());
-            return null;
-        }
-
-        return $response->json();
+        return ['items' => $items];
     }
 
-    public function getSubscriptionByIdentifier(string $storeSubscriptionId): array
+    public function getMetricsOverview(): array
     {
-        $response = Http::withHeaders($this->headers())
-            ->get("{$this->baseUrl}/projects/{$this->projectId}/subscriptions", [
-                'store_subscription_identifier' => $storeSubscriptionId,
+        try {
+            if ($this->apiKey === '' || $this->projectId === '' || $this->baseUrl === '') {
+                throw new \RuntimeException('RevenueCat API configuration is incomplete.');
+            }
+
+            $response = Http::connectTimeout(3)
+                ->timeout(6)
+                ->withHeaders($this->headers())
+                ->get("{$this->baseUrl}/projects/{$this->projectId}/metrics/overview");
+
+            if ($response->failed()) {
+                Log::warning('RevenueCat metrics overview request failed.', [
+                    'status' => $response->status(),
+                    'project_id' => $this->projectId,
+                ]);
+
+                return ['ok' => false, 'metrics' => [], 'error' => 'RevenueCat metrics are unavailable.'];
+            }
+
+            $payload = $response->json();
+            if (! is_array($payload)) {
+                throw new \UnexpectedValueException('RevenueCat metrics overview response was invalid.');
+            }
+
+            return [
+                'ok' => true,
+                'metrics' => $this->normalizeOverviewMetrics($payload),
+                'error' => null,
+            ];
+        } catch (Throwable $exception) {
+            Log::warning('RevenueCat metrics overview request failed.', [
+                'project_id' => $this->projectId,
+                'exception' => $exception::class,
+                'message' => $exception->getMessage(),
             ]);
 
-        if ($response->failed()) {
-            Log::error('RevenueCat Subscription Fetch Error: ' . $response->body());
-            return [];
+            return ['ok' => false, 'metrics' => [], 'error' => 'RevenueCat metrics are unavailable.'];
         }
-
-        return $response->json();
     }
 
     protected function headers(): array
@@ -86,5 +93,119 @@ class RevenueCatService
             'Authorization' => 'Bearer ' . $this->apiKey,
             'Accept' => 'application/json',
         ];
+    }
+
+    protected function getAllPages(string $url, array $query, string $resource): array
+    {
+        $items = [];
+        $cursor = null;
+        $seenCursors = [];
+
+        do {
+            $pageQuery = $query;
+            if ($cursor !== null) {
+                $pageQuery['starting_after'] = $cursor;
+            }
+
+            $page = $this->getPage($url, $pageQuery, $resource);
+            $items = array_merge($items, $page['items']);
+            $nextPage = $page['next_page'];
+            if (! is_string($nextPage) || $nextPage === '') {
+                break;
+            }
+
+            parse_str((string) parse_url($nextPage, PHP_URL_QUERY), $nextQuery);
+            $nextCursor = $nextQuery['starting_after'] ?? null;
+            if (! is_string($nextCursor) || $nextCursor === '' || isset($seenCursors[$nextCursor])) {
+                break;
+            }
+
+            $seenCursors[$nextCursor] = true;
+            $cursor = $nextCursor;
+        } while (true);
+
+        return $items;
+    }
+
+    protected function getPage(string $url, array $query, string $resource): array
+    {
+        if ($this->apiKey === '' || $this->projectId === '' || $this->baseUrl === '') {
+            throw new \RuntimeException('RevenueCat API configuration is incomplete.');
+        }
+
+        $response = Http::connectTimeout(5)
+            ->timeout(10)
+            ->withHeaders($this->headers())
+            ->get($url, $query);
+
+        if ($response->failed()) {
+            Log::warning('RevenueCat API request failed.', [
+                'resource' => $resource,
+                'status' => $response->status(),
+                'url' => $url,
+            ]);
+
+            return ['items' => [], 'next_page' => null];
+        }
+
+        $json = $response->json();
+        if (! is_array($json) || ! is_array($json['items'] ?? null)) {
+            return ['items' => [], 'next_page' => null];
+        }
+
+        return [
+            'items' => $json['items'],
+            'next_page' => $json['next_page'] ?? null,
+        ];
+    }
+
+    private function normalizeOverviewMetrics(array $payload): array
+    {
+        $aliases = [
+            'active_subscriptions' => ['active_subscriptions', 'activeSubscriptions'],
+            'mrr' => ['mrr', 'monthly_recurring_revenue', 'monthlyRecurringRevenue'],
+            'revenue_28d' => ['revenue', 'revenue_28d', 'revenue_last_28_days', 'revenueLast28Days'],
+            'new_customers_28d' => ['new_customers', 'new_customers_28d', 'new_customers_last_28_days', 'newCustomers'],
+            'active_users_28d' => ['active_users', 'active_users_28d', 'active_users_last_28_days', 'activeUsers'],
+        ];
+
+        $metrics = [];
+        foreach ($aliases as $name => $keys) {
+            $metrics[$name] = $this->findMetricValue($payload, $keys);
+        }
+
+        return $metrics;
+    }
+
+    private function findMetricValue(array $payload, array $keys): int|float|string|null
+    {
+        foreach ($payload as $key => $value) {
+            if (is_string($key) && in_array($key, $keys, true)) {
+                if (is_array($value)) {
+                    $value = $value['value'] ?? $value['amount'] ?? $value['total'] ?? $value['display_value'] ?? null;
+                }
+
+                if (is_int($value) || is_float($value) || is_string($value)) {
+                    return $value;
+                }
+            }
+
+            if (is_array($value)) {
+                $identifier = $value['id'] ?? $value['key'] ?? $value['name'] ?? $value['metric'] ?? null;
+                if (is_string($identifier) && in_array($identifier, $keys, true)) {
+                    $metricValue = $value['value'] ?? $value['amount'] ?? $value['total'] ?? $value['display_value'] ?? null;
+                    if (is_int($metricValue) || is_float($metricValue) || is_string($metricValue)) {
+                        return $metricValue;
+                    }
+                }
+
+                $found = $this->findMetricValue($value, $keys);
+                if ($found !== null) {
+                    return $found;
+                }
+            }
+        }
+
+        return null;
     }
 }

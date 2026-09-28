@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Models\Subscription;
 use App\Models\Activity;
 use App\Models\ActivityLogs;
 use App\Models\Research;
@@ -18,12 +17,13 @@ use App\Models\ChallengeLog;
 use App\Models\GroupChallengeParticipant;
 use App\Models\Invitation;
 use App\Models\AppUsageLogs;
-use Illuminate\Http\Request;
+use App\Models\AppUninstall;
 use Illuminate\Support\Facades\DB;
+use App\Services\SubscriptionService;
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(SubscriptionService $subscriptions)
     {
         // ── Users ──────────────────────────────────────────────────────────
         $totalUsers        = User::count();
@@ -39,20 +39,28 @@ class DashboardController extends Controller
             : 0;
 
         // ── Subscriptions ──────────────────────────────────────────────────
-        // Only paid Tier 2 and Tier 3 users are subscriptions for dashboard reporting.
-        // Tier IDs are not assumed to be 2/3; the tier table's configured names are authoritative.
-        $paidSubscriptions = Subscription::query()
-            ->where('active', true)
-            ->whereHas('tier', fn($query) => $query->whereIn('name', ['2', '3']));
+        $subscriptionData       = $subscriptions->getAdminData();
+        $subscriptionMetrics    = $subscriptions->metrics(collect($subscriptionData['items']));
+        $activeSubscriptions    = $subscriptionMetrics['active'];
+        $totalSubscriptions     = $subscriptionMetrics['total'];
+        $trialSubscriptions     = $subscriptionMetrics['trial'];
+        $expiredSubscriptions   = $subscriptionMetrics['expired'];
+        $cancelledSubscriptions = $subscriptionMetrics['cancelled'];
+        $expiringSubscriptions  = $subscriptionMetrics['expiring_soon'];
+        $activeSubscriptionSource = 'Local synchronized data';
+        $revenueCatOverview = $subscriptions->metricsOverview();
+        $revenueCatActiveSubscriptions = data_get($revenueCatOverview, 'metrics.active_subscriptions');
 
-        $activeSubscriptions = (clone $paidSubscriptions)->count();
-        $totalSubscriptions = $activeSubscriptions;
+        if (($revenueCatOverview['ok'] ?? false) && is_numeric($revenueCatActiveSubscriptions)) {
+            $activeSubscriptions = (int) $revenueCatActiveSubscriptions;
+            $activeSubscriptionSource = 'RevenueCat overview';
+        }
 
         // ── Activities ─────────────────────────────────────────────────────
-        $totalActivities         = Activity::count();
-        $totalActivityLogs       = ActivityLogs::count();
-        $completedActivityLogs   = ActivityLogs::where('completed', true)->count();
-        $activityLogsThisMonth   = ActivityLogs::whereMonth('created_at', now()->month)
+        $totalActivities        = Activity::count();
+        $totalActivityLogs      = ActivityLogs::count();
+        $completedActivityLogs  = ActivityLogs::where('completed', true)->count();
+        $activityLogsThisMonth  = ActivityLogs::whereMonth('created_at', now()->month)
             ->whereYear('created_at', now()->year)
             ->count();
 
@@ -63,8 +71,8 @@ class DashboardController extends Controller
         $totalHobbies = Hobby::count();
 
         // ── User Profiles ──────────────────────────────────────────────────
-        $totalProfiles            = UserProfile::count();
-        $onboardingCompleted      = UserProfile::where('onboarding_completed', true)->count();
+        $totalProfiles       = UserProfile::count();
+        $onboardingCompleted = UserProfile::where('onboarding_completed', true)->count();
 
         // ── Focus Sessions ─────────────────────────────────────────────────
         $totalFocusSessions     = FocusSessionLogs::count();
@@ -78,12 +86,12 @@ class DashboardController extends Controller
         $totalEmotionLogs = EmotionLogs::count();
 
         // ── Goal Logs ──────────────────────────────────────────────────────
-        $totalGoalLogs     = GoalLogs::count();
-        $completedGoals    = GoalLogs::where('completed', true)->count();
+        $totalGoalLogs  = GoalLogs::count();
+        $completedGoals = GoalLogs::where('completed', true)->count();
 
         // ── Challenge Logs ─────────────────────────────────────────────────
-        $totalChallengeLogs     = ChallengeLog::count() + GroupChallengeParticipant::count();
-        $completedChallenges    = ChallengeLog::where('status', 'completed')->count()
+        $totalChallengeLogs  = ChallengeLog::count() + GroupChallengeParticipant::count();
+        $completedChallenges = ChallengeLog::where('status', 'completed')->count()
             + GroupChallengeParticipant::whereNotNull('completed_at')->count();
 
         // ── Invitations ────────────────────────────────────────────────────
@@ -121,7 +129,13 @@ class DashboardController extends Controller
             'newUsersThisMonth',
             'usersGrowth',
             'activeSubscriptions',
+            'activeSubscriptionSource',
             'totalSubscriptions',
+            'trialSubscriptions',
+            'expiredSubscriptions',
+            'cancelledSubscriptions',
+            'expiringSubscriptions',
+            'subscriptionData',
             'totalActivities',
             'totalActivityLogs',
             'completedActivityLogs',

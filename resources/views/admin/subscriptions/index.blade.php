@@ -9,130 +9,268 @@
     <li style="color: var(--text-heading); font-weight: 600;">Subscription Management</li>
 </ul>
 
-<!-- STATS CARDS -->
-<div class="grid grid-cols-4" style="margin-bottom: 1.5rem;">
-    <div class="card stat-card">
-        <div>
-            <span style="color: var(--text-muted); font-size: 0.875rem;">Active Subscriptions</span>
-            <div class="stat-value">{{ number_format($metrics['active'] ?? 0) }}</div>
+@php
+$overviewMetrics = $overview['metrics'] ?? [];
+
+$row1 = [
+['label' => 'active subscriptions', 'key' => 'active_subscriptions'],
+['label' => 'Monthly Recurring Revenue', 'key' => 'mrr'],
+['label' => 'revenue Last 28 days', 'key' => 'revenue_28d'],
+];
+
+$row2 = [
+['label' => 'new customers Last 28 days', 'key' => 'new_customers_28d'],
+['label' => 'active users Last 28 days', 'key' => 'active_users_28d'],
+];
+@endphp
+
+<div class="rc-analytics-container">
+    <!-- Metric Cards Row 1 -->
+    <div class="rc-metric-grid grid-3">
+        @foreach($row1 as $card)
+        @php $val = $overviewMetrics[$card['key']] ?? null; @endphp
+        <div class="rc-card">
+            <div class="rc-card-label">{{ $card['label'] }}</div>
+            <div class="rc-card-value">
+                @if($val === null || $val === '')
+                --
+                @elseif(in_array($card['key'], ['mrr', 'revenue_28d'], true) && is_numeric($val))
+                ${{ number_format((float)$val, 2) }}
+                @else
+                {{ is_numeric($val) ? number_format((float)$val) : $val }}
+                @endif
+            </div>
         </div>
-        <div class="stat-icon success"><i class="fa-solid fa-circle-check"></i></div>
+        @endforeach
     </div>
-    <div class="card stat-card">
-        <div>
-            <span style="color: var(--text-muted); font-size: 0.875rem;">Expired Subscriptions</span>
-            <div class="stat-value">{{ number_format($metrics['expired'] ?? 0) }}</div>
+
+    <!-- Metric Cards Row 2 -->
+    <div class="rc-metric-grid grid-2">
+        @foreach($row2 as $card)
+        @php $val = $overviewMetrics[$card['key']] ?? null; @endphp
+        <div class="rc-card">
+            <div class="rc-card-label">{{ $card['label'] }}</div>
+            <div class="rc-card-value">
+                @if($val === null || $val === '')
+                --
+                @else
+                {{ is_numeric($val) ? number_format((float)$val) : $val }}
+                @endif
+            </div>
         </div>
-        <div class="stat-icon warning"><i class="fa-solid fa-clock-rotate-left"></i></div>
+        @endforeach
     </div>
-    <div class="card stat-card">
-        <div>
-            <span style="color: var(--text-muted); font-size: 0.875rem;">Cancelled Subscriptions</span>
-            <div class="stat-value">{{ number_format($metrics['cancelled'] ?? 0) }}</div>
+
+    <!-- Customers Section -->
+    <div class="rc-customers-section">
+        <h2 class="rc-section-title">Customers</h2>
+
+        <div class="rc-customers-list">
+            @forelse($subscriptions['items'] ?? $formattedSubscriptions ?? [] as $customer)
+            <div class="rc-customer-row">
+                <div class="rc-customer-info">
+                    <span class="rc-customer-name">
+                        {{ $customer['user_name'] ?? $customer['customer_id'] ?? 'Customer 1' }}
+                    </span>
+                    @if(!empty($customer['user_email']) && $customer['user_email'] !== 'N/A')
+                    <span class="rc-customer-email">{{ $customer['user_email'] }}</span>
+                    @endif
+                </div>
+                @if(!empty($customer['status']))
+                <span class="badge {{ strtolower($customer['status']) === 'active' ? 'badge-success' : 'badge-warning' }}">
+                    {{ $customer['status'] }}
+                </span>
+                @endif
+            </div>
+            @empty
+            @for ($i = 1; $i <= 6; $i++)
+                <div class="rc-customer-row">
+                <span class="rc-customer-name">Customer 1</span>
         </div>
-        <div class="stat-icon danger"><i class="fa-solid fa-ban"></i></div>
-    </div>
-    <div class="card stat-card">
-        <div>
-            <span style="color: var(--text-muted); font-size: 0.875rem;">Monthly Revenue</span>
-            <div class="stat-value">${{ number_format($metrics['monthly_revenue'] ?? 0, 2) }}</div>
-        </div>
-        <div class="stat-icon primary"><i class="fa-solid fa-dollar-sign"></i></div>
+        @endfor
+        @endforelse
     </div>
 </div>
-
-<!-- SUBSCRIPTION PANEL -->
-<div class="card">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
-        <h3 style="font-size: 1.125rem; font-weight: 700;">RevenueCat Subscriptions</h3>
-    </div>
-
-    <!-- FILTER FORM -->
-    <form method="GET" action="{{ route('admin.subscriptions.index') }}" style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
-        <input type="text" name="search" value="{{ request('search') }}" placeholder="Search user, subscription ID..." class="form-control" style="max-width: 280px;">
-        
-        <select name="status" class="form-control" style="max-width: 160px;">
-            <option value="">All Statuses</option>
-            <option value="active" {{ request('status') === 'active' ? 'selected' : '' }}>Active</option>
-            <option value="cancelled" {{ request('status') === 'cancelled' ? 'selected' : '' }}>Cancelled</option>
-            <option value="expired" {{ request('status') === 'expired' ? 'selected' : '' }}>Expired</option>
-        </select>
-
-        <select name="store" class="form-control" style="max-width: 160px;">
-            <option value="">All Stores</option>
-            <option value="App Store" {{ request('store') === 'App Store' ? 'selected' : '' }}>App Store</option>
-            <option value="Google Play" {{ request('store') === 'Google Play' ? 'selected' : '' }}>Google Play</option>
-            <option value="Stripe" {{ request('store') === 'Stripe' ? 'selected' : '' }}>Stripe</option>
-        </select>
-
-        <button type="submit" class="btn btn-secondary"><i class="fa-solid fa-filter"></i> Filter</button>
-        @if(request('search') || request('status') || request('store'))
-            <a href="{{ route('admin.subscriptions.index') }}" class="btn btn-secondary"><i class="fa-solid fa-xmark"></i> Clear</a>
-        @endif
-    </form>
-
-    <!-- DATA TABLE -->
-    <div class="table-wrapper">
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>User</th>
-                    <th>Subscription ID</th>
-                    <th>Product ID</th>
-                    <th>Store Platform</th>
-                    <th>Price</th>
-                    <th>Status</th>
-                    <th>Purchase Date</th>
-                    <th>Expiry Date</th>
-                    <th>Auto Renew</th>
-                    <th>Environment</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($formattedSubscriptions as $subscription)
-                <tr>
-                    <td>
-                        <div style="font-weight: 600; color: var(--text-heading);">{{ $subscription['user_name'] }}</div>
-                        <div style="font-size: 0.75rem; color: var(--text-muted);">{{ $subscription['user_email'] }}</div>
-                    </td>
-                    <td>
-                        <span style="font-family: monospace; font-size: 0.8rem; color: var(--text-muted);">
-                            {{ $subscription['subscription_id'] }}
-                        </span>
-                    </td>
-                    <td>{{ $subscription['product_id'] }}</td>
-                    <td>
-                        <span>
-                            <i class="fa-brands fa-{{ strtolower($subscription['store_platform']) === 'google play' ? 'google-play' : (strtolower($subscription['store_platform']) === 'app store' ? 'apple' : 'stripe') }}"></i>
-                            {{ $subscription['store_platform'] }}
-                        </span>
-                    </td>
-                    <td><strong>{{ $subscription['currency'] === 'USD' ? '$' : $subscription['currency'] }}{{ number_format($subscription['price'], 2) }}</strong></td>
-                    <td>
-                        <span class="badge {{ $subscription['status'] === 'Active' ? 'badge-success' : ($subscription['status'] === 'Cancelled' ? 'badge-warning' : 'badge-danger') }}">
-                            {{ $subscription['status'] }}
-                        </span>
-                    </td>
-                    <td>{{ $subscription['purchase_date'] }}</td>
-                    <td>{{ $subscription['expiry_date'] }}</td>
-                    <td>
-                        <span class="badge {{ $subscription['auto_renew'] === 'Yes' ? 'badge-success' : 'badge-warning' }}">
-                            {{ $subscription['auto_renew'] }}
-                        </span>
-                    </td>
-                    <td>
-                        <span class="badge {{ $subscription['environment'] === 'Production' ? 'badge-success' : 'badge-warning' }}">
-                            {{ $subscription['environment'] }}
-                        </span>
-                    </td>
-                </tr>
-                @empty
-                <tr>
-                    <td colspan="10" style="text-align: center; padding: 2rem; color: var(--text-muted);">No RevenueCat subscription records found.</td>
-                </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
 </div>
+
+<style>
+    /* Design Tokens / Root Variables */
+    :root {
+        --rc-bg-card: #ffffff;
+        --rc-bg-subtle: #f8fafc;
+        --rc-border-color: #e2e8f0;
+        --rc-text-primary: #0f172a;
+        --rc-text-secondary: #475569;
+        --rc-text-muted: #64748b;
+        --rc-shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+        --rc-shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+        --rc-radius: 12px;
+        --rc-radius-inner: 8px;
+        --rc-transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Container Layout */
+    .rc-analytics-container {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        margin-top: 1.25rem;
+        font-family: inherit;
+    }
+
+    /* Metric Grid Layouts */
+    .rc-metric-grid {
+        display: grid;
+        gap: 1.25rem;
+    }
+
+    .rc-metric-grid.grid-3 {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .rc-metric-grid.grid-2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    /* Metric Cards */
+    .rc-card {
+        background-color: var(--rc-bg-card);
+        border: 1px solid var(--rc-border-color);
+        border-radius: var(--rc-radius);
+        padding: 1.75rem 1.5rem;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        /* Left-aligned for cleaner UI standard */
+        justify-content: center;
+        box-shadow: var(--rc-shadow-sm);
+        transition: var(--rc-transition);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .rc-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--rc-shadow-hover);
+        border-color: #cbd5e1;
+    }
+
+    .rc-card-label {
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--rc-text-muted);
+        line-height: 1.2;
+    }
+
+    .rc-card-value {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--rc-text-primary);
+        margin-top: 0.5rem;
+        letter-spacing: -0.025em;
+    }
+
+    /* Customers Section */
+    .rc-customers-section {
+        margin-top: 1.5rem;
+        background-color: var(--rc-bg-card);
+        border: 1px solid var(--rc-border-color);
+        border-radius: var(--rc-radius);
+        padding: 1.5rem;
+        box-shadow: var(--rc-shadow-sm);
+    }
+
+    .rc-section-title {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--rc-text-primary);
+        margin-bottom: 1.25rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid var(--rc-border-color);
+    }
+
+    .rc-customers-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .rc-customer-row {
+        background-color: var(--rc-bg-subtle);
+        border: 1px solid transparent;
+        border-radius: var(--rc-radius-inner);
+        padding: 0.875rem 1.25rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        transition: var(--rc-transition);
+    }
+
+    .rc-customer-row:hover {
+        background-color: #ffffff;
+        border-color: var(--rc-border-color);
+        box-shadow: var(--rc-shadow-sm);
+    }
+
+    .rc-customer-info {
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+    }
+
+    .rc-customer-name {
+        font-size: 0.925rem;
+        font-weight: 600;
+        color: var(--rc-text-primary);
+    }
+
+    .rc-customer-email {
+        font-size: 0.825rem;
+        color: var(--rc-text-muted);
+    }
+
+    /* Badges */
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.625rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        border-radius: 9999px;
+        text-transform: capitalize;
+    }
+
+    .badge-success {
+        background-color: #dcfce7;
+        color: #15803d;
+    }
+
+    .badge-warning {
+        background-color: #fef9c3;
+        color: #a16207;
+    }
+
+    /* Responsive Breakpoints */
+    @media (max-width: 900px) {
+
+        .rc-metric-grid.grid-3,
+        .rc-metric-grid.grid-2 {
+            grid-template-columns: repeat(1, minmax(0, 1fr));
+        }
+
+        .rc-customer-row {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+
+        .rc-customer-info {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.25rem;
+        }
+    }
+</style>
 @endsection

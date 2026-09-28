@@ -1,8 +1,10 @@
 <?php
+
 use Illuminate\Support\Facades\Auth;
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -19,18 +21,19 @@ use Illuminate\Support\Facades\Auth;
         document.documentElement.setAttribute('data-theme', savedTheme);
     </script>
 </head>
+
 <body>
     <!-- Mobile sidebar backdrop overlay -->
     <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
     <div class="app-wrapper">
-        
+
         <!-- Sidebar Navigation -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
-                <img src="{{ asset('assets/img/logo.png') }}" 
-                     alt="Pivot Logo" 
-                     style="width: 36px; height: 36px; border-radius: 8px; object-fit: cover;">
+                <img src="{{ asset('assets/img/logo.png') }}"
+                    alt="Pivot Logo"
+                    style="width: 36px; height: 36px; border-radius: 8px; object-fit: cover;">
                 <span class="sidebar-brand-title">Pivot Admin</span>
             </div>
 
@@ -79,11 +82,11 @@ use Illuminate\Support\Facades\Auth;
                 <a href="{{ route('admin.app-analyze.index') }}" class="nav-item {{ request()->routeIs('admin.app-analyze.*') ? 'active' : '' }}">
                     <i class="fa-solid fa-magnifying-glass-chart"></i>
                     <span>App Analytics</span>
-                </a>    
+                </a>
 
                 <!-- Monetization Section -->
                 <div class="nav-section-title">Monetization</div>
-                <a href="#" class="nav-item {{ request()->routeIs('admin.subscriptions.*') ? 'active' : '' }}">
+                <a href="{{ route('admin.subscriptions.index') }}" class="nav-item {{ request()->routeIs('admin.subscriptions.*') ? 'active' : '' }}">
                     <i class="fa-solid fa-credit-card"></i>
                     <span>Subscriptions</span>
                 </a>
@@ -111,7 +114,7 @@ use Illuminate\Support\Facades\Auth;
 
         <!-- Main Content Area -->
         <div class="main-content">
-            
+
             <!-- Top Navigation Bar -->
             <header class="topbar">
                 <div class="topbar-left">
@@ -157,8 +160,8 @@ use Illuminate\Support\Facades\Auth;
     <!-- UI Interaction Scripts -->
     <script>
         // ── Sidebar Toggle Logic (mobile drawer vs desktop collapse) ──────────
-        const sidebar        = document.getElementById('sidebar');
-        const sidebarToggle  = document.getElementById('sidebar-toggle');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarToggle = document.getElementById('sidebar-toggle');
         const sidebarOverlay = document.getElementById('sidebar-overlay');
 
         function isMobile() {
@@ -210,7 +213,7 @@ use Illuminate\Support\Facades\Auth;
 
         // ── Dark/Light Mode Switcher ──────────────────────────────────────────
         const themeToggleBtn = document.getElementById('theme-toggle');
-        const themeIcon      = document.getElementById('theme-icon');
+        const themeIcon = document.getElementById('theme-icon');
 
         function syncThemeIcon(theme) {
             themeIcon.className = theme === 'dark' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
@@ -220,7 +223,7 @@ use Illuminate\Support\Facades\Auth;
 
         themeToggleBtn.addEventListener('click', () => {
             const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
-            const nextTheme    = currentTheme === 'light' ? 'dark' : 'light';
+            const nextTheme = currentTheme === 'light' ? 'dark' : 'light';
             document.documentElement.setAttribute('data-theme', nextTheme);
             localStorage.setItem('pivot_theme', nextTheme);
             syncThemeIcon(nextTheme);
@@ -246,6 +249,7 @@ use Illuminate\Support\Facades\Auth;
 
         // ── Debounced Auto-Search for Inputs ──────────────────────────────────
         let searchTimer = null;
+
         function debouncedSubmit(inputElement, delay = 450) {
             clearTimeout(searchTimer);
             searchTimer = setTimeout(() => {
@@ -266,4 +270,5 @@ use Illuminate\Support\Facades\Auth;
     </script>
     @stack('scripts')
 </body>
+
 </html>
