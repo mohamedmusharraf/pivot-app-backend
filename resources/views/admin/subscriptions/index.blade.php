@@ -70,8 +70,9 @@ $row2 = [
                 <thead>
                     <tr>
                         <th>Customer</th>
-                        <th>Platform / OS</th>
-                        <th>App Version</th>
+                        <th>Tier</th>
+                        <th>Platform</th>
+                        <th>Version</th>
                         <th>Country</th>
                         <th>First Seen</th>
                         <th>Last Seen</th>
@@ -89,6 +90,11 @@ $row2 = [
                                 @endif
                                 <span style="font-size: 0.75rem; color: var(--rc-text-muted);">{{ $customer['customer_id'] ?? '' }}</span>
                             </div>
+                        </td>
+                        <td>
+                            <span class="badge" style="background: #f1f5f9; color: #334155; font-weight: 700;">
+                                {{ $customer['tier'] ?? 'N/A' }}
+                            </span>
                         </td>
                         <td>
                             @if(($customer['platform'] ?? 'N/A') !== 'N/A')
