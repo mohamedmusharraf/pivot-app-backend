@@ -19,30 +19,40 @@ class RevenueCatService
         $this->baseUrl = rtrim((string) config('services.revenuecat.api_url', 'https://api.revenuecat.com/v2'), '/');
     }
 
-    public function getCustomers(int $limit = 25, ?string $startingAfter = null): array
+    public function getCustomers(int $limit = 50, ?string $startingAfter = null): array
     {
         $query = ['limit' => min(max($limit, 1), 100)];
 
-        if ($startingAfter !== null && $startingAfter !== '') {
+        if (!empty($startingAfter)) {
             $query['starting_after'] = $startingAfter;
         }
 
-        return $this->getPage(
-            "{$this->baseUrl}/projects/{$this->projectId}/customers",
-            $query,
-            'Customers'
-        );
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer ' . $this->apiKey,
+            'Accept'        => 'application/json',
+        ])->get("{$this->baseUrl}/projects/{$this->projectId}/customers", $query);
+
+        if ($response->failed()) {
+            Log::error('RevenueCat Customers Fetch Error: ' . $response->body());
+            return ['items' => []];
+        }
+
+        return $response->json();
     }
 
-    public function getCustomerSubscriptions(string $customerId, int $limit = 50): ?array
+    public function getCustomerSubscriptions(string $customerId): array
     {
-        $items = $this->getAllPages(
-            "{$this->baseUrl}/projects/{$this->projectId}/customers/" . rawurlencode($customerId) . '/subscriptions',
-            ['limit' => $limit],
-            "Customer Subscriptions for ID {$customerId}"
-        );
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer ' . $this->apiKey,
+            'Accept'        => 'application/json',
+        ])->get("{$this->baseUrl}/projects/{$this->projectId}/customers/" . rawurlencode($customerId) . "/subscriptions");
 
-        return ['items' => $items];
+        if ($response->failed()) {
+            Log::error("RevenueCat Customer Subscription Fetch Error for ID {$customerId}: " . $response->body());
+            return ['items' => []];
+        }
+
+        return $response->json();
     }
 
     public function getMetricsOverview(): array

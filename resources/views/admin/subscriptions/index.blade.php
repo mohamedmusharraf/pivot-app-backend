@@ -65,32 +65,78 @@ $row2 = [
     <div class="rc-customers-section">
         <h2 class="rc-section-title">Customers</h2>
 
-        <div class="rc-customers-list">
-            @forelse($subscriptions['items'] ?? $formattedSubscriptions ?? [] as $customer)
-            <div class="rc-customer-row">
-                <div class="rc-customer-info">
-                    <span class="rc-customer-name">
-                        {{ $customer['user_name'] ?? $customer['customer_id'] ?? 'Customer 1' }}
-                    </span>
-                    @if(!empty($customer['user_email']) && $customer['user_email'] !== 'N/A')
-                    <span class="rc-customer-email">{{ $customer['user_email'] }}</span>
-                    @endif
-                </div>
-                @if(!empty($customer['status']))
-                <span class="badge {{ strtolower($customer['status']) === 'active' ? 'badge-success' : 'badge-warning' }}">
-                    {{ $customer['status'] }}
-                </span>
-                @endif
-            </div>
-            @empty
-            @for ($i = 1; $i <= 6; $i++)
-                <div class="rc-customer-row">
-                <span class="rc-customer-name">Customer 1</span>
+        <div class="table-responsive">
+            <table class="rc-customers-table">
+                <thead>
+                    <tr>
+                        <th>Customer</th>
+                        <th>Platform / OS</th>
+                        <th>App Version</th>
+                        <th>Country</th>
+                        <th>First Seen</th>
+                        <th>Last Seen</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($subscriptions['items'] ?? [] as $customer)
+                    <tr>
+                        <td>
+                            <div class="rc-customer-info">
+                                <span class="rc-customer-name">{{ $customer['user_name'] ?? 'N/A' }}</span>
+                                @if(!empty($customer['user_email']) && $customer['user_email'] !== 'N/A')
+                                <span class="rc-customer-email">{{ $customer['user_email'] }}</span>
+                                @endif
+                                <span style="font-size: 0.75rem; color: var(--rc-text-muted);">{{ $customer['customer_id'] ?? '' }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            @if(($customer['platform'] ?? 'N/A') !== 'N/A')
+                                <span class="badge" style="background: #e2e8f0; color: #475569;">{{ ucfirst($customer['platform']) }}</span>
+                            @else
+                                <span style="color: var(--rc-text-muted);">N/A</span>
+                            @endif
+                            @if(($customer['os_version'] ?? 'N/A') !== 'N/A')
+                                <div style="font-size: 0.75rem; color: var(--rc-text-muted); margin-top: 0.25rem;">OS: {{ $customer['os_version'] }}</div>
+                            @endif
+                        </td>
+                        <td>{{ $customer['app_version'] ?? 'N/A' }}</td>
+                        <td>{{ $customer['country'] ?? 'N/A' }}</td>
+                        <td>{{ $customer['first_seen'] ?? 'N/A' }}</td>
+                        <td>{{ $customer['last_seen'] ?? 'N/A' }}</td>
+                        <td>
+                            <span class="badge {{ strtolower($customer['status'] ?? '') === 'active' ? 'badge-success' : 'badge-warning' }}">
+                                {{ $customer['status'] ?? 'Expired' }}
+                            </span>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 2rem;">No customers found.</td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
-        @endfor
-        @endforelse
+
+        <div class="rc-pagination">
+            @if(request('starting_after'))
+                <a href="{{ route('admin.subscriptions.index') }}" class="btn" style="background: var(--rc-bg-subtle); border: 1px solid var(--rc-border-color); padding: 0.5rem 1rem; border-radius: var(--rc-radius-inner); color: var(--rc-text-primary); text-decoration: none;">&laquo; First Page</a>
+            @else
+                <div></div>
+            @endif
+
+            <div class="rc-page-info" style="font-size: 0.875rem; color: var(--rc-text-muted); font-weight: 500;">
+                Page {{ $currentPage ?? 1 }}
+            </div>
+
+            @if(!empty($nextStartingAfter))
+                <a href="{{ route('admin.subscriptions.index', ['starting_after' => $nextStartingAfter, 'page' => ($currentPage ?? 1) + 1]) }}" class="btn" style="background: #0f172a; border: 1px solid #0f172a; padding: 0.5rem 1rem; border-radius: var(--rc-radius-inner); color: white; text-decoration: none;">Next Page &raquo;</a>
+            @else
+                <div></div>
+            @endif
+        </div>
     </div>
-</div>
 </div>
 
 <style>
@@ -191,33 +237,51 @@ $row2 = [
         border-bottom: 1px solid var(--rc-border-color);
     }
 
-    .rc-customers-list {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
+    /* Table Styles */
+    .table-responsive {
+        width: 100%;
+        overflow-x: auto;
+        margin-bottom: 1rem;
     }
-
-    .rc-customer-row {
+    
+    .rc-customers-table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+    }
+    
+    .rc-customers-table th {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--rc-text-muted);
+        text-transform: uppercase;
+        padding: 1rem;
+        border-bottom: 2px solid var(--rc-border-color);
+    }
+    
+    .rc-customers-table td {
+        padding: 1rem;
+        border-bottom: 1px solid var(--rc-border-color);
+        vertical-align: middle;
+        font-size: 0.9rem;
+        color: var(--rc-text-primary);
+    }
+    
+    .rc-customers-table tr:hover {
         background-color: var(--rc-bg-subtle);
-        border: 1px solid transparent;
-        border-radius: var(--rc-radius-inner);
-        padding: 0.875rem 1.25rem;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        transition: var(--rc-transition);
     }
-
-    .rc-customer-row:hover {
-        background-color: #ffffff;
-        border-color: var(--rc-border-color);
-        box-shadow: var(--rc-shadow-sm);
+    
+    .rc-pagination {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 1.5rem;
     }
 
     .rc-customer-info {
         display: flex;
-        align-items: center;
-        gap: 1.25rem;
+        flex-direction: column;
+        gap: 0.25rem;
     }
 
     .rc-customer-name {
