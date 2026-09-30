@@ -69,14 +69,13 @@ $row2 = [
             <table class="rc-customers-table">
                 <thead>
                     <tr>
-                        <th>Customer</th>
-                        <th>Tier</th>
+                        <th>Name</th>
+                        <th>Revenue</th>
                         <th>Platform</th>
-                        <th>Version</th>
-                        <th>Country</th>
-                        <th>First Seen</th>
-                        <th>Last Seen</th>
+                        <th>Dates</th>
+                        <th>Countries</th>
                         <th>Status</th>
+                        <th>Store</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -88,13 +87,10 @@ $row2 = [
                                 @if(!empty($customer['user_email']) && $customer['user_email'] !== 'N/A')
                                 <span class="rc-customer-email">{{ $customer['user_email'] }}</span>
                                 @endif
-                                <span style="font-size: 0.75rem; color: var(--rc-text-muted);">{{ $customer['customer_id'] ?? '' }}</span>
                             </div>
                         </td>
                         <td>
-                            <span class="badge" style="background: #f1f5f9; color: #334155; font-weight: 700;">
-                                {{ $customer['tier'] ?? 'N/A' }}
-                            </span>
+                            <span style="font-weight: 600; color: var(--rc-text-primary);">${{ number_format((float)($customer['gross_revenue'] ?? 0), 2) }}</span>
                         </td>
                         <td>
                             @if(($customer['platform'] ?? 'N/A') !== 'N/A')
@@ -106,14 +102,24 @@ $row2 = [
                                 <div style="font-size: 0.75rem; color: var(--rc-text-muted); margin-top: 0.25rem;">OS: {{ $customer['os_version'] }}</div>
                             @endif
                         </td>
-                        <td>{{ $customer['app_version'] ?? 'N/A' }}</td>
+                        <td>
+                            <div style="display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.8rem;">
+                                <div><span style="color: var(--rc-text-muted);">Starts:</span> {{ $customer['subscription_starts_at'] ?? 'N/A' }}</div>
+                                <div><span style="color: var(--rc-text-muted);">Ends:</span> {{ $customer['subscription_ends_at'] ?? 'N/A' }}</div>
+                            </div>
+                        </td>
                         <td>{{ $customer['country'] ?? 'N/A' }}</td>
-                        <td>{{ $customer['first_seen'] ?? 'N/A' }}</td>
-                        <td>{{ $customer['last_seen'] ?? 'N/A' }}</td>
                         <td>
                             <span class="badge {{ strtolower($customer['status'] ?? '') === 'active' ? 'badge-success' : 'badge-warning' }}">
                                 {{ $customer['status'] ?? 'Expired' }}
                             </span>
+                        </td>
+                        <td>
+                            @if(($customer['store'] ?? 'N/A') !== 'N/A')
+                                <span class="badge" style="background: #f8fafc; border: 1px solid #e2e8f0; color: #475569;">{{ ucwords(str_replace('_', ' ', $customer['store'])) }}</span>
+                            @else
+                                <span style="color: var(--rc-text-muted);">N/A</span>
+                            @endif
                         </td>
                     </tr>
                     @empty
