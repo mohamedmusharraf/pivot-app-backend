@@ -41,6 +41,7 @@ use App\Repositories\Contracts\EmotionLogsRepositoryInterface;
 use App\Repositories\EmotionLogsRepository;
 use App\Repositories\Contracts\StreakLogsRepositoryInterface;
 use App\Repositories\StreakLogsRepository;
+use App\Repositories\Contracts\GroupChallengeSessionRepositoryInterface;
 use App\Repositories\GroupChallengeSessionRepository;
 use App\Repositories\Contracts\EventRepositoryInterface;
 use App\Repositories\EventRepository;

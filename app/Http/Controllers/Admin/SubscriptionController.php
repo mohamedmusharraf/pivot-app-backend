@@ -36,7 +36,7 @@ class SubscriptionController extends Controller
             $primarySub = $subscriptions[0] ?? [];
 
             // DEBUG: Log the primary subscription to inspect available fields like product and revenue
-            if (!empty($primarySub)) {
+            if (!empty($primarySub)) {  
                 \Illuminate\Support\Facades\Log::info('RevenueCat Subscription Data: ', $primarySub);
             }
 
@@ -87,10 +87,16 @@ class SubscriptionController extends Controller
             return [
                 'customer_id'   => $customerId ?? 'N/A',
                 'user_name'     => $userName,
+                'has_real_name' => !empty($user?->name),
                 'user_email'    => $user?->email ?? 'N/A',
                 'status'        => $status,
                 'tier'          => $tier,
                 'store'         => $primarySub['store'] ?? 'N/A',
+                'subscription_id' => $primarySub['id'] ?? 'N/A',
+                'auto_renewal_status' => $primarySub['auto_renewal_status'] ?? 'N/A',
+                'gross_revenue' => $primarySub['total_revenue_in_usd']['gross'] ?? 0,
+                'subscription_starts_at' => isset($primarySub['starts_at']) ? date('M d, Y', $primarySub['starts_at'] / 1000) : 'N/A',
+                'subscription_ends_at' => isset($primarySub['ends_at']) ? date('M d, Y', $primarySub['ends_at'] / 1000) : 'N/A',
                 'first_seen'    => isset($customer['first_seen_at']) && $customer['first_seen_at'] ? date('M d, Y', $customer['first_seen_at'] / 1000) : 'N/A',
                 'last_seen'     => isset($customer['last_seen_at']) && $customer['last_seen_at'] ? date('M d, Y', $customer['last_seen_at'] / 1000) : 'N/A',
                 'app_version'   => $customer['last_seen_app_version'] ?? 'N/A',
@@ -98,7 +104,9 @@ class SubscriptionController extends Controller
                 'platform'      => $customer['last_seen_platform'] ?? 'N/A',
                 'os_version'    => $customer['last_seen_platform_version'] ?? 'N/A',
             ];
-        });
+        })->filter(function ($customer) {
+            return $customer['has_real_name'] === true;
+        })->values();
 
         return view('admin.subscriptions.index', [
             'overview'          => $overview,
