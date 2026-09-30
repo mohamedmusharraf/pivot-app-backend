@@ -132,20 +132,28 @@ $row2 = [
         </div>
 
         <div class="rc-pagination">
-            @if(request('starting_after'))
-                <a href="{{ route('admin.subscriptions.index') }}" class="btn" style="background: var(--rc-bg-subtle); border: 1px solid var(--rc-border-color); padding: 0.5rem 1rem; border-radius: var(--rc-radius-inner); color: var(--rc-text-primary); text-decoration: none;">&laquo; First Page</a>
+            {{-- Previous --}}
+            @if($paginator->onFirstPage())
+                <span class="rc-page-btn rc-page-btn--disabled">&laquo; Previous</span>
             @else
-                <div></div>
+                <a href="{{ $paginator->previousPageUrl() }}" class="rc-page-btn">
+                    &laquo; Previous
+                </a>
             @endif
 
-            <div class="rc-page-info" style="font-size: 0.875rem; color: var(--rc-text-muted); font-weight: 500;">
-                Page {{ $currentPage ?? 1 }}
+            {{-- Page info --}}
+            <div class="rc-page-info">
+                <span class="rc-page-current">Page {{ $currentPage }} of {{ $totalPages }}</span>
+                <span class="rc-page-total">{{ number_format($total) }} total records</span>
             </div>
 
-            @if(!empty($nextStartingAfter))
-                <a href="{{ route('admin.subscriptions.index', ['starting_after' => $nextStartingAfter, 'page' => ($currentPage ?? 1) + 1]) }}" class="btn" style="background: #0f172a; border: 1px solid #0f172a; padding: 0.5rem 1rem; border-radius: var(--rc-radius-inner); color: white; text-decoration: none;">Next Page &raquo;</a>
+            {{-- Next --}}
+            @if($paginator->hasMorePages())
+                <a href="{{ $paginator->nextPageUrl() }}" class="rc-page-btn rc-page-btn--primary">
+                    Next &raquo;
+                </a>
             @else
-                <div></div>
+                <span class="rc-page-btn rc-page-btn--disabled">Next &raquo;</span>
             @endif
         </div>
     </div>
@@ -288,6 +296,65 @@ $row2 = [
         justify-content: space-between;
         align-items: center;
         margin-top: 1.5rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--rc-border-color);
+        gap: 1rem;
+    }
+
+    .rc-page-btn {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.5rem 1.125rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        border-radius: var(--rc-radius-inner);
+        text-decoration: none;
+        border: 1px solid var(--rc-border-color);
+        background: var(--rc-bg-subtle);
+        color: var(--rc-text-primary);
+        transition: var(--rc-transition);
+        cursor: pointer;
+    }
+
+    .rc-page-btn:hover {
+        background: #e2e8f0;
+        border-color: #cbd5e1;
+    }
+
+    .rc-page-btn--primary {
+        background: #0f172a;
+        border-color: #0f172a;
+        color: #ffffff;
+    }
+
+    .rc-page-btn--primary:hover {
+        background: #1e293b;
+        border-color: #1e293b;
+    }
+
+    .rc-page-btn--disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+    .rc-page-info {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.2rem;
+    }
+
+    .rc-page-current {
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: var(--rc-text-primary);
+    }
+
+    .rc-page-total {
+        font-size: 0.775rem;
+        color: var(--rc-text-muted);
+        font-weight: 500;
     }
 
     .rc-customer-info {
