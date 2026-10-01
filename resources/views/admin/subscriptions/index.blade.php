@@ -72,9 +72,7 @@ $row2 = [
                         <th>Name</th>
                         <th>Tier</th>
                         <th>Revenue</th>
-                        <th>Platform</th>
                         <th>Dates</th>
-                        <th>Countries</th>
                         <th>Status</th>
                         <th>Store</th>
                     </tr>
@@ -105,22 +103,11 @@ $row2 = [
                             <span style="font-weight: 600; color: var(--rc-text-primary);">${{ number_format((float)($customer['gross_revenue'] ?? 0), 2) }}</span>
                         </td>
                         <td>
-                            @if(($customer['platform'] ?? 'N/A') !== 'N/A')
-                                <span class="badge" style="background: #e2e8f0; color: #475569;">{{ ucfirst($customer['platform']) }}</span>
-                            @else
-                                <span style="color: var(--rc-text-muted);">N/A</span>
-                            @endif
-                            @if(($customer['os_version'] ?? 'N/A') !== 'N/A')
-                                <div style="font-size: 0.75rem; color: var(--rc-text-muted); margin-top: 0.25rem;">OS: {{ $customer['os_version'] }}</div>
-                            @endif
-                        </td>
-                        <td>
                             <div style="display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.8rem;">
                                 <div><span style="color: var(--rc-text-muted);">Starts:</span> {{ $customer['subscription_starts_at'] ?? 'N/A' }}</div>
                                 <div><span style="color: var(--rc-text-muted);">Ends:</span> {{ $customer['subscription_ends_at'] ?? 'N/A' }}</div>
                             </div>
                         </td>
-                        <td>{{ $customer['country'] ?? 'N/A' }}</td>
                         <td>
                             <span class="badge {{ strtolower($customer['status'] ?? '') === 'active' ? 'badge-success' : 'badge-warning' }}">
                                 {{ $customer['status'] ?? 'Expired' }}
@@ -136,7 +123,7 @@ $row2 = [
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="8" style="text-align: center; padding: 2rem;">No customers found.</td>
+                        <td colspan="6" style="text-align: center; padding: 2rem;">No customers found.</td>
                     </tr>
                     @endforelse
                 </tbody>

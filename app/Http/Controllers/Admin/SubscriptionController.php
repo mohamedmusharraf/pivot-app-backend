@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Services\RevenueCatService;
 use App\Models\User;
-use App\Models\Country;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
@@ -17,19 +16,19 @@ class SubscriptionController extends Controller
     {
         $overview = $revenueCat->getMetricsOverview();
 
-        $countries = Country::pluck('name', 'iso_code');
-
-        // Paginate users who have a subscription and exist in the DB
+        // Paginate users who have a subscription, ordered by newest subscription first
         $paginator = User::whereHas('subscription')
             ->with('subscription.tier')
-            ->orderBy('id', 'desc')
+            ->join('subscriptions', 'users.id', '=', 'subscriptions.user_id')
+            ->orderBy('subscriptions.created_at', 'desc')
+            ->select('users.*')
             ->paginate(self::PER_PAGE, ['*'], 'page', (int) $request->query('page', 1));
 
         $currentPage = $paginator->currentPage();
         $totalPages  = $paginator->lastPage();
         $total       = $paginator->total();
 
-        $realCustomers = collect($paginator->items())->map(function (User $user) use ($revenueCat, $countries) {
+        $realCustomers = collect($paginator->items())->map(function (User $user) use ($revenueCat) {
             $customerId = (string) $user->id;
 
             $subData       = $revenueCat->getCustomerSubscriptions($customerId);
@@ -45,10 +44,6 @@ class SubscriptionController extends Controller
             } elseif (($primarySub['status'] ?? '') === 'active') {
                 $status = 'Active';
             }
-
-            // Country
-            $isoCode     = $primarySub['last_seen_country'] ?? null;
-            $countryName = $isoCode ? ($countries[$isoCode] ?? $isoCode) : 'N/A';
 
             // Tier — read directly from local DB (authoritative source)
             $tier = $user->subscription?->tier?->name ?? 'N/A';
@@ -72,9 +67,6 @@ class SubscriptionController extends Controller
                         ? date('M d, Y', $primarySub['ends_at'] / 1000)
                         : Carbon::parse($primarySub['ends_at'])->format('M d, Y'))
                     : 'N/A',
-                'country'                => $countryName,
-                'platform'               => $primarySub['platform'] ?? 'N/A',
-                'os_version'             => 'N/A',
             ];
         })->values();
 
