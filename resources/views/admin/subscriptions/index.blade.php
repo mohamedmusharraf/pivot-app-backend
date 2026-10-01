@@ -72,9 +72,9 @@ $row2 = [
                         <th>Name</th>
                         <th>Tier</th>
                         <th>Revenue</th>
-                        <th>Dates</th>
                         <th>Status</th>
                         <th>Store</th>
+                        <th>Subscription Dates</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -90,23 +90,17 @@ $row2 = [
                         </td>
                         <td>
                             @php
-                                $tierVal = $customer['tier'] ?? 'N/A';
-                                $tierStyle = match(strtolower($tierVal)) {
-                                    'tier 2', 'tier2' => 'background:#ede9fe; color:#6d28d9;',
-                                    'tier 3', 'tier3' => 'background:#fef3c7; color:#b45309;',
-                                    default           => 'background:#f1f5f9; color:#475569;',
-                                };
+                            $tierVal = $customer['tier'] ?? 'N/A';
+                            $tierStyle = match(strtolower($tierVal)) {
+                            'tier 2', 'tier2' => 'background:#ede9fe; color:#6d28d9;',
+                            'tier 3', 'tier3' => 'background:#fef3c7; color:#b45309;',
+                            default => 'background:#f1f5f9; color:#475569;',
+                            };
                             @endphp
                             <span class="badge" style="{{ $tierStyle }} font-weight: 700;">{{ $tierVal }}</span>
                         </td>
                         <td>
                             <span style="font-weight: 600; color: var(--rc-text-primary);">${{ number_format((float)($customer['gross_revenue'] ?? 0), 2) }}</span>
-                        </td>
-                        <td>
-                            <div style="display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.8rem;">
-                                <div><span style="color: var(--rc-text-muted);">Starts:</span> {{ $customer['subscription_starts_at'] ?? 'N/A' }}</div>
-                                <div><span style="color: var(--rc-text-muted);">Ends:</span> {{ $customer['subscription_ends_at'] ?? 'N/A' }}</div>
-                            </div>
                         </td>
                         <td>
                             <span class="badge {{ strtolower($customer['status'] ?? '') === 'active' ? 'badge-success' : 'badge-warning' }}">
@@ -115,10 +109,14 @@ $row2 = [
                         </td>
                         <td>
                             @if(($customer['store'] ?? 'N/A') !== 'N/A')
-                                <span class="badge" style="background: #f8fafc; border: 1px solid #e2e8f0; color: #475569;">{{ ucwords(str_replace('_', ' ', $customer['store'])) }}</span>
+                            <span class="badge" style="background: #f8fafc; border: 1px solid #e2e8f0; color: #475569;">{{ ucwords(str_replace('_', ' ', $customer['store'])) }}</span>
                             @else
-                                <span style="color: var(--rc-text-muted);">N/A</span>
+                            <span style="color: var(--rc-text-muted);">N/A</span>
                             @endif
+                        </td>
+                        <td>
+                            <div>Starts: {{ $customer['subscription_starts_at'] ?? 'N/A' }}</div>
+                            <div>Ends: {{ $customer['subscription_ends_at'] ?? 'N/A' }}</div>
                         </td>
                     </tr>
                     @empty
@@ -133,11 +131,11 @@ $row2 = [
         <div class="rc-pagination">
             {{-- Previous --}}
             @if($paginator->onFirstPage())
-                <span class="rc-page-btn rc-page-btn--disabled">&laquo; Previous</span>
+            <span class="rc-page-btn rc-page-btn--disabled">&laquo; Previous</span>
             @else
-                <a href="{{ $paginator->previousPageUrl() }}" class="rc-page-btn">
-                    &laquo; Previous
-                </a>
+            <a href="{{ $paginator->previousPageUrl() }}" class="rc-page-btn">
+                &laquo; Previous
+            </a>
             @endif
 
             {{-- Page info --}}
@@ -148,11 +146,11 @@ $row2 = [
 
             {{-- Next --}}
             @if($paginator->hasMorePages())
-                <a href="{{ $paginator->nextPageUrl() }}" class="rc-page-btn rc-page-btn--primary">
-                    Next &raquo;
-                </a>
+            <a href="{{ $paginator->nextPageUrl() }}" class="rc-page-btn rc-page-btn--primary">
+                Next &raquo;
+            </a>
             @else
-                <span class="rc-page-btn rc-page-btn--disabled">Next &raquo;</span>
+            <span class="rc-page-btn rc-page-btn--disabled">Next &raquo;</span>
             @endif
         </div>
     </div>
@@ -262,13 +260,13 @@ $row2 = [
         overflow-x: auto;
         margin-bottom: 1rem;
     }
-    
+
     .rc-customers-table {
         width: 100%;
         border-collapse: collapse;
         text-align: left;
     }
-    
+
     .rc-customers-table th {
         font-size: 0.85rem;
         font-weight: 600;
@@ -277,7 +275,7 @@ $row2 = [
         padding: 1rem;
         border-bottom: 2px solid var(--rc-border-color);
     }
-    
+
     .rc-customers-table td {
         padding: 1rem;
         border-bottom: 1px solid var(--rc-border-color);
@@ -285,11 +283,11 @@ $row2 = [
         font-size: 0.9rem;
         color: var(--rc-text-primary);
     }
-    
+
     .rc-customers-table tr:hover {
         background-color: var(--rc-bg-subtle);
     }
-    
+
     .rc-pagination {
         display: flex;
         justify-content: space-between;

@@ -20,6 +20,8 @@ class SubscriptionController extends Controller
         $paginator = User::whereHas('subscription')
             ->with('subscription.tier')
             ->join('subscriptions', 'users.id', '=', 'subscriptions.user_id')
+            ->orderByRaw('CASE WHEN subscriptions.started_at IS NULL THEN 1 ELSE 0 END')
+            ->orderBy('subscriptions.started_at', 'desc')
             ->orderBy('subscriptions.created_at', 'desc')
             ->select('users.*')
             ->paginate(self::PER_PAGE, ['*'], 'page', (int) $request->query('page', 1));
@@ -47,6 +49,12 @@ class SubscriptionController extends Controller
 
             // Tier — read directly from local DB (authoritative source)
             $tier = $user->subscription?->tier?->name ?? 'N/A';
+            $startsAt = !empty($primarySub['starts_at'])
+                ? $primarySub['starts_at']
+                : $user->subscription?->started_at;
+            $endsAt = !empty($primarySub['ends_at'])
+                ? $primarySub['ends_at']
+                : $user->subscription?->expires_at;
 
             return [
                 'user_name'              => $user->name,
@@ -57,15 +65,15 @@ class SubscriptionController extends Controller
                 'subscription_id'        => $primarySub['id'] ?? 'N/A',
                 'auto_renewal_status'    => $primarySub['auto_renewal_status'] ?? 'N/A',
                 'gross_revenue'          => $primarySub['total_revenue_in_usd']['gross'] ?? 0,
-                'subscription_starts_at' => !empty($primarySub['starts_at'])
-                    ? (is_numeric($primarySub['starts_at'])
-                        ? date('M d, Y', $primarySub['starts_at'] / 1000)
-                        : Carbon::parse($primarySub['starts_at'])->format('M d, Y'))
+                'subscription_starts_at' => !empty($startsAt)
+                    ? (is_numeric($startsAt)
+                        ? date('M d, Y', $startsAt / 1000)
+                        : Carbon::parse($startsAt)->format('M d, Y'))
                     : 'N/A',
-                'subscription_ends_at'   => !empty($primarySub['ends_at'])
-                    ? (is_numeric($primarySub['ends_at'])
-                        ? date('M d, Y', $primarySub['ends_at'] / 1000)
-                        : Carbon::parse($primarySub['ends_at'])->format('M d, Y'))
+                'subscription_ends_at'   => !empty($endsAt)
+                    ? (is_numeric($endsAt)
+                        ? date('M d, Y', $endsAt / 1000)
+                        : Carbon::parse($endsAt)->format('M d, Y'))
                     : 'N/A',
             ];
         })->values();
