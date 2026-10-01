@@ -70,6 +70,7 @@ $row2 = [
                 <thead>
                     <tr>
                         <th>Name</th>
+                        <th>Tier</th>
                         <th>Revenue</th>
                         <th>Platform</th>
                         <th>Dates</th>
@@ -88,6 +89,17 @@ $row2 = [
                                 <span class="rc-customer-email">{{ $customer['user_email'] }}</span>
                                 @endif
                             </div>
+                        </td>
+                        <td>
+                            @php
+                                $tierVal = $customer['tier'] ?? 'N/A';
+                                $tierStyle = match(strtolower($tierVal)) {
+                                    'tier 2', 'tier2' => 'background:#ede9fe; color:#6d28d9;',
+                                    'tier 3', 'tier3' => 'background:#fef3c7; color:#b45309;',
+                                    default           => 'background:#f1f5f9; color:#475569;',
+                                };
+                            @endphp
+                            <span class="badge" style="{{ $tierStyle }} font-weight: 700;">{{ $tierVal }}</span>
                         </td>
                         <td>
                             <span style="font-weight: 600; color: var(--rc-text-primary);">${{ number_format((float)($customer['gross_revenue'] ?? 0), 2) }}</span>
@@ -124,7 +136,7 @@ $row2 = [
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="7" style="text-align: center; padding: 2rem;">No customers found.</td>
+                        <td colspan="8" style="text-align: center; padding: 2rem;">No customers found.</td>
                     </tr>
                     @endforelse
                 </tbody>

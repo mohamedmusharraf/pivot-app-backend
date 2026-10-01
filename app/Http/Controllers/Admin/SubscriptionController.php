@@ -21,7 +21,7 @@ class SubscriptionController extends Controller
 
         // Paginate users who have a subscription and exist in the DB
         $paginator = User::whereHas('subscription')
-            ->with('subscription')
+            ->with('subscription.tier')
             ->orderBy('id', 'desc')
             ->paginate(self::PER_PAGE, ['*'], 'page', (int) $request->query('page', 1));
 
@@ -50,26 +50,8 @@ class SubscriptionController extends Controller
             $isoCode     = $primarySub['last_seen_country'] ?? null;
             $countryName = $isoCode ? ($countries[$isoCode] ?? $isoCode) : 'N/A';
 
-            // Tier from product identifier
-            $productId = $primarySub['product']['identifier']
-                ?? $primarySub['product']['id']
-                ?? $primarySub['product_id']
-                ?? $primarySub['product_identifier']
-                ?? $primarySub['entitlement_id']
-                ?? null;
-
-            $tier = 'N/A';
-            if ($productId) {
-                if (stripos($productId, 'tier 3') !== false || stripos($productId, 'tier_3') !== false || stripos($productId, 'tier-3') !== false) {
-                    $tier = 'Tier 3';
-                } elseif (stripos($productId, 'tier 2') !== false || stripos($productId, 'tier_2') !== false || stripos($productId, 'tier-2') !== false) {
-                    $tier = 'Tier 2';
-                } elseif (stripos($productId, 'tier 1') !== false || stripos($productId, 'tier_1') !== false || stripos($productId, 'tier-1') !== false) {
-                    $tier = 'Tier 1';
-                } else {
-                    $tier = ucwords(str_replace(['_', '-'], ' ', explode(':', $productId)[0]));
-                }
-            }
+            // Tier — read directly from local DB (authoritative source)
+            $tier = $user->subscription?->tier?->name ?? 'N/A';
 
             return [
                 'user_name'              => $user->name,
@@ -94,7 +76,7 @@ class SubscriptionController extends Controller
                 'platform'               => $primarySub['platform'] ?? 'N/A',
                 'os_version'             => 'N/A',
             ];
-        })->filter(fn($c) => $c['tier'] !== 'Tier 1')->values();
+        })->values();
 
         return view('admin.subscriptions.index', [
             'overview'      => $overview,
