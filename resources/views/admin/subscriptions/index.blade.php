@@ -65,6 +65,19 @@ $row2 = [
     <div class="rc-customers-section">
         <h2 class="rc-section-title">Customers</h2>
 
+        <form method="GET" action="{{ route('admin.subscriptions.index') }}" class="rc-search-form">
+            <input
+                type="search"
+                name="search"
+                value="{{ $search }}"
+                placeholder="Search name or email"
+                aria-label="Search subscriptions by customer name or email">
+            <button type="submit" class="rc-page-btn rc-page-btn--primary">Search</button>
+            @if($search !== '')
+            <a href="{{ route('admin.subscriptions.index') }}" class="rc-page-btn">Clear</a>
+            @endif
+        </form>
+
         <div class="table-responsive">
             <table class="rc-customers-table">
                 <thead>
@@ -254,6 +267,28 @@ $row2 = [
         border-bottom: 1px solid var(--rc-border-color);
     }
 
+    .rc-search-form {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .rc-search-form input {
+        flex: 1 1 16rem;
+        min-width: 0;
+        padding: 0.5rem 0.75rem;
+        border: 1px solid var(--rc-border-color);
+        border-radius: var(--rc-radius-inner);
+        color: var(--rc-text-primary);
+        font: inherit;
+    }
+
+    .rc-search-form input:focus-visible {
+        outline: 2px solid #0f172a;
+        outline-offset: 2px;
+    }
+
     /* Table Styles */
     .table-responsive {
         width: 100%;
@@ -413,4 +448,36 @@ $row2 = [
         }
     }
 </style>
+
+<script>
+    (() => {
+        const form = document.querySelector('.rc-search-form');
+        const input = form?.querySelector('input[name="search"]');
+        const focusKey = 'admin-subscriptions-search-focus';
+
+        if (!form || !input) {
+            return;
+        }
+
+        if (sessionStorage.getItem(focusKey) === '1') {
+            sessionStorage.removeItem(focusKey);
+            input.focus();
+            input.setSelectionRange(input.value.length, input.value.length);
+        }
+
+        let debounceTimer;
+        input.addEventListener('input', () => {
+            window.clearTimeout(debounceTimer);
+            debounceTimer = window.setTimeout(() => {
+                const currentSearch = new URLSearchParams(window.location.search).get('search')?.trim() ?? '';
+                if (input.value.trim() === currentSearch) {
+                    return;
+                }
+
+                sessionStorage.setItem(focusKey, '1');
+                form.requestSubmit();
+            }, 500);
+        });
+    })();
+</script>
 @endsection

@@ -15,16 +15,26 @@ class SubscriptionController extends Controller
     public function index(Request $request, RevenueCatService $revenueCat)
     {
         $overview = $revenueCat->getMetricsOverview();
+        $search = trim((string) $request->query('search', ''));
 
-        // Paginate users who have a subscription, ordered by newest subscription first
-        $paginator = User::whereHas('subscription')
+        $query = User::whereHas('subscription')
             ->with('subscription.tier')
             ->join('subscriptions', 'users.id', '=', 'subscriptions.user_id')
             ->orderByRaw('CASE WHEN subscriptions.started_at IS NULL THEN 1 ELSE 0 END')
             ->orderBy('subscriptions.started_at', 'desc')
             ->orderBy('subscriptions.created_at', 'desc')
-            ->select('users.*')
-            ->paginate(self::PER_PAGE, ['*'], 'page', (int) $request->query('page', 1));
+            ->select('users.*');
+
+        if ($search !== '') {
+            $query->where(function ($query) use ($search) {
+                $query->where('users.name', 'like', "%{$search}%")
+                    ->orWhere('users.email', 'like', "%{$search}%");
+            });
+        }
+
+        $paginator = $query
+            ->paginate(self::PER_PAGE, ['*'], 'page', (int) $request->query('page', 1))
+            ->withQueryString();
 
         $currentPage = $paginator->currentPage();
         $totalPages  = $paginator->lastPage();
@@ -85,6 +95,7 @@ class SubscriptionController extends Controller
             'totalPages'    => $totalPages,
             'total'         => $total,
             'paginator'     => $paginator,
+            'search'        => $search,
         ]);
     }
 }
